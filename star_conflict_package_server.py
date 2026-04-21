@@ -3,6 +3,7 @@
 
 import kaitaistruct
 from kaitaistruct import KaitaiStruct, KaitaiStream, BytesIO
+from enum import IntEnum
 
 
 if getattr(kaitaistruct, 'API_VERSION', (0, 9)) < (0, 11):
@@ -2323,6 +2324,12 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcClanRequestDesc(KaitaiStruct):
+
+        class Role(IntEnum):
+            ceo = 0
+            member = 1
+            officer = 2
+            vice_president = 3
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcClanRequestDesc, self).__init__(_io)
             self._parent = _parent
@@ -2330,11 +2337,49 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
+            self.unknown = self._io.read_u4be()
+            self.clan_id = self._io.read_u4be()
+            self.clan_name = (self._io.read_bytes_term(0, False, True, True)).decode(u"UTF-8")
+            self.clan_tag = (self._io.read_bytes_term(0, False, True, True)).decode(u"UTF-8")
+            self.motd = (self._io.read_bytes_term(0, False, True, True)).decode(u"UTF-8")
+            self.description = (self._io.read_bytes_term(0, False, True, True)).decode(u"UTF-8")
+            self.clan_icon = (self._io.read_bytes_term(0, False, True, True)).decode(u"UTF-8")
+            self.clan_faction = (self._io.read_bytes_term(0, False, True, True)).decode(u"UTF-8")
+            self.unknown1 = self._io.read_u8be()
+            self.unknown2 = self._io.read_u8be()
+            self.unknown3 = self._io.read_u8be()
+            self.unknown4 = self._io.read_u2be()
+            self.unknown5 = self._io.read_u1()
+            self.member_count = self._io.read_u4be()
+            self.member_uids = []
+            for i in range(self.member_count):
+                self.member_uids.append(StarConflictPackageServer.AcClanRequestDesc.Member(self._io, self, self._root))
+
             self.dummy = self._io.read_u1()
 
 
         def _fetch_instances(self):
             pass
+            for i in range(len(self.member_uids)):
+                pass
+                self.member_uids[i]._fetch_instances()
+
+
+        class Member(KaitaiStruct):
+            def __init__(self, _io, _parent=None, _root=None):
+                super(StarConflictPackageServer.AcClanRequestDesc.Member, self).__init__(_io)
+                self._parent = _parent
+                self._root = _root
+                self._read()
+
+            def _read(self):
+                self.uid = self._io.read_u8be()
+                self.role = KaitaiStream.resolve_enum(StarConflictPackageServer.AcClanRequestDesc.Role, self._io.read_u1())
+
+
+            def _fetch_instances(self):
+                pass
+
 
 
     class AcClanRequestProfile(KaitaiStruct):
@@ -3504,6 +3549,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcMailGet(KaitaiStruct):
+        """Mailbox response; contains zero or more mail messages."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcMailGet, self).__init__(_io)
             self._parent = _parent
@@ -3511,11 +3557,34 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.num_messages = self._io.read_u4be()
+            self.messages = []
+            for i in range(self.num_messages):
+                self.messages.append(StarConflictPackageServer.AcMailGet.MailMessage(self._io, self, self._root))
+
 
 
         def _fetch_instances(self):
             pass
+            for i in range(len(self.messages)):
+                pass
+                self.messages[i]._fetch_instances()
+
+
+        class MailMessage(KaitaiStruct):
+            def __init__(self, _io, _parent=None, _root=None):
+                super(StarConflictPackageServer.AcMailGet.MailMessage, self).__init__(_io)
+                self._parent = _parent
+                self._root = _root
+                self._read()
+
+            def _read(self):
+                self.dummy = self._io.read_u1()
+
+
+            def _fetch_instances(self):
+                pass
+
 
 
     class AcMailRemove(KaitaiStruct):
@@ -3564,6 +3633,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcMotd(KaitaiStruct):
+        """Server MOTD notification; status indicates MOTD type/availability."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcMotd, self).__init__(_io)
             self._parent = _parent
@@ -3571,7 +3641,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -4029,6 +4099,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcServerInfo(KaitaiStruct):
+        """Server metadata sent after initial connection."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcServerInfo, self).__init__(_io)
             self._parent = _parent
@@ -4036,7 +4107,12 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.online_count = self._io.read_u4be()
+            self.server_time = self._io.read_u4be()
+            self.session_token = self._io.read_u2be()
+            self.server_id = self._io.read_u2be()
+            self.shard_flags = self._io.read_u4be()
+            self.version = self._io.read_bytes(4)
 
 
         def _fetch_instances(self):
@@ -4862,9 +4938,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.unknown = self._io.read_u1()
-            self.uid = self._io.read_u8be()
-            self.note = (self._io.read_bytes_term(0, False, True, True)).decode(u"UTF-8")
+            self.dummy = self._io.read_u1()
 
 
         def _fetch_instances(self):
