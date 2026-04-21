@@ -1649,6 +1649,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcAdventures(KaitaiStruct):
+        """Available adventures list."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcAdventures, self).__init__(_io)
             self._parent = _parent
@@ -1656,7 +1657,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.data = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -1874,6 +1875,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcBattleSlots(KaitaiStruct):
+        """Battle loadout slots with equipped vessel IDs."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcBattleSlots, self).__init__(_io)
             self._parent = _parent
@@ -1881,7 +1883,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.slot_count = self._io.read_u4be()
+            self.data = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2653,6 +2656,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcEnterMmQueue(KaitaiStruct):
+        """Matchmaking queue update; flags=0x80 means queued."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcEnterMmQueue, self).__init__(_io)
             self._parent = _parent
@@ -2660,7 +2664,9 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.flags = self._io.read_u1()
+            self.queue_id = self._io.read_u4be()
+            self.slot = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -2743,6 +2749,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcFriendsAcceptRequest(KaitaiStruct):
+        """Result of accepting a friend request; uid is the new friend."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcFriendsAcceptRequest, self).__init__(_io)
             self._parent = _parent
@@ -2750,7 +2757,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.uid = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -2803,6 +2811,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcFriendsSendRequest(KaitaiStruct):
+        """Friends list with UIDs and per-friend data."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcFriendsSendRequest, self).__init__(_io)
             self._parent = _parent
@@ -2810,7 +2819,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.data = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2863,6 +2872,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcGetFbToken(KaitaiStruct):
+        """Facebook token (18-byte blob, all-zero when not linked)."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcGetFbToken, self).__init__(_io)
             self._parent = _parent
@@ -2870,7 +2880,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.token = self._io.read_bytes(18)
 
 
         def _fetch_instances(self):
@@ -3234,6 +3244,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcLoadInitialPlayerData(KaitaiStruct):
+        """Server response to initial load; variable content (login data or keepalive)."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcLoadInitialPlayerData, self).__init__(_io)
             self._parent = _parent
@@ -3241,7 +3252,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.data = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3519,6 +3530,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcMailAcknowledgeExpiration(KaitaiStruct):
+        """Acknowledge expired mail; mail_id=0xffffffff means all."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcMailAcknowledgeExpiration, self).__init__(_io)
             self._parent = _parent
@@ -3526,7 +3538,9 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.mail_id = self._io.read_u4be()
+            self.timestamp = self._io.read_u4be()
 
 
         def _fetch_instances(self):
@@ -3603,6 +3617,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcMailSend(KaitaiStruct):
+        """Result of sending mail; status + assigned mail ID."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcMailSend, self).__init__(_io)
             self._parent = _parent
@@ -3610,7 +3625,9 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.unknown = self._io.read_u1()
+            self.mail_id = self._io.read_u4be()
 
 
         def _fetch_instances(self):
@@ -3709,6 +3726,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcPlayerCredentials(KaitaiStruct):
+        """Player nickname and session credentials."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcPlayerCredentials, self).__init__(_io)
             self._parent = _parent
@@ -3716,7 +3734,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.nickname = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
+            self.data = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3724,6 +3743,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcPlayerCredits(KaitaiStruct):
+        """All currency balances for the player."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcPlayerCredits, self).__init__(_io)
             self._parent = _parent
@@ -3731,7 +3751,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.data = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3799,6 +3819,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcPremiumInfo(KaitaiStruct):
+        """Premium account expiry timestamp in milliseconds."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcPremiumInfo, self).__init__(_io)
             self._parent = _parent
@@ -3806,7 +3827,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.expiry_ms = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -3964,6 +3985,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcRewardedTutorials(KaitaiStruct):
+        """List of tutorial IDs that have been completed and rewarded."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcRewardedTutorials, self).__init__(_io)
             self._parent = _parent
@@ -3971,11 +3993,18 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.count = self._io.read_u1()
+            self.tutorial_ids = []
+            for i in range(self.count):
+                self.tutorial_ids.append(self._io.read_u1())
+
 
 
         def _fetch_instances(self):
             pass
+            for i in range(len(self.tutorial_ids)):
+                pass
+
 
 
     class AcSalvageItem(KaitaiStruct):
@@ -4157,7 +4186,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_u2be()
+            self.value = self._io.read_u2be()
 
 
         def _fetch_instances(self):
@@ -4247,7 +4277,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.uid = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -4262,7 +4293,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.uid = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -4322,7 +4354,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.uid = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -4337,7 +4370,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.uid = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -4375,6 +4409,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcSquadInfo(KaitaiStruct):
+        """Current squad state; zero fields when not in a squad."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcSquadInfo, self).__init__(_io)
             self._parent = _parent
@@ -4382,7 +4417,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.squad_id = self._io.read_u8be()
+            self.leader_uid = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -4511,6 +4547,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcSurveyGetNew(KaitaiStruct):
+        """Response to survey poll; all-zero when no surveys available."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcSurveyGetNew, self).__init__(_io)
             self._parent = _parent
@@ -4518,7 +4555,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.reserved = self._io.read_u4be()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -4526,6 +4564,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcSurveyResults(KaitaiStruct):
+        """Survey result data; all-zero when no surveys active."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcSurveyResults, self).__init__(_io)
             self._parent = _parent
@@ -4533,7 +4572,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.reserved = self._io.read_u4be()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -4931,6 +4971,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcUserNotesAdd(KaitaiStruct):
+        """Confirmation of user note added; echoes uid and note text."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcUserNotesAdd, self).__init__(_io)
             self._parent = _parent
@@ -4938,7 +4979,9 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.uid = self._io.read_u8be()
+            self.note = (self._io.read_bytes_term(0, False, True, True)).decode(u"UTF-8")
 
 
         def _fetch_instances(self):
@@ -4946,6 +4989,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcUserNotesDelete(KaitaiStruct):
+        """Confirmation of user note deletion."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcUserNotesDelete, self).__init__(_io)
             self._parent = _parent
@@ -4953,7 +4997,9 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.flags = self._io.read_u2be()
+            self.uid = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -5306,6 +5352,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcVesselStripImproperBattle(KaitaiStruct):
+        """Vessels removed from battle slots due to invalid configuration."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcVesselStripImproperBattle, self).__init__(_io)
             self._parent = _parent
@@ -5313,11 +5360,18 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.count = self._io.read_u4be()
+            self.entry_ids = []
+            for i in range(self.count):
+                self.entry_ids.append(self._io.read_u1())
+
 
 
         def _fetch_instances(self):
             pass
+            for i in range(len(self.entry_ids)):
+                pass
+
 
 
     class AcVesselTransferEquip(KaitaiStruct):
@@ -5427,6 +5481,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcZonesLuaActiveEventsUpdate(KaitaiStruct):
+        """Active Lua event status for zones."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcZonesLuaActiveEventsUpdate, self).__init__(_io)
             self._parent = _parent
@@ -5434,7 +5489,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
