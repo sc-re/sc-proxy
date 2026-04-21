@@ -18,7 +18,12 @@ Choose `localhost` in the Server dropdown to connect through the proxy.
 After logging in, the proxy will dump the bodies of recieved packets in `./captures`
 or whatever directory the environment variable `SC_CAPTURE_DIR` points to.
 
-Update the file `packet.ksy` with definitions of pacakges you understand.
+Update the files `server.ksy` and `client.ksy` with definitions of packages you understand.
+- `client.ksy` is for packages flowing from Client to Server
+- `server.ksy` is for packages flowing from Server to Client
+
+Not all package types do get sent in both directions
+
 
 ## Dependencies
 - python
