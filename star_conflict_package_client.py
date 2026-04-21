@@ -1648,6 +1648,7 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcAdventures(KaitaiStruct):
+        """Empty request, server responds with adventures list."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcAdventures, self).__init__(_io)
             self._parent = _parent
@@ -1655,7 +1656,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            pass
 
 
         def _fetch_instances(self):
@@ -3811,6 +3812,7 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcQuests(KaitaiStruct):
+        """Empty request, server responds with quest list."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcQuests, self).__init__(_io)
             self._parent = _parent
@@ -3818,7 +3820,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            pass
 
 
         def _fetch_instances(self):
@@ -4730,6 +4732,7 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcUniverseGet(KaitaiStruct):
+        """Empty request, server responds with universe data."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcUniverseGet, self).__init__(_io)
             self._parent = _parent
@@ -4737,7 +4740,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            pass
 
 
         def _fetch_instances(self):
