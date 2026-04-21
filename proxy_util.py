@@ -83,19 +83,27 @@ def _kaitai_repr(obj) -> str:
     return " ".join(parts)
 
 
-def _parse_kaitai(body: bytes, tag: str) -> str:
-    """Try to parse body with the kaitai parser; return a short description."""
+_GREEN = "\033[32m"
+_RED   = "\033[31m"
+_RESET = "\033[0m"
+
+
+def _colorize(text: str, ok: bool) -> str:
+    return f"{_GREEN if ok else _RED}{text}{_RESET}"
+
+
+def _parse_kaitai(body: bytes, tag: str) -> tuple[str, bool]:
+    """Try to parse body; return (description, success)."""
     try:
-        parsed = None
-        if tag == "SHARD C→S":
+        if "C→S" in tag:
             parsed = StarConflictPackageClient(KaitaiStream(BytesIO(body)))
         else:
             parsed = StarConflictPackageServer(KaitaiStream(BytesIO(body)))
         name = type(parsed.body).__name__
         detail = _kaitai_repr(parsed.body)
-        return f" [{name}{': ' + detail if detail else ''}]"
+        return f" [{name}{': ' + detail if detail else ''}]", True if detail else False
     except Exception as e:
-        return f"{e}"
+        return f" [{e}]", False
 
 
 def hexdump(data: bytes, width: int = 16, prefix: str = "    ") -> str:
@@ -120,7 +128,7 @@ def log_packet(tag: str, pkt: dict, extra: str = ""):
         log.info(f"[{tag}] SPECIAL (ff ff ff fe + 8 bytes) {extra}")
         return
     body = pkt.get("body", b"")
-    kaitai_str=_parse_kaitai(body, tag)
+    kaitai_str, ok = _parse_kaitai(body, tag)
     ac_idx = int.from_bytes(body[:2], "big") if len(body) >= 2 else 0xffff
     hdr = (f"[{tag}] type=0x{pkt['type']:04x} seq={pkt['seq']} "
            f"req_id=0x{pkt['req_id']:04x} body_len={pkt['body_len']}"
@@ -142,10 +150,10 @@ def log_packet(tag: str, pkt: dict, extra: str = ""):
             hdr += f" save_error={e}"
     if extra:
         hdr += f" {extra}"
-    log.info(hdr)
-    if body and not kaitai_str:
+    log.info(_colorize(hdr, ok))
+    if body and not ok:
         body_preview = body[:128]
-        log.info(f"    body[0:{len(body_preview)}]:\n{hexdump(body_preview)}")
+        log.info(_colorize(f"    body[0:{len(body_preview)}]:\n{hexdump(body_preview)}", False))
 
 
 def relay_loop(src: socket.socket, dst: socket.socket, tag: str,
