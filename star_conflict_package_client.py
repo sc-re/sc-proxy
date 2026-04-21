@@ -2323,6 +2323,7 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcClanRequestDesc(KaitaiStruct):
+        """Empty request, server responds with clan description."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcClanRequestDesc, self).__init__(_io)
             self._parent = _parent
@@ -2330,7 +2331,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            pass
 
 
         def _fetch_instances(self):
@@ -2758,6 +2759,7 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcFriendsSendRequest(KaitaiStruct):
+        """Empty request, initiates friend request flow."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcFriendsSendRequest, self).__init__(_io)
             self._parent = _parent
@@ -2765,7 +2767,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            pass
 
 
         def _fetch_instances(self):
@@ -2993,6 +2995,7 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcLeaderboardGetDescs(KaitaiStruct):
+        """Empty request, server responds with leaderboard descriptors."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcLeaderboardGetDescs, self).__init__(_io)
             self._parent = _parent
@@ -3000,7 +3003,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            pass
 
 
         def _fetch_instances(self):
@@ -3023,6 +3026,7 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcLeagueTeamInfo(KaitaiStruct):
+        """Empty request, server responds with league team info."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcLeagueTeamInfo, self).__init__(_io)
             self._parent = _parent
@@ -3030,7 +3034,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            pass
 
 
         def _fetch_instances(self):
@@ -3188,6 +3192,7 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcLoadInitialPlayerData(KaitaiStruct):
+        """Initial player data request; 6 bytes when sent with session credentials, empty for keepalive."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcLoadInitialPlayerData, self).__init__(_io)
             self._parent = _parent
@@ -3195,7 +3200,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.session_data = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3338,6 +3343,7 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcLobbyInfo(KaitaiStruct):
+        """Empty request, server responds with lobby info."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcLobbyInfo, self).__init__(_io)
             self._parent = _parent
@@ -3345,7 +3351,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            pass
 
 
         def _fetch_instances(self):
@@ -3503,6 +3509,7 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcMailGet(KaitaiStruct):
+        """Client requests mailbox contents in specified language."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcMailGet, self).__init__(_io)
             self._parent = _parent
@@ -3510,7 +3517,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.lang = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
 
 
         def _fetch_instances(self):
@@ -3563,6 +3570,7 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcMotd(KaitaiStruct):
+        """Client requests MOTD in specified language."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcMotd, self).__init__(_io)
             self._parent = _parent
@@ -3570,7 +3578,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.lang = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
 
 
         def _fetch_instances(self):
@@ -4028,6 +4036,7 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcServerInfo(KaitaiStruct):
+        """Empty request, server responds with server info."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcServerInfo, self).__init__(_io)
             self._parent = _parent
@@ -4035,7 +4044,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            pass
 
 
         def _fetch_instances(self):
@@ -4298,6 +4307,7 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcSquadInfo(KaitaiStruct):
+        """Empty request, server responds with squad info."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcSquadInfo, self).__init__(_io)
             self._parent = _parent
@@ -4305,7 +4315,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            pass
 
 
         def _fetch_instances(self):
@@ -4614,6 +4624,7 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcTeachingList(KaitaiStruct):
+        """Empty request, server responds with teaching list."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcTeachingList, self).__init__(_io)
             self._parent = _parent
@@ -4621,7 +4632,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            pass
 
 
         def _fetch_instances(self):
@@ -5291,6 +5302,7 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcWarmapGet(KaitaiStruct):
+        """Client requests war map data for a specific zone."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcWarmapGet, self).__init__(_io)
             self._parent = _parent
@@ -5298,7 +5310,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.zone_id = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -5306,6 +5318,7 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcWelcomeMsg(KaitaiStruct):
+        """Client requests welcome message in specified language."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcWelcomeMsg, self).__init__(_io)
             self._parent = _parent
@@ -5313,8 +5326,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.unknown = self._io.read_u1()
-            self.msg = (self._io.read_bytes_term(0, False, True, True)).decode(u"UTF-8")
+            self.lang = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
 
 
         def _fetch_instances(self):

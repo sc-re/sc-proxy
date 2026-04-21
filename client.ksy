@@ -264,13 +264,12 @@ seq:
         252: ac_adventure_cancel
 types:
   ac_load_initial_player_data:
+    doc: Initial player data request; 6 bytes when sent with session credentials, empty for keepalive
     seq:
-     - id: dummy
-       type: u1
+    - id: session_data
+      size-eos: true
   ac_server_info:
-    seq:
-     - id: dummy
-       type: u1
+    doc: Empty request, server responds with server info
   ac_enter_mm_queue:
     seq:
      - id: dummy
@@ -638,9 +637,7 @@ types:
      - id: dummy
        type: u1
   ac_squad_info:
-    seq:
-     - id: dummy
-       type: u1
+    doc: Empty request, server responds with squad info
   ac_squad_invite_accept:
     seq:
      - id: dummy
@@ -675,9 +672,7 @@ types:
      - id: dummy
        type: u1
   ac_league_team_info:
-    seq:
-     - id: dummy
-       type: u1
+    doc: Empty request, server responds with league team info
   ac_league_team_create:
     seq:
      - id: dummy
@@ -747,9 +742,7 @@ types:
      - id: dummy
        type: u1
   ac_friends_send_request:
-    seq:
-     - id: dummy
-       type: u1
+    doc: Empty request, initiates friend request flow
   ac_friends_accept_request:
     seq:
      - id: dummy
@@ -795,9 +788,7 @@ types:
      - id: dummy
        type: u1
   ac_teaching_list:
-    seq:
-     - id: dummy
-       type: u1
+    doc: Empty request, server responds with teaching list
   ac_teaching_request_to_teacher:
     seq:
      - id: dummy
@@ -863,9 +854,7 @@ types:
      - id: dummy
        type: u1
   ac_lobby_info:
-    seq:
-     - id: dummy
-       type: u1
+    doc: Empty request, server responds with lobby info
   ac_lobby_kick:
     seq:
      - id: dummy
@@ -923,9 +912,7 @@ types:
      - id: dummy
        type: u1
   ac_clan_request_desc:
-    seq:
-     - id: dummy
-       type: u1
+    doc: Empty request, server responds with clan description
   ac_clan_request_profile:
     seq:
      - id: dummy
@@ -1087,13 +1074,17 @@ types:
      - id: dummy
        type: u1
   ac_welcome_msg:
+    doc: Client requests welcome message in specified language
     seq:
-    - id: dummy
-      type: u1
+    - id: lang
+      type: strz
+      encoding: ASCII
   ac_motd:
+    doc: Client requests MOTD in specified language
     seq:
-     - id: dummy
-       type: u1
+    - id: lang
+      type: strz
+      encoding: ASCII
   ac_survey_get_new:
     seq:
      - id: dummy
@@ -1115,13 +1106,16 @@ types:
      - id: dummy
        type: u1
   ac_warmap_get:
+    doc: Client requests war map data for a specific zone
     seq:
-     - id: dummy
-       type: u1
+    - id: zone_id
+      type: u8be
   ac_mail_get:
+    doc: Client requests mailbox contents in specified language
     seq:
-     - id: dummy
-       type: u1
+    - id: lang
+      type: strz
+      encoding: ASCII
   ac_mail_deliver:
     seq:
      - id: dummy
@@ -1175,9 +1169,7 @@ types:
      - id: dummy
        type: u1
   ac_leaderboard_get_descs:
-    seq:
-     - id: dummy
-       type: u1
+    doc: Empty request, server responds with leaderboard descriptors
   ac_set_fb_token:
     seq:
      - id: dummy
