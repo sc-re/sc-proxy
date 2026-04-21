@@ -268,9 +268,26 @@ types:
      - id: dummy
        type: u1
   ac_server_info:
+    doc: Server metadata sent after initial connection
     seq:
-     - id: dummy
-       type: u1
+    - id: online_count
+      type: u4be
+      doc: Number of online players or server load metric
+    - id: server_time
+      type: u4be
+      doc: Server uptime or custom-epoch timestamp
+    - id: session_token
+      type: u2be
+      doc: Per-connection token
+    - id: server_id
+      type: u2be
+      doc: "Server identifier (observed: 0x8549, 0x8649)"
+    - id: shard_flags
+      type: u4be
+      doc: Always 0x04000000
+    - id: version
+      size: 4
+      doc: Server version bytes (0x00010101)
   ac_enter_mm_queue:
     seq:
      - id: dummy
@@ -1139,9 +1156,10 @@ types:
       type: strz
       encoding: UTF-8
   ac_motd:
+    doc: Server MOTD notification; status indicates MOTD type/availability
     seq:
-     - id: dummy
-       type: u1
+    - id: status
+      type: u1
   ac_survey_get_new:
     seq:
      - id: dummy
@@ -1167,9 +1185,19 @@ types:
      - id: dummy
        type: u1
   ac_mail_get:
+    doc: Mailbox response; contains zero or more mail messages
     seq:
-     - id: dummy
-       type: u1
+    - id: num_messages
+      type: u4be
+    - id: messages
+      type: mail_message
+      repeat: expr
+      repeat-expr: num_messages
+    types:
+      mail_message:
+        seq:
+        - id: dummy
+          type: u1
   ac_mail_deliver:
     seq:
      - id: dummy
