@@ -13,7 +13,8 @@ import os
 
 from protocol import read_packet
 from ac_types import pkt_type_name
-from star_conflict_package import StarConflictPackage
+from star_conflict_package_client import StarConflictPackageClient
+from star_conflict_package_server import StarConflictPackageServer
 from kaitaistruct import KaitaiStream, BytesIO
 
 log = logging.getLogger("proxy")
@@ -82,15 +83,19 @@ def _kaitai_repr(obj) -> str:
     return " ".join(parts)
 
 
-def _parse_kaitai(body: bytes) -> str:
+def _parse_kaitai(body: bytes, tag: str) -> str:
     """Try to parse body with the kaitai parser; return a short description."""
     try:
-        parsed = StarConflictPackage(KaitaiStream(BytesIO(body)))
+        parsed = None
+        if tag == "SHARD C→S":
+            parsed = StarConflictPackageClient(KaitaiStream(BytesIO(body)))
+        else:
+            parsed = StarConflictPackageServer(KaitaiStream(BytesIO(body)))
         name = type(parsed.body).__name__
         detail = _kaitai_repr(parsed.body)
         return f" [{name}{': ' + detail if detail else ''}]"
-    except Exception:
-        return ""
+    except Exception as e:
+        return f"{e}"
 
 
 def hexdump(data: bytes, width: int = 16, prefix: str = "    ") -> str:
@@ -115,10 +120,11 @@ def log_packet(tag: str, pkt: dict, extra: str = ""):
         log.info(f"[{tag}] SPECIAL (ff ff ff fe + 8 bytes) {extra}")
         return
     body = pkt.get("body", b"")
+    kaitai_str=_parse_kaitai(body, tag)
     ac_idx = int.from_bytes(body[:2], "big") if len(body) >= 2 else 0xffff
     hdr = (f"[{tag}] type=0x{pkt['type']:04x} seq={pkt['seq']} "
            f"req_id=0x{pkt['req_id']:04x} body_len={pkt['body_len']}"
-           f"{_parse_kaitai(body)}")
+           f"{kaitai_str}")
     # Save the full body to disk for offline extraction — the log hexdump
     # is still truncated to keep the log readable.
     if body:
@@ -137,7 +143,7 @@ def log_packet(tag: str, pkt: dict, extra: str = ""):
     if extra:
         hdr += f" {extra}"
     log.info(hdr)
-    if body:
+    if body and not kaitai_str:
         body_preview = body[:128]
         log.info(f"    body[0:{len(body_preview)}]:\n{hexdump(body_preview)}")
 

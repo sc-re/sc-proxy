@@ -1,5 +1,5 @@
 meta:
-  id: star_conflict_package
+  id: star_conflict_package_client
   application: Star Conflict
   endian: be
 seq:
@@ -705,20 +705,17 @@ types:
     seq:
     - id: unknown
       type: u2be
-    - id: num_nicks
+    - id: num_uids
       type: u2be
-    - id: nicks
-      type: nick
+    - id: uids
+      type: uid
       repeat: expr
-      repeat-expr: num_nicks
+      repeat-expr: num_uids
     types:
-      nick:
+      uid:
         seq:
           - id: uid
             type: u8be
-          - id: nickname
-            type: strz
-            encoding: ASCII
   ac_get_uids:
     seq:
      - id: dummy
@@ -1081,11 +1078,8 @@ types:
        type: u1
   ac_welcome_msg:
     seq:
-    - id: unknown
+    - id: dummy
       type: u1
-    - id: msg
-      type: strz
-      encoding: UTF-8
   ac_motd:
     seq:
      - id: dummy
