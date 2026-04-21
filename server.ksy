@@ -917,8 +917,60 @@ types:
        type: u1
   ac_clan_request_desc:
     seq:
-     - id: dummy
-       type: u1
+    - id: unknown
+      type: u4
+    - id: clan_id
+      type: u4be
+    - id: clan_name
+      type: strz
+      encoding: UTF-8
+    - id: clan_tag
+      type: strz
+      encoding: UTF-8
+    - id: motd
+      type: strz
+      encoding: UTF-8
+    - id: description
+      type: strz
+      encoding: UTF-8
+    - id: clan_icon
+      type: strz
+      encoding: UTF-8
+    - id: clan_faction
+      type: strz
+      encoding: UTF-8
+    - id: unknown1
+      type: u8
+    - id: unknown2
+      type: u8
+    - id: unknown3
+      type: u8
+    - id: unknown4
+      type: u2
+    - id: unknown5
+      type: u1
+    - id: member_count
+      type: u4be
+    - id: member_uids
+      type: member
+      repeat: expr
+      repeat-expr: member_count
+    - id: dummy
+      type: u1
+    types:
+      member:
+        seq:
+        - id: uid
+          type: u8be
+        - id: role
+          type: u1
+          enum: role
+    enums:
+      role:
+        3: vice_president
+        2: officer
+        1: member
+        0: ceo
   ac_clan_request_profile:
     seq:
      - id: dummy
