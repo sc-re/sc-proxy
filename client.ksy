@@ -272,376 +272,376 @@ types:
     doc: Empty request, server responds with server info
   ac_enter_mm_queue:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_leave_mm_queue:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_mm_info:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_enter_tournament:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_leave_tournament:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_get_userdata:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_set_userdata:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_player_credentials:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_player_credits:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_player_stats:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_player_arc_balance:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_titles_set_active:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_avatars_set_active:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_mottos_set_active:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_choose_starting_station:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_change_player_nickname:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_steam_user_info:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_premium_info:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_premium_buy:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_account_auras:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_add_account_aura:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_cancel_account_aura:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_quests:
     doc: Empty request, server responds with quest list
   ac_quest_accept:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_quest_change:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_quest_complete:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_quest_complete_all:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_ship_quests:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_ship_quest_start:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_ship_quest_change:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_ship_quest_end:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_rewarded_tutorials:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_reward_tutorial:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_player_inventory:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_player_autogen_inventory:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_player_vessels:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_vessel_equipment:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_buy_item:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_sell_item:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_sell_items:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_enchant_item:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_salvage_item:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_salvage_items:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_upgrade_items:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_upgrade_autogen_item:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_craft_upgrade_item:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_find_autogen_item:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_activate_resource_vessel:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_sell_vessel:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_vessel_change_equip:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_vessel_change_equip_multi:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_vessel_cheat_change_equip:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_vessel_transfer_equip:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_vessel_strip_equip:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_vessel_change_munition:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_vessel_refill_munition:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_vessel_transfer_munition:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_vessel_autogen_destroy:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_vessel_autogen_dismantle:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_vessel_extract_exp:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_vessel_levelup:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_vessel_repair:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_vessel_repair_battle:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_vessel_refill_battle:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_vessel_strip_improper_battle:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_vessel_free_custom_elements:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_vessel_custom_elements_buy:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_vessel_custom_elements_acknowledge_expiration:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_vessel_craft:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_vessel_recraft:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_vessel_budget_levelup:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_vessel_budget_activate:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_vessel_unlock_node:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_vessel_activate_node:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_battle_slots:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_battle_slot_change_vessel:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_battle_slot_swap_vessels:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_battle_slot_cheat_change_vessel:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_inv_ext_buy:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_autogen_inv_ext_buy:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_exchange_gold:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_buy_gold:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_buy_arc_dlc:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_talents_acquire:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_talents_update:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_talents_reset:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_talents_assign_sets:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_buy_talent_set:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_react_on_abandoned_game:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_squad_info:
     doc: Empty request, server responds with squad info
   ac_squad_invite_accept:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_squad_invite_decline:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_squad_leave:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_squad_invite_send:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_squad_invite_cancel:
     doc: Cancel Squad invite
     seq:
@@ -649,50 +649,50 @@ types:
        type: u1
   ac_squad_kick:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_squad_ready:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_squad_convert_to_wing:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_league_team_info:
     doc: Empty request, server responds with league team info
   ac_league_team_create:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_league_team_invite_send:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_league_team_invite_cancel:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_league_team_invite_accept:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_league_team_kick:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_league_team_leave:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_league_team_invite_decline:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_league_team_request_names:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_get_nicknames:
     doc: Return list of nicknames
     seq:
@@ -711,356 +711,356 @@ types:
             type: u8be
   ac_get_uids:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_report_player:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_update_yup_purchases:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_check_yup_purchases:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_update_dlc_ownership:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_friends_send_request:
     doc: Empty request, initiates friend request flow
   ac_friends_accept_request:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_friends_reject_request:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_friends_remove:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_friends_list:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_social_ignore_add:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_social_ignore_remove:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_social_watch_add:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_social_watch_remove:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_social_suggest_steam:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_social_suggest_fb:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_social_suggest_vk:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_teaching_list:
     doc: Empty request, server responds with teaching list
   ac_teaching_request_to_teacher:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_teaching_request_to_student:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_teaching_accept:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_teaching_reject:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_teaching_check:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_teaching_allow:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_referrals:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_set_referrer:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_obtain_referral_key:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_attach_steam_account:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_finalize_steam_mtxn:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_attach_yup_account:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_attach_email:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_lobby_list:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_lobby_join:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_lobby_create:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_lobby_info:
     doc: Empty request, server responds with lobby info
   ac_lobby_kick:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_lobby_leave:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_lobby_invite:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_lobby_modify:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_lobby_start_game:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_lobby_group_list:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_lobby_group_info:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_lobby_group_create:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_lobby_group_modify:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_lobby_group_delete:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_lobby_group_joinreq_create:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_lobby_group_joinreq_cancel:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_lobby_group_joinreq_reject:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_clan_request_credentials:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_clan_request_desc:
     doc: Empty request, server responds with clan description
   ac_clan_request_profile:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_clan_joinreq_create:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_clan_joinreq_cancel:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_clan_joinreq_accept:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_clan_invite_send:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_clan_invite_accept:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_clan_invite_cancel:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_clan_kick:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_clan_leave:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_clan_set_role:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_clan_change_motd:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_clan_change_desc:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_clan_change_recruiting:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_clan_resource_convert:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_clan_ship_build:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_clan_ship_boost_building:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_clan_ship_repair:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_clan_ship_boost_repairing:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_clan_ship_fit:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_clan_ship_set_current:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_clan_universe_move:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_clan_set_civilian_zone:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_clan_revive_in_war:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_clan_war_start:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_clan_quest_accept:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_clan_create:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_clan_upgrade:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_clan_change_name:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_clan_change_tag:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_clan_assign_emblem:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_clan_bank_transfer:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_clan_list_recruiting:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_clan_history_get:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_related_quest_enable:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_user_profile_get:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_achievements:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_admin_cmd:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_games_info:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_zone_instances_info:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_get_punishments:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_welcome_msg:
     doc: Client requests welcome message in specified language
     seq:
@@ -1075,22 +1075,22 @@ types:
       encoding: ASCII
   ac_survey_get_new:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_survey_vote:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_survey_results:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_universe_get:
     doc: Empty request, server responds with universe data
   ac_universe_counters:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_warmap_get:
     doc: Client requests war map data for a specific zone
     seq:
@@ -1104,154 +1104,154 @@ types:
       encoding: ASCII
   ac_mail_deliver:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_mail_send:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_mail_remove:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_mail_acknowledge_expiration:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_send_early_player_log:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_auto_pilot_space_station:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_undock_space_station:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_set_visited_zone:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_zone_coordinator_gm_command:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_space_stations_population:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_karma_reset:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_faction_rep_reset:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_leaderboard_get:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_leaderboard_get_descs:
     doc: Empty request, server responds with leaderboard descriptors
   ac_set_fb_token:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_get_fb_token:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_log_fb_event:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_get_craft_resources:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_use_blueprint:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_sell_craft_resource:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_sell_craft_resources:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_get_blueprints:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_learn_blueprint:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_get_free_space_save_data:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_disassemble_item:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_add_thumb_up:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_get_visited_free_space_zones:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_advert_create:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_advert_delete:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_advert_header_get:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_advert_get:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_buy_product_from_advert:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_emm_change_ready:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_unlim_pve_upgrade_player_level:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_unlim_pve_disable_player_buffs:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_ta_stats_send_tutorial_entter:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_ta_stats_send_tutorial_exit:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_user_notes:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_user_notes_add:
     seq:
     - id: unknown
@@ -1263,19 +1263,19 @@ types:
       encoding: UTF-8
   ac_user_notes_delete:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_battle_pass_unlock_level:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_zones_lua_active_events_update:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_adventures:
     doc: Empty request, server responds with adventures list
   ac_adventure_cancel:
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
