@@ -359,9 +359,7 @@ types:
      - id: dummy
        type: u1
   ac_quests:
-    seq:
-     - id: dummy
-       type: u1
+    doc: Empty request, server responds with quest list
   ac_quest_accept:
     seq:
      - id: dummy
@@ -1088,9 +1086,7 @@ types:
      - id: dummy
        type: u1
   ac_universe_get:
-    seq:
-     - id: dummy
-       type: u1
+    doc: Empty request, server responds with universe data
   ac_universe_counters:
     seq:
      - id: dummy
@@ -1278,9 +1274,7 @@ types:
      - id: dummy
        type: u1
   ac_adventures:
-    seq:
-     - id: dummy
-       type: u1
+    doc: Empty request, server responds with adventures list
   ac_adventure_cancel:
     seq:
      - id: dummy
