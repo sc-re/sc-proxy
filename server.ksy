@@ -264,9 +264,10 @@ seq:
         252: ac_adventure_cancel
 types:
   ac_load_initial_player_data:
+    doc: Server response to initial load; variable content (login data or keepalive)
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_server_info:
     doc: Server metadata sent after initial connection
     seq:
@@ -289,9 +290,14 @@ types:
       size: 4
       doc: Server version bytes (0x00010101)
   ac_enter_mm_queue:
+    doc: Matchmaking queue update; flags=0x80 means queued
     seq:
-     - id: dummy
-       type: u1
+    - id: flags
+      type: u1
+    - id: queue_id
+      type: u4be
+    - id: slot
+      type: u1
   ac_leave_mm_queue:
     seq:
      - id: dummy
@@ -314,16 +320,23 @@ types:
        type: u1
   ac_set_userdata:
     seq:
-     - id: dummy
-       type: u1
+    - id: unknown
+      type: u2be
+    - id: value
+      type: u2be
   ac_player_credentials:
+    doc: Player nickname and session credentials
     seq:
-     - id: dummy
-       type: u1
+    - id: nickname
+      type: strz
+      encoding: ASCII
+    - id: data
+      size-eos: true
   ac_player_credits:
+    doc: All currency balances for the player
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_player_stats:
     seq:
      - id: dummy
@@ -357,9 +370,10 @@ types:
      - id: dummy
        type: u1
   ac_premium_info:
+    doc: Premium account expiry timestamp in milliseconds
     seq:
-     - id: dummy
-       type: u1
+    - id: expiry_ms
+      type: u8be
   ac_premium_buy:
     seq:
      - id: dummy
@@ -413,9 +427,14 @@ types:
      - id: dummy
        type: u1
   ac_rewarded_tutorials:
+    doc: List of tutorial IDs that have been completed and rewarded
     seq:
-     - id: dummy
-       type: u1
+    - id: count
+      type: u1
+    - id: tutorial_ids
+      type: u1
+      repeat: expr
+      repeat-expr: count
   ac_reward_tutorial:
     seq:
      - id: dummy
@@ -545,9 +564,14 @@ types:
      - id: dummy
        type: u1
   ac_vessel_strip_improper_battle:
+    doc: Vessels removed from battle slots due to invalid configuration
     seq:
-     - id: dummy
-       type: u1
+    - id: count
+      type: u4be
+    - id: entry_ids
+      type: u1
+      repeat: expr
+      repeat-expr: count
   ac_vessel_free_custom_elements:
     seq:
      - id: dummy
@@ -585,9 +609,12 @@ types:
      - id: dummy
        type: u1
   ac_battle_slots:
+    doc: Battle loadout slots with equipped vessel IDs
     seq:
-     - id: dummy
-       type: u1
+    - id: slot_count
+      type: u4be
+    - id: data
+      size-eos: true
   ac_battle_slot_change_vessel:
     seq:
      - id: dummy
@@ -645,9 +672,12 @@ types:
      - id: dummy
        type: u1
   ac_squad_info:
+    doc: Current squad state; zero fields when not in a squad
     seq:
-     - id: dummy
-       type: u1
+    - id: squad_id
+      type: u8be
+    - id: leader_uid
+      type: u8be
   ac_squad_invite_accept:
     seq:
      - id: dummy
@@ -757,13 +787,17 @@ types:
      - id: dummy
        type: u1
   ac_friends_send_request:
+    doc: Friends list with UIDs and per-friend data
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_friends_accept_request:
+    doc: Result of accepting a friend request; uid is the new friend
     seq:
-     - id: dummy
-       type: u1
+    - id: status
+      type: u1
+    - id: uid
+      type: u8be
   ac_friends_reject_request:
     seq:
      - id: dummy
@@ -778,20 +812,28 @@ types:
        type: u1
   ac_social_ignore_add:
     seq:
-     - id: dummy
-       type: u1
+    - id: status
+      type: u1
+    - id: uid
+      type: u8be
   ac_social_ignore_remove:
     seq:
-     - id: dummy
-       type: u1
+    - id: status
+      type: u1
+    - id: uid
+      type: u8be
   ac_social_watch_add:
     seq:
-     - id: dummy
-       type: u1
+    - id: status
+      type: u1
+    - id: uid
+      type: u8be
   ac_social_watch_remove:
     seq:
-     - id: dummy
-       type: u1
+    - id: status
+      type: u1
+    - id: uid
+      type: u8be
   ac_social_suggest_steam:
     seq:
      - id: dummy
@@ -1161,17 +1203,23 @@ types:
     - id: status
       type: u1
   ac_survey_get_new:
+    doc: Response to survey poll; all-zero when no surveys available
     seq:
-     - id: dummy
-       type: u1
+    - id: reserved
+      type: u4be
+    - id: status
+      type: u1
   ac_survey_vote:
     seq:
      - id: dummy
        type: u1
   ac_survey_results:
+    doc: Survey result data; all-zero when no surveys active
     seq:
-     - id: dummy
-       type: u1
+    - id: reserved
+      type: u4be
+    - id: status
+      type: u1
   ac_universe_get:
     seq:
      - id: dummy
@@ -1203,17 +1251,27 @@ types:
      - id: dummy
        type: u1
   ac_mail_send:
+    doc: Result of sending mail; status + assigned mail ID
     seq:
-     - id: dummy
-       type: u1
+    - id: status
+      type: u1
+    - id: unknown
+      type: u1
+    - id: mail_id
+      type: u4be
   ac_mail_remove:
     seq:
      - id: dummy
        type: u1
   ac_mail_acknowledge_expiration:
+    doc: Acknowledge expired mail; mail_id=0xffffffff means all
     seq:
-     - id: dummy
-       type: u1
+    - id: status
+      type: u1
+    - id: mail_id
+      type: u4be
+    - id: timestamp
+      type: u4be
   ac_send_early_player_log:
     seq:
      - id: dummy
@@ -1259,9 +1317,10 @@ types:
      - id: dummy
        type: u1
   ac_get_fb_token:
+    doc: Facebook token (18-byte blob, all-zero when not linked)
     seq:
-     - id: dummy
-       type: u1
+    - id: token
+      size: 18
   ac_log_fb_event:
     seq:
      - id: dummy
@@ -1351,25 +1410,38 @@ types:
      - id: dummy
        type: u1
   ac_user_notes_add:
+    doc: Confirmation of user note added; echoes uid and note text
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: uid
+      type: u8be
+    - id: note
+      type: strz
+      encoding: UTF-8
   ac_user_notes_delete:
+    doc: Confirmation of user note deletion
     seq:
-     - id: dummy
-       type: u1
+    - id: status
+      type: u1
+    - id: flags
+      type: u2be
+    - id: uid
+      type: u8be
   ac_battle_pass_unlock_level:
     seq:
      - id: dummy
        type: u1
   ac_zones_lua_active_events_update:
+    doc: Active Lua event status for zones
     seq:
-     - id: dummy
-       type: u1
+    - id: status
+      type: u1
   ac_adventures:
+    doc: Available adventures list
     seq:
-     - id: dummy
-       type: u1
+    - id: data
+      size-eos: true
   ac_adventure_cancel:
     seq:
      - id: dummy
