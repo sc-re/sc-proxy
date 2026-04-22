@@ -37,6 +37,9 @@ class StarConflictPackageServer(KaitaiStruct):
         elif _on == 102:
             pass
             self.body = StarConflictPackageServer.AcLeagueTeamInviteSend(self._io, self, self._root)
+        elif _on == 1024:
+            pass
+            self.body = StarConflictPackageServer.ZoneInstanceJoin(self._io, self, self._root)
         elif _on == 103:
             pass
             self.body = StarConflictPackageServer.AcLeagueTeamInviteCancel(self._io, self, self._root)
@@ -121,6 +124,15 @@ class StarConflictPackageServer(KaitaiStruct):
         elif _on == 128:
             pass
             self.body = StarConflictPackageServer.AcTeachingRequestToTeacher(self._io, self, self._root)
+        elif _on == 1280:
+            pass
+            self.body = StarConflictPackageServer.ZoneStatsList(self._io, self, self._root)
+        elif _on == 1284:
+            pass
+            self.body = StarConflictPackageServer.ZonePlayerHealth(self._io, self, self._root)
+        elif _on == 12851:
+            pass
+            self.body = StarConflictPackageServer.ZoneServer23(self._io, self, self._root)
         elif _on == 129:
             pass
             self.body = StarConflictPackageServer.AcTeachingRequestToStudent(self._io, self, self._root)
@@ -154,6 +166,9 @@ class StarConflictPackageServer(KaitaiStruct):
         elif _on == 138:
             pass
             self.body = StarConflictPackageServer.AcFinalizeSteamMtxn(self._io, self, self._root)
+        elif _on == 13824:
+            pass
+            self.body = StarConflictPackageServer.ZoneKvData(self._io, self, self._root)
         elif _on == 139:
             pass
             self.body = StarConflictPackageServer.AcAttachYupAccount(self._io, self, self._root)
@@ -163,6 +178,9 @@ class StarConflictPackageServer(KaitaiStruct):
         elif _on == 140:
             pass
             self.body = StarConflictPackageServer.AcAttachEmail(self._io, self, self._root)
+        elif _on == 14080:
+            pass
+            self.body = StarConflictPackageServer.ZonePlayerList(self._io, self, self._root)
         elif _on == 141:
             pass
             self.body = StarConflictPackageServer.AcLobbyList(self._io, self, self._root)
@@ -172,6 +190,9 @@ class StarConflictPackageServer(KaitaiStruct):
         elif _on == 143:
             pass
             self.body = StarConflictPackageServer.AcLobbyCreate(self._io, self, self._root)
+        elif _on == 14393:
+            pass
+            self.body = StarConflictPackageServer.ZoneServer89(self._io, self, self._root)
         elif _on == 144:
             pass
             self.body = StarConflictPackageServer.AcLobbyInfo(self._io, self, self._root)
@@ -289,6 +310,9 @@ class StarConflictPackageServer(KaitaiStruct):
         elif _on == 179:
             pass
             self.body = StarConflictPackageServer.AcClanShipSetCurrent(self._io, self, self._root)
+        elif _on == 1792:
+            pass
+            self.body = StarConflictPackageServer.ZonePlayerData(self._io, self, self._root)
         elif _on == 18:
             pass
             self.body = StarConflictPackageServer.AcSteamUserInfo(self._io, self, self._root)
@@ -463,6 +487,9 @@ class StarConflictPackageServer(KaitaiStruct):
         elif _on == 230:
             pass
             self.body = StarConflictPackageServer.AcGetBlueprints(self._io, self, self._root)
+        elif _on == 2304:
+            pass
+            self.body = StarConflictPackageServer.ZonePlayerUpdate(self._io, self, self._root)
         elif _on == 231:
             pass
             self.body = StarConflictPackageServer.AcLearnBlueprint(self._io, self, self._root)
@@ -529,15 +556,24 @@ class StarConflictPackageServer(KaitaiStruct):
         elif _on == 250:
             pass
             self.body = StarConflictPackageServer.AcZonesLuaActiveEventsUpdate(self._io, self, self._root)
+        elif _on == 25088:
+            pass
+            self.body = StarConflictPackageServer.ZoneMilitaryRank(self._io, self, self._root)
         elif _on == 251:
             pass
             self.body = StarConflictPackageServer.AcAdventures(self._io, self, self._root)
         elif _on == 252:
             pass
             self.body = StarConflictPackageServer.AcAdventureCancel(self._io, self, self._root)
+        elif _on == 2560:
+            pass
+            self.body = StarConflictPackageServer.ZonePlayerJoin(self._io, self, self._root)
         elif _on == 26:
             pass
             self.body = StarConflictPackageServer.AcQuestChange(self._io, self, self._root)
+        elif _on == 26624:
+            pass
+            self.body = StarConflictPackageServer.ZonePlayerStatus(self._io, self, self._root)
         elif _on == 27:
             pass
             self.body = StarConflictPackageServer.AcQuestComplete(self._io, self, self._root)
@@ -553,6 +589,9 @@ class StarConflictPackageServer(KaitaiStruct):
         elif _on == 30:
             pass
             self.body = StarConflictPackageServer.AcShipQuestStart(self._io, self, self._root)
+        elif _on == 3072:
+            pass
+            self.body = StarConflictPackageServer.ZoneMembership(self._io, self, self._root)
         elif _on == 31:
             pass
             self.body = StarConflictPackageServer.AcShipQuestChange(self._io, self, self._root)
@@ -801,6 +840,9 @@ class StarConflictPackageServer(KaitaiStruct):
         elif _on == 102:
             pass
             self.body._fetch_instances()
+        elif _on == 1024:
+            pass
+            self.body._fetch_instances()
         elif _on == 103:
             pass
             self.body._fetch_instances()
@@ -885,6 +927,15 @@ class StarConflictPackageServer(KaitaiStruct):
         elif _on == 128:
             pass
             self.body._fetch_instances()
+        elif _on == 1280:
+            pass
+            self.body._fetch_instances()
+        elif _on == 1284:
+            pass
+            self.body._fetch_instances()
+        elif _on == 12851:
+            pass
+            self.body._fetch_instances()
         elif _on == 129:
             pass
             self.body._fetch_instances()
@@ -918,6 +969,9 @@ class StarConflictPackageServer(KaitaiStruct):
         elif _on == 138:
             pass
             self.body._fetch_instances()
+        elif _on == 13824:
+            pass
+            self.body._fetch_instances()
         elif _on == 139:
             pass
             self.body._fetch_instances()
@@ -927,6 +981,9 @@ class StarConflictPackageServer(KaitaiStruct):
         elif _on == 140:
             pass
             self.body._fetch_instances()
+        elif _on == 14080:
+            pass
+            self.body._fetch_instances()
         elif _on == 141:
             pass
             self.body._fetch_instances()
@@ -934,6 +991,9 @@ class StarConflictPackageServer(KaitaiStruct):
             pass
             self.body._fetch_instances()
         elif _on == 143:
+            pass
+            self.body._fetch_instances()
+        elif _on == 14393:
             pass
             self.body._fetch_instances()
         elif _on == 144:
@@ -1051,6 +1111,9 @@ class StarConflictPackageServer(KaitaiStruct):
             pass
             self.body._fetch_instances()
         elif _on == 179:
+            pass
+            self.body._fetch_instances()
+        elif _on == 1792:
             pass
             self.body._fetch_instances()
         elif _on == 18:
@@ -1227,6 +1290,9 @@ class StarConflictPackageServer(KaitaiStruct):
         elif _on == 230:
             pass
             self.body._fetch_instances()
+        elif _on == 2304:
+            pass
+            self.body._fetch_instances()
         elif _on == 231:
             pass
             self.body._fetch_instances()
@@ -1293,13 +1359,22 @@ class StarConflictPackageServer(KaitaiStruct):
         elif _on == 250:
             pass
             self.body._fetch_instances()
+        elif _on == 25088:
+            pass
+            self.body._fetch_instances()
         elif _on == 251:
             pass
             self.body._fetch_instances()
         elif _on == 252:
             pass
             self.body._fetch_instances()
+        elif _on == 2560:
+            pass
+            self.body._fetch_instances()
         elif _on == 26:
+            pass
+            self.body._fetch_instances()
+        elif _on == 26624:
             pass
             self.body._fetch_instances()
         elif _on == 27:
@@ -1315,6 +1390,9 @@ class StarConflictPackageServer(KaitaiStruct):
             pass
             self.body._fetch_instances()
         elif _on == 30:
+            pass
+            self.body._fetch_instances()
+        elif _on == 3072:
             pass
             self.body._fetch_instances()
         elif _on == 31:
@@ -1604,6 +1682,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcAddThumbUp(KaitaiStruct):
+        """13 bytes. Request: echo + u16be(type) + u32be(0) + u32be(instance_id).
+        Response: echo + u8(0x80) + u32be(0) + 4B(player/zone_id?) + u16be(flags).
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcAddThumbUp, self).__init__(_io)
             self._parent = _parent
@@ -1611,7 +1692,10 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.flags = self._io.read_u1()
+            self.padding = self._io.read_u4be()
+            self.zone_or_player_id = self._io.read_bytes(4)
+            self.result_flags = self._io.read_u2be()
 
 
         def _fetch_instances(self):
@@ -1667,6 +1751,10 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcAdvertCreate(KaitaiStruct):
+        """3B (fail) or 61B (success).
+        3B form: echo + u8(result=1 = slot full/fail).
+        61B form: echo + u32be(0) + u32be(0) + u16be(advert_id) + null-term item name + more data.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcAdvertCreate, self).__init__(_io)
             self._parent = _parent
@@ -1674,7 +1762,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.result = self._io.read_u1()
+            self.payload = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -1832,6 +1921,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcBattleSlotChangeVessel(KaitaiStruct):
+        """13 bytes. Request: echo + slot(u8) + 8B ship data (u32be zeros + u32be ship_id).
+        Response: same + u16be result at end (observed: 0x0004).
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcBattleSlotChangeVessel, self).__init__(_io)
             self._parent = _parent
@@ -1839,7 +1931,9 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.slot = self._io.read_u1()
+            self.ship_data = self._io.read_bytes(8)
+            self.result = self._io.read_u2be()
 
 
         def _fetch_instances(self):
@@ -1962,6 +2056,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcBuyProductFromAdvert(KaitaiStruct):
+        """Simple ACK — echo(2B) + result byte (0 = success)."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcBuyProductFromAdvert, self).__init__(_io)
             self._parent = _parent
@@ -1969,7 +2064,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.result = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -2352,6 +2447,52 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcClanRequestDesc(KaitaiStruct):
+        """Full clan description packet (0x009f). Structure up to `dummy` is fully
+        decoded. Everything after `dummy` is a TGP-encoded FedDesign K-V stream
+        that is NOT parsed here — served as opaque bytes by the masterserver.
+        
+        POST-DUMMY STRUCTURE (partial knowledge, not implemented in ksy):
+        The remainder is a TGP wire-format K-V stream. Keys use three different
+        encodings depending on first byte:
+          - cs-encoded (carry-shift-right): byte[i] = (char[i]>>1)|(carry<<7),
+            null terminator when ((b0&0x7f)<<1)|(b1>>7)==0.
+          - x2-encoded: byte = char*2, first byte >= 0x80 for uppercase.
+          - cleartext: raw ASCII, null-terminated.
+        TGP wire type tags: 0x02=cs-string, 0x03=counted K-V map,
+          0x04=u64be, 0x05=cleartext-str, 0x06=array-of-cs-strings,
+          0x0a=x2-str, 0x0c=struct(u32be-header + K-V body), 0x14=marker,
+          0x15=cs-string-value, 0x18=u32be.
+        
+        Known top-level FedDesign fields (all cs0-encoded keys):
+          moduleSlots  — type 0x03 map; 160-byte constant binary header
+                         (same across captures, content unknown — binary hash
+                         table metadata) followed by variable K-V entries.
+                         Each slot key is x2-encoded (main_1..main_3,
+                         additional_1..additional_2, turret_1..turret_3).
+                         Slot values: type 0x0c struct with u32be header
+                         (= installed-module count) + K-V body containing
+                         "fit" (cs-string, fitted module name) and
+                         "built" (nested struct with additional_N entries).
+                         Some slots use type 0x03 instead (count=1 map).
+          partBeingBuilt      — cs0-string
+          slotBeingBuilt      — cs0-string
+          productionStartTime — cs0-string
+          productionCompleteAt — cs0-string
+          boostBuildingBudget — cs0-string
+          broken              — cs0-string
+          repairStartTime     — cs0-string
+          repairEndTime       — cs0-string
+          boostRepairingBudget — cs0-string
+          curZone             — cs0-string
+        
+        The moduleSlots constant 160-byte header starts at block[0x000] after
+        the TGP map header (cs0("moduleSlots") + 0x03 + u32be count). It is
+        identical between the two captured sessions (captures/20260421_223139
+        and captures/20260422_063139). Its internal structure is unknown —
+        FNV-1a hashes of slot names do NOT match any bytes within it.
+        The variable K-V data begins at block[0x0a0] mid-cs-string (a cs-string
+        starting at block[0x0097] crosses the constant/variable boundary).
+        """
 
         class Role(IntEnum):
             ceo = 0
@@ -2384,6 +2525,7 @@ class StarConflictPackageServer(KaitaiStruct):
                 self.member_uids.append(StarConflictPackageServer.AcClanRequestDesc.Member(self._io, self, self._root))
 
             self.dummy = self._io.read_u1()
+            self.fed_design_tgp_stream = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2716,6 +2858,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcExchangeGold(KaitaiStruct):
+        """Exchange gold for credits."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcExchangeGold, self).__init__(_io)
             self._parent = _parent
@@ -2723,7 +2866,9 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.credits = self._io.read_u4be()
+            self.gold = self._io.read_u4be()
 
 
         def _fetch_instances(self):
@@ -3241,6 +3386,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcLeaveMmQueue(KaitaiStruct):
+        """2B echo + 2B status. Observed: 0xc240 (normal leave), 0x8000 (queue closed).
+        The status is a bit-packed field; exact bit layout not reversed.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcLeaveMmQueue, self).__init__(_io)
             self._parent = _parent
@@ -3248,7 +3396,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u2be()
 
 
         def _fetch_instances(self):
@@ -3575,6 +3723,10 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcMailDeliver(KaitaiStruct):
+        """16 bytes. Push from server when mail arrives.
+        Layout: echo(2) + u32be(0) + u32be(mail_id) + u32be(expiry_or_ts) + u16be(flags).
+        Observed: mail_id=0x00656ca9, expiry=0x77000000, flags=0x0100.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcMailDeliver, self).__init__(_io)
             self._parent = _parent
@@ -3582,7 +3734,10 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.padding = self._io.read_u4be()
+            self.mail_id = self._io.read_u4be()
+            self.expiry_ts = self._io.read_u4be()
+            self.flags = self._io.read_u2be()
 
 
         def _fetch_instances(self):
@@ -3662,6 +3817,10 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcMmInfo(KaitaiStruct):
+        """Matchmaking queue state update. Variable 213–305 bytes. Bit-packed,
+        structure not fully reversed. Byte 2 = flags (0x80 = in queue).
+        Subsequent bytes: player list + team compositions, encoded.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcMmInfo, self).__init__(_io)
             self._parent = _parent
@@ -3669,7 +3828,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.flags = self._io.read_u1()
+            self.payload = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3877,6 +4037,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcQuestChange(KaitaiStruct):
+        """21 bytes. Request: echo + u16be(quest_id).
+        Response: echo + u8(status=0) + u16be(quest_id_echo) + u16be(new_state) + 12B opaque.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcQuestChange, self).__init__(_io)
             self._parent = _parent
@@ -3884,7 +4047,10 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.quest_id = self._io.read_u2be()
+            self.new_state = self._io.read_u2be()
+            self.opaque = self._io.read_bytes(14)
 
 
         def _fetch_instances(self):
@@ -3892,6 +4058,10 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcQuestComplete(KaitaiStruct):
+        """41 or 53 bytes. Request: echo + u16be(quest_id).
+        Response: echo + u8(status=0) + u16be(quest_id_echo) + bit-packed reward/stat data.
+        Shorter form (41B) omits the extra reward block present in the 53B form.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcQuestComplete, self).__init__(_io)
             self._parent = _parent
@@ -3899,7 +4069,9 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.quest_id = self._io.read_u2be()
+            self.payload = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -5539,6 +5711,286 @@ class StarConflictPackageServer(KaitaiStruct):
 
         def _read(self):
             self.status = self._io.read_u1()
+
+
+        def _fetch_instances(self):
+            pass
+
+
+    class ZoneInstanceJoin(KaitaiStruct):
+        """Zone instance notification. Two forms:
+        Short (9B): echo + u24be(0) + u32be(instance_id) — join confirmation.
+        Long (1097B): echo + u32be(0) + 3B(uid) + list of avatar names + player data.
+        The long form is pushed once when a zone fills with players.
+        """
+        def __init__(self, _io, _parent=None, _root=None):
+            super(StarConflictPackageServer.ZoneInstanceJoin, self).__init__(_io)
+            self._parent = _parent
+            self._root = _root
+            self._read()
+
+        def _read(self):
+            self.payload = self._io.read_bytes_full()
+
+
+        def _fetch_instances(self):
+            pass
+
+
+    class ZoneKvData(KaitaiStruct):
+        """Open-space zone K-V data (376B). cs0-encoded key-value stream.
+        Header: u16be(0) + u8(count=3).
+        Known keys: "tier" (zone tier/rank), "auras" (active auras), "bundles".
+        Values follow each key; type encoding unknown.
+        """
+        def __init__(self, _io, _parent=None, _root=None):
+            super(StarConflictPackageServer.ZoneKvData, self).__init__(_io)
+            self._parent = _parent
+            self._root = _root
+            self._read()
+
+        def _read(self):
+            self.header = self._io.read_bytes(2)
+            self.payload = self._io.read_bytes_full()
+
+
+        def _fetch_instances(self):
+            pass
+
+
+    class ZoneMembership(KaitaiStruct):
+        """Zone membership event (26B). Contains two 3-byte player IDs.
+        Constant bytes: u48be(0) + u16be(0x074b=1867) + u48be(0) + 3B(player_uid_low)
+        + u48be(0) + u8(0x32=50) + u8(0x00).
+        Appears when players enter/leave a zone.
+        """
+        def __init__(self, _io, _parent=None, _root=None):
+            super(StarConflictPackageServer.ZoneMembership, self).__init__(_io)
+            self._parent = _parent
+            self._root = _root
+            self._read()
+
+        def _read(self):
+            self.payload = self._io.read_bytes(24)
+
+
+        def _fetch_instances(self):
+            pass
+
+
+    class ZoneMilitaryRank(KaitaiStruct):
+        """Player military rank updates (49B). count=3 at byte 4, then
+        3 cs0-keyed entries starting at byte 5. First key = "militaryRank".
+        Values are bit-packed after each cs0 key (format not fully reversed).
+        """
+        def __init__(self, _io, _parent=None, _root=None):
+            super(StarConflictPackageServer.ZoneMilitaryRank, self).__init__(_io)
+            self._parent = _parent
+            self._root = _root
+            self._read()
+
+        def _read(self):
+            self.header = self._io.read_bytes(3)
+            self.payload = self._io.read_bytes_full()
+
+
+        def _fetch_instances(self):
+            pass
+
+
+    class ZonePlayerData(KaitaiStruct):
+        """Player presence data. Two forms:
+        Short (10B): echo + u24be(1) + 3B(player_uid_low) + u8(flags=0x03)
+          — player online/join indicator.
+        Long (78B): echo + u24be(0) + 3B(player_uid_low) + credits(u32be)
+          + 64B bit-packed zone stats (damage dealt, kills, etc.) — full stats push.
+        Appears after 0x0a00 (join) and 0x0900 (update) for the same player.
+        """
+        def __init__(self, _io, _parent=None, _root=None):
+            super(StarConflictPackageServer.ZonePlayerData, self).__init__(_io)
+            self._parent = _parent
+            self._root = _root
+            self._read()
+
+        def _read(self):
+            self.payload = self._io.read_bytes_full()
+
+
+        def _fetch_instances(self):
+            pass
+
+
+    class ZonePlayerHealth(KaitaiStruct):
+        """Zone player health/shield status (70B). Contains float32 values
+        for each player in the zone. 0x3f800000 = 1.0 (full health/shield).
+        Repeating entries: 3B player_id + float32 health + more fields.
+        """
+        def __init__(self, _io, _parent=None, _root=None):
+            super(StarConflictPackageServer.ZonePlayerHealth, self).__init__(_io)
+            self._parent = _parent
+            self._root = _root
+            self._read()
+
+        def _read(self):
+            self.padding = self._io.read_u4be()
+            self.payload = self._io.read_bytes_full()
+
+
+        def _fetch_instances(self):
+            pass
+
+
+    class ZonePlayerJoin(KaitaiStruct):
+        """Player join notification in zone (13B).
+        Layout: echo(2) + u24be(1) + 3B(player_uid_low) + 4B(flags/status).
+        Flags: 0x3f800000 = float 1.0 = player is fully online/active.
+        Preceded by 0x8000 (player stats dump) and followed by 0x0700 (presence).
+        """
+        def __init__(self, _io, _parent=None, _root=None):
+            super(StarConflictPackageServer.ZonePlayerJoin, self).__init__(_io)
+            self._parent = _parent
+            self._root = _root
+            self._read()
+
+        def _read(self):
+            self.unknown_prefix = self._io.read_u4be()
+            self.player_uid_low = self._io.read_bytes(3)
+            self.status_flags = self._io.read_u4be()
+
+
+        def _fetch_instances(self):
+            pass
+
+
+    class ZonePlayerList(KaitaiStruct):
+        """Zone player list (283B). Structure not fully reversed."""
+        def __init__(self, _io, _parent=None, _root=None):
+            super(StarConflictPackageServer.ZonePlayerList, self).__init__(_io)
+            self._parent = _parent
+            self._root = _root
+            self._read()
+
+        def _read(self):
+            self.payload = self._io.read_bytes_full()
+
+
+        def _fetch_instances(self):
+            pass
+
+
+    class ZonePlayerStatus(KaitaiStruct):
+        """Brief player status update in zone (19B).
+        Layout: echo(2) + u24be(1) + 3B(constant=0x3b34b2) + u8(0) + u8(1)
+        + u48be(0) + 4B(varying value).
+        The varying 4B at the end changes with player activity (credits? HP?).
+        All examples share the same 3B constant, suggesting this is tied to a
+        specific player or zone instance.
+        """
+        def __init__(self, _io, _parent=None, _root=None):
+            super(StarConflictPackageServer.ZonePlayerStatus, self).__init__(_io)
+            self._parent = _parent
+            self._root = _root
+            self._read()
+
+        def _read(self):
+            self.prefix = self._io.read_u4be()
+            self.player_uid_or_constant = self._io.read_bytes(3)
+            self.padding = self._io.read_bytes(6)
+            self.value = self._io.read_u4be()
+
+
+        def _fetch_instances(self):
+            pass
+
+
+    class ZonePlayerUpdate(KaitaiStruct):
+        """Player credits/status update in zone (13B).
+        Layout: echo(2) + u24be(1) + 3B(player_uid_low) + 4B(value).
+        The 3-byte player UID is the low 3 bytes of the player's full UID.
+        Observed alongside zone_player_join for the same player.
+        """
+        def __init__(self, _io, _parent=None, _root=None):
+            super(StarConflictPackageServer.ZonePlayerUpdate, self).__init__(_io)
+            self._parent = _parent
+            self._root = _root
+            self._read()
+
+        def _read(self):
+            self.unknown_prefix = self._io.read_u4be()
+            self.player_uid_low = self._io.read_bytes(3)
+            self.value = self._io.read_u4be()
+
+
+        def _fetch_instances(self):
+            pass
+
+
+    class ZoneServer23(KaitaiStruct):
+        """Server address notification for 23.x.x.x servers (30B).
+        The type code 0x3233 = "23" ARE the first two bytes of the IP string,
+        so the body starts mid-string at ".111.211.207\0".
+        Layout: echo("23") + partial_ip(\0-terminated) + port(u16be)
+                + field_a(u32be) + field_b(u32be) + field_c(u32be) + pad(u8).
+        When in an active instance: field_a=0, field_b=instance_id, field_c=0.
+        When idle: field_a=player_count, field_b=zone_id, field_c=capacity.
+        """
+        def __init__(self, _io, _parent=None, _root=None):
+            super(StarConflictPackageServer.ZoneServer23, self).__init__(_io)
+            self._parent = _parent
+            self._root = _root
+            self._read()
+
+        def _read(self):
+            self.ip_suffix = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
+            self.port = self._io.read_u2be()
+            self.field_a = self._io.read_u4be()
+            self.field_b = self._io.read_u4be()
+            self.field_c = self._io.read_u4be()
+            self.pad = self._io.read_u1()
+
+
+        def _fetch_instances(self):
+            pass
+
+
+    class ZoneServer89(KaitaiStruct):
+        """Server address notification for 89.x.x.x servers (29B). Same
+        structure as zone_server_23. Type 0x3839 = "89" = IP prefix.
+        """
+        def __init__(self, _io, _parent=None, _root=None):
+            super(StarConflictPackageServer.ZoneServer89, self).__init__(_io)
+            self._parent = _parent
+            self._root = _root
+            self._read()
+
+        def _read(self):
+            self.ip_suffix = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
+            self.port = self._io.read_u2be()
+            self.field_a = self._io.read_u4be()
+            self.field_b = self._io.read_u4be()
+            self.field_c = self._io.read_u4be()
+
+
+        def _fetch_instances(self):
+            pass
+
+
+    class ZoneStatsList(KaitaiStruct):
+        """Zone session stat counters (119B). 5 bytes header + 6 cs0-keyed entries.
+        Header: u16be(0) + u8(0) + u16be(count=6).
+        Entries (cs0-encoded key + u16be value + 3B padding each):
+          munitionTransfered, munitionPurchased, credits,
+          and 3 more (names still cs-encoded; values bit-packed).
+        """
+        def __init__(self, _io, _parent=None, _root=None):
+            super(StarConflictPackageServer.ZoneStatsList, self).__init__(_io)
+            self._parent = _parent
+            self._root = _root
+            self._read()
+
+        def _read(self):
+            self.header = self._io.read_bytes(3)
+            self.payload = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
