@@ -262,6 +262,20 @@ seq:
         250: ac_zones_lua_active_events_update
         251: ac_adventures
         252: ac_adventure_cancel
+        # High-range types seen in open-space / zone sessions
+        0x0400: zone_instance_join     # zone instance join notification (9B short or 1097B long)
+        0x0500: zone_stats_list        # zone stat counters: munitionTransfered, credits, etc.
+        0x0504: zone_player_health     # zone player health/shield floats (70B)
+        0x0700: zone_player_data       # player presence (10B) or full stats (78B)
+        0x0900: zone_player_update     # player credits/status update in zone (13B)
+        0x0a00: zone_player_join       # player join notification in zone (13B)
+        0x0c00: zone_membership        # zone membership event (26B)
+        0x3233: zone_server_23         # server addr 23.x.x.x + port (30B)
+        0x3600: zone_kv_data           # open-space K-V stream: tier/auras/bundles (376B)
+        0x3700: zone_player_list       # player list in zone (283B)
+        0x3839: zone_server_89         # server addr 89.x.x.x + port (29B)
+        0x6200: zone_military_rank     # militaryRank updates, count=3 entries (49B)
+        0x6800: zone_player_status     # brief player status: 3B id + varying value (19B)
 types:
   ac_load_initial_player_data:
     doc: Server response to initial load; variable content (login data or keepalive)
@@ -292,13 +306,22 @@ types:
     - id: slot
       type: u1
   ac_leave_mm_queue:
+    doc: |
+      2B echo + 2B status. Observed: 0xc240 (normal leave), 0x8000 (queue closed).
+      The status is a bit-packed field; exact bit layout not reversed.
     seq:
-    - id: dummy
-      type: u1
+    - id: status
+      type: u2be
   ac_mm_info:
+    doc: |
+      Matchmaking queue state update. Variable 213–305 bytes. Bit-packed,
+      structure not fully reversed. Byte 2 = flags (0x80 = in queue).
+      Subsequent bytes: player list + team compositions, encoded.
     seq:
-    - id: dummy
+    - id: flags
       type: u1
+    - id: payload
+      size-eos: true
   ac_enter_tournament:
     seq:
     - id: dummy
@@ -392,13 +415,30 @@ types:
     - id: dummy
       type: u1
   ac_quest_change:
+    doc: |
+      21 bytes. Request: echo + u16be(quest_id).
+      Response: echo + u8(status=0) + u16be(quest_id_echo) + u16be(new_state) + 12B opaque.
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: quest_id
+      type: u2be
+    - id: new_state
+      type: u2be
+    - id: opaque
+      size: 14
   ac_quest_complete:
+    doc: |
+      41 or 53 bytes. Request: echo + u16be(quest_id).
+      Response: echo + u8(status=0) + u16be(quest_id_echo) + bit-packed reward/stat data.
+      Shorter form (41B) omits the extra reward block present in the 53B form.
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: quest_id
+      type: u2be
+    - id: payload
+      size-eos: true
   ac_quest_complete_all:
     seq:
     - id: dummy
@@ -637,9 +677,16 @@ types:
         - id: vessel_id
           type: u4be
   ac_battle_slot_change_vessel:
+    doc: |
+      13 bytes. Request: echo + slot(u8) + 8B ship data (u32be zeros + u32be ship_id).
+      Response: same + u16be result at end (observed: 0x0004).
     seq:
-    - id: dummy
+    - id: slot
       type: u1
+    - id: ship_data
+      size: 8
+    - id: result
+      type: u2be
   ac_battle_slot_swap_vessels:
     seq:
     - id: dummy
@@ -1340,9 +1387,19 @@ types:
         - id: dummy
           type: u1
   ac_mail_deliver:
+    doc: |
+      16 bytes. Push from server when mail arrives.
+      Layout: echo(2) + u32be(0) + u32be(mail_id) + u32be(expiry_or_ts) + u16be(flags).
+      Observed: mail_id=0x00656ca9, expiry=0x77000000, flags=0x0100.
     seq:
-    - id: dummy
-      type: u1
+    - id: padding
+      type: u4be
+    - id: mail_id
+      type: u4be
+    - id: expiry_ts
+      type: u4be
+    - id: flags
+      type: u2be
   ac_mail_send:
     doc: Result of sending mail; status + assigned mail ID
     seq:
@@ -1452,17 +1509,32 @@ types:
     - id: dummy
       type: u1
   ac_add_thumb_up:
+    doc: |
+      13 bytes. Request: echo + u16be(type) + u32be(0) + u32be(instance_id).
+      Response: echo + u8(0x80) + u32be(0) + 4B(player/zone_id?) + u16be(flags).
     seq:
-    - id: dummy
+    - id: flags
       type: u1
+    - id: padding
+      type: u4be
+    - id: zone_or_player_id
+      size: 4
+    - id: result_flags
+      type: u2be
   ac_get_visited_free_space_zones:
     seq:
     - id: dummy
       type: u1
   ac_advert_create:
+    doc: |
+      3B (fail) or 61B (success).
+      3B form: echo + u8(result=1 = slot full/fail).
+      61B form: echo + u32be(0) + u32be(0) + u16be(advert_id) + null-term item name + more data.
     seq:
-    - id: dummy
+    - id: result
       type: u1
+    - id: payload
+      size-eos: true
   ac_advert_delete:
     seq:
     - id: dummy
@@ -1476,8 +1548,9 @@ types:
     - id: dummy
       type: u1
   ac_buy_product_from_advert:
+    doc: Simple ACK — echo(2B) + result byte (0 = success).
     seq:
-    - id: dummy
+    - id: result
       type: u1
   ac_emm_change_ready:
     seq:
@@ -1544,3 +1617,179 @@ types:
     seq:
     - id: dummy
       type: u1
+
+  # ── Open-space / zone session packet types ────────────────────────────────
+  # These types are pushed by the server during open-space play.
+  # All have the standard 2-byte AC echo at the start of the body.
+
+  zone_server_23:
+    doc: |
+      Server address notification for 23.x.x.x servers (30B).
+      The type code 0x3233 = "23" ARE the first two bytes of the IP string,
+      so the body starts mid-string at ".111.211.207\0".
+      Layout: echo("23") + partial_ip(\0-terminated) + port(u16be)
+              + field_a(u32be) + field_b(u32be) + field_c(u32be) + pad(u8).
+      When in an active instance: field_a=0, field_b=instance_id, field_c=0.
+      When idle: field_a=player_count, field_b=zone_id, field_c=capacity.
+    seq:
+    - id: ip_suffix
+      type: strz
+      encoding: ASCII
+    - id: port
+      type: u2be
+    - id: field_a
+      type: u4be
+    - id: field_b
+      type: u4be
+    - id: field_c
+      type: u4be
+    - id: pad
+      type: u1
+
+  zone_server_89:
+    doc: |
+      Server address notification for 89.x.x.x servers (29B). Same
+      structure as zone_server_23. Type 0x3839 = "89" = IP prefix.
+    seq:
+    - id: ip_suffix
+      type: strz
+      encoding: ASCII
+    - id: port
+      type: u2be
+    - id: field_a
+      type: u4be
+    - id: field_b
+      type: u4be
+    - id: field_c
+      type: u4be
+
+  zone_instance_join:
+    doc: |
+      Zone instance notification. Two forms:
+      Short (9B): echo + u24be(0) + u32be(instance_id) — join confirmation.
+      Long (1097B): echo + u32be(0) + 3B(uid) + list of avatar names + player data.
+      The long form is pushed once when a zone fills with players.
+    seq:
+    - id: payload
+      size-eos: true
+
+  zone_stats_list:
+    doc: |
+      Zone session stat counters (119B). 5 bytes header + 6 cs0-keyed entries.
+      Header: u16be(0) + u8(0) + u16be(count=6).
+      Entries (cs0-encoded key + u16be value + 3B padding each):
+        munitionTransfered, munitionPurchased, credits,
+        and 3 more (names still cs-encoded; values bit-packed).
+    seq:
+    - id: header
+      size: 3
+    - id: payload
+      size-eos: true
+
+  zone_player_health:
+    doc: |
+      Zone player health/shield status (70B). Contains float32 values
+      for each player in the zone. 0x3f800000 = 1.0 (full health/shield).
+      Repeating entries: 3B player_id + float32 health + more fields.
+    seq:
+    - id: padding
+      type: u4be
+    - id: payload
+      size-eos: true
+
+  zone_player_data:
+    doc: |
+      Player presence data. Two forms:
+      Short (10B): echo + u24be(1) + 3B(player_uid_low) + u8(flags=0x03)
+        — player online/join indicator.
+      Long (78B): echo + u24be(0) + 3B(player_uid_low) + credits(u32be)
+        + 64B bit-packed zone stats (damage dealt, kills, etc.) — full stats push.
+      Appears after 0x0a00 (join) and 0x0900 (update) for the same player.
+    seq:
+    - id: payload
+      size-eos: true
+
+  zone_player_update:
+    doc: |
+      Player credits/status update in zone (13B).
+      Layout: echo(2) + u24be(1) + 3B(player_uid_low) + 4B(value).
+      The 3-byte player UID is the low 3 bytes of the player's full UID.
+      Observed alongside zone_player_join for the same player.
+    seq:
+    - id: unknown_prefix
+      type: u4be
+    - id: player_uid_low
+      size: 3
+    - id: value
+      type: u4be
+
+  zone_player_join:
+    doc: |
+      Player join notification in zone (13B).
+      Layout: echo(2) + u24be(1) + 3B(player_uid_low) + 4B(flags/status).
+      Flags: 0x3f800000 = float 1.0 = player is fully online/active.
+      Preceded by 0x8000 (player stats dump) and followed by 0x0700 (presence).
+    seq:
+    - id: unknown_prefix
+      type: u4be
+    - id: player_uid_low
+      size: 3
+    - id: status_flags
+      type: u4be
+
+  zone_membership:
+    doc: |
+      Zone membership event (26B). Contains two 3-byte player IDs.
+      Constant bytes: u48be(0) + u16be(0x074b=1867) + u48be(0) + 3B(player_uid_low)
+      + u48be(0) + u8(0x32=50) + u8(0x00).
+      Appears when players enter/leave a zone.
+    seq:
+    - id: payload
+      size: 24
+
+  zone_kv_data:
+    doc: |
+      Open-space zone K-V data (376B). cs0-encoded key-value stream.
+      Header: u16be(0) + u8(count=3).
+      Known keys: "tier" (zone tier/rank), "auras" (active auras), "bundles".
+      Values follow each key; type encoding unknown.
+    seq:
+    - id: header
+      size: 2
+    - id: payload
+      size-eos: true
+
+  zone_player_list:
+    doc: Zone player list (283B). Structure not fully reversed.
+    seq:
+    - id: payload
+      size-eos: true
+
+  zone_military_rank:
+    doc: |
+      Player military rank updates (49B). count=3 at byte 4, then
+      3 cs0-keyed entries starting at byte 5. First key = "militaryRank".
+      Values are bit-packed after each cs0 key (format not fully reversed).
+    seq:
+    - id: header
+      size: 3
+    - id: payload
+      size-eos: true
+
+  zone_player_status:
+    doc: |
+      Brief player status update in zone (19B).
+      Layout: echo(2) + u24be(1) + 3B(constant=0x3b34b2) + u8(0) + u8(1)
+      + u48be(0) + 4B(varying value).
+      The varying 4B at the end changes with player activity (credits? HP?).
+      All examples share the same 3B constant, suggesting this is tied to a
+      specific player or zone instance.
+    seq:
+    - id: prefix
+      type: u4be
+    - id: player_uid_or_constant
+      size: 3
+    - id: padding
+      size: 6
+    - id: value
+      type: u4be
