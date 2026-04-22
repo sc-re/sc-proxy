@@ -1093,13 +1093,17 @@ types:
       type: u1
   ac_clan_request_desc:
     doc: |
-      Full clan description packet (0x009f). Structure up to `dummy` is fully
-      decoded. Everything after `dummy` is a TGP-encoded FedDesign K-V stream
-      that is NOT parsed here — served as opaque bytes by the masterserver.
+      Full clan description (0x009f). Field names and types match the Lua
+      binding MasterServer_ClanGetDesc (fn at 0x086fc350), which delegates
+      to the clan_desc → Lua table converter at 0x088e1280. The converter
+      reads a singleton clan struct at 0x0945b430 and pushes ~20 named
+      top-level fields. The packet carries structured prefix fields (cid,
+      strings, timestamps, counters, quest state, members) followed by a
+      TGP-encoded FedDesign K-V stream that holds the invites, joinReqs,
+      upgrades, resources, clanShips and clanItemKeys arrays.
 
-      POST-DUMMY STRUCTURE (partial knowledge, not implemented in ksy):
-      The remainder is a TGP wire-format K-V stream. Keys use three different
-      encodings depending on first byte:
+      TGP stream format:
+      Keys use three different encodings depending on first byte:
         - cs-encoded (carry-shift-right): byte[i] = (char[i]>>1)|(carry<<7),
           null terminator when ((b0&0x7f)<<1)|(b1>>7)==0.
         - x2-encoded: byte = char*2, first byte >= 0x80 for uppercase.
@@ -1109,71 +1113,82 @@ types:
         0x0a=x2-str, 0x0c=struct(u32be-header + K-V body), 0x14=marker,
         0x15=cs-string-value, 0x18=u32be.
 
-      Known top-level FedDesign fields (all cs0-encoded keys):
-        moduleSlots  — type 0x03 map; 160-byte constant binary header
-                       (same across captures, content unknown — binary hash
-                       table metadata) followed by variable K-V entries.
-                       Each slot key is x2-encoded (main_1..main_3,
-                       additional_1..additional_2, turret_1..turret_3).
-                       Slot values: type 0x0c struct with u32be header
-                       (= installed-module count) + K-V body containing
-                       "fit" (cs-string, fitted module name) and
-                       "built" (nested struct with additional_N entries).
-                       Some slots use type 0x03 instead (count=1 map).
-        partBeingBuilt      — cs0-string
-        slotBeingBuilt      — cs0-string
-        productionStartTime — cs0-string
-        productionCompleteAt — cs0-string
-        boostBuildingBudget — cs0-string
-        broken              — cs0-string
-        repairStartTime     — cs0-string
-        repairEndTime       — cs0-string
-        boostRepairingBudget — cs0-string
-        curZone             — cs0-string
+      The TGP stream contains one entry per clanShip (keyed by design name
+      e.g. EmpireDesign, FederationDesign, JerichoDesign) with per-ship
+      fields: defName, productionStartTime, productionCompleteAt,
+      repairStartTime, repairEndTime, broken, boostBuildingBudget,
+      boostRepairingBudget, partBeingBuilt, slotBeingBuilt, curZone,
+      moduleSlots, mainParts. Plus the top-level arrays invites (u64
+      uids), joinReqs (empty when none), upgrades (small u32 ids),
+      resources (4 u32 balances) and clanItemKeys.
 
-      The moduleSlots constant 160-byte header starts at block[0x000] after
-      the TGP map header (cs0("moduleSlots") + 0x03 + u32be count). It is
-      identical between the two captured sessions (captures/20260421_223139
-      and captures/20260422_063139). Its internal structure is unknown —
-      FNV-1a hashes of slot names do NOT match any bytes within it.
-      The variable K-V data begins at block[0x0a0] mid-cs-string (a cs-string
-      starting at block[0x0097] crosses the constant/variable boundary).
+      moduleSlots structure: type 0x03 map with a 160-byte constant
+      binary header (identical between captured sessions) followed by
+      variable K-V entries. Each slot key is x2-encoded (main_1..main_3,
+      additional_1..additional_2, turret_1..turret_3). Slot values: type
+      0x0c struct with u32be header (= installed-module count) + K-V body
+      containing "fit" (cs-string, fitted module name) and "built"
+      (nested struct with additional_N entries). Some slots use type
+      0x03 instead (count=1 map).
     seq:
-    - id: unknown
-      type: u4
-    - id: clan_id
-      type: u4be
-    - id: clan_name
+    - id: cid
+      type: u8be
+      doc: |
+        Clan ID. Lua exposes as int64 `cid`; observed high 32 bits are
+        always zero so practical range fits u32.
+    - id: name
       type: strz
       encoding: UTF-8
-    - id: clan_tag
+    - id: tag
       type: strz
       encoding: UTF-8
     - id: motd
       type: strz
       encoding: UTF-8
-    - id: description
+    - id: desc
       type: strz
       encoding: UTF-8
-    - id: clan_icon
+    - id: emblem
       type: strz
       encoding: UTF-8
-    - id: clan_faction
+      doc: Clan icon/emblem identifier, e.g. "clan_icon_id_1534".
+    - id: current_clan_ship
       type: strz
       encoding: UTF-8
-    - id: unknown1
-      type: u8
-    - id: unknown2
-      type: u8
-    - id: unknown3
-      type: u8
-    - id: unknown4
-      type: u2
-    - id: unknown5
+      doc: |
+        Design name of the clan's currently-active ship, e.g. "EmpireDesign".
+        Keys into the clanShips map in the TGP stream.
+    - id: creation_date
+      type: u8be
+      doc: Milliseconds since the Unix epoch — when the clan was founded.
+    - id: unknown_a
+      type: u4be
+      doc: |
+        Not surfaced by MasterServer_ClanGetDesc. Observed 0x442fed22 and
+        constant between captures for the same clan; role unknown. Possibly
+        a boost/budget timestamp or reserved field.
+    - id: counter_target
+      type: u4be
+      doc: Clan contribution counter target (Lua `counterTarget`).
+    - id: counter_progress
+      type: u4be
+      doc: Clan contribution counter progress (Lua `counterProgress`).
+    - id: clan_quest_id
+      type: s4be
+      doc: |
+        Active clan quest id; -1 = none. Lua exposes as `clanQuestId` (int).
+    - id: clan_quest_progress
+      type: u2be
+      doc: |
+        Clan quest progress. Lua promotes to int32 via setInt, but only
+        3 bytes are available between clan_quest_id and member_count on the
+        wire, split as (u16 progress, u8 recruiting). Both observed zero.
+    - id: recruiting
       type: u1
+      doc: Boolean — whether the clan is accepting new members.
     - id: member_count
       type: u4be
-    - id: member_uids
+    - id: members
       type: member
       repeat: expr
       repeat-expr: member_count
@@ -1182,11 +1197,12 @@ types:
     - id: fed_design_tgp_stream
       size-eos: true
       doc: |
-        TGP-encoded FedDesign K-V stream. See type doc above for partial
-        field map. Not parsed — opaque bytes. In the two captured sessions
-        this section is 4205 bytes (lo1, 7883-byte packet) and 3728 bytes
-        (lo2, 7381-byte packet). Differences reflect different numbers of
-        built/fitted modules per ship slot.
+        TGP-encoded FedDesign K-V stream holding the top-level arrays
+        (invites, joinReqs, upgrades, resources, clanShips, clanItemKeys).
+        Not parsed here — opaque bytes. Observed sizes: 4275 bytes
+        (7883-byte packet, 20260421 session) and 3728 bytes (7381-byte
+        packet, 20260422 session). Size varies with fitted/built modules
+        per ship slot and the number of invites/upgrades/resources.
     types:
       member:
         seq:
