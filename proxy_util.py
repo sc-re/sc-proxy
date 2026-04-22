@@ -118,7 +118,9 @@ def hexdump(data: bytes, width: int = 16, prefix: str = "    ") -> str:
 
 # Full bodies go here so they can be recovered as exact bytes; the log
 # still only holds a preview so it doesn't become unreadable.
-CAPTURE_DIR = os.environ.get("SC_CAPTURE_DIR", "captures/")
+_capture_base = os.environ.get("SC_CAPTURE_DIR", "captures/")
+_session_ts = time.strftime("%Y%m%d_%H%M%S")
+CAPTURE_DIR = os.path.join(_capture_base, _session_ts)
 _capture_idx = [0]
 _capture_lock = threading.Lock()
 
