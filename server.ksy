@@ -599,6 +599,7 @@ types:
     - id: credits
       type: u4be
     - id: gold
+      type: u4be
   ac_buy_gold:
     seq:
      - id: dummy
