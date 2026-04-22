@@ -1192,17 +1192,64 @@ types:
       type: member
       repeat: expr
       repeat-expr: member_count
-    - id: dummy
+    - id: invites_count
+      type: u4be
+    - id: invites
+      type: u8be
+      repeat: expr
+      repeat-expr: invites_count
+      doc: Lua `invites` — player uids (u64 each) with pending clan invites.
+    - id: joinreqs_count
+      type: u4be
+    - id: joinreqs
+      type: u8be
+      repeat: expr
+      repeat-expr: joinreqs_count
+      doc: Lua `joinReqs` — player uids (u64 each) with pending join requests.
+    - id: upgrade_a
       type: u1
+      doc: Lua `upgrades[0]` — first upgrade track level (observed 10..12).
+    - id: upgrade_b
+      type: u1
+      doc: Lua `upgrades[1]` — second upgrade track level (observed 1).
+    - id: resources
+      type: u4be
+      repeat: expr
+      repeat-expr: 4
+      doc: |
+        Lua `resources[0..3]` — four clan resource balances. Observed values
+        show resource[0]/resource[1] carry non-zero balances while [2]/[3]
+        are zero in captured clans.
+    - id: fed_design_tgp_stream_flags
+      type: u4be
+      doc: |
+        Header word of the FedDesign TGP stream. Observed values 0x00000001
+        (GD3F) and 0x80000001 (TerraLuX). Low bits likely a count/version;
+        high bit likely a flag (possibly "has clanItemKeys"). Not yet fully
+        reversed.
     - id: fed_design_tgp_stream
       size-eos: true
       doc: |
-        TGP-encoded FedDesign K-V stream holding the top-level arrays
-        (invites, joinReqs, upgrades, resources, clanShips, clanItemKeys).
-        Not parsed here — opaque bytes. Observed sizes: 4275 bytes
-        (7883-byte packet, 20260421 session) and 3728 bytes (7381-byte
-        packet, 20260422 session). Size varies with fitted/built modules
-        per ship slot and the number of invites/upgrades/resources.
+        Remaining bytes: a binary serialization of the `clanShips` map
+        (keyed by design name: EmpireDesign, FederationDesign, JerichoDesign
+        in the captured clans) and possibly `clanItemKeys`. Each ship entry
+        carries defName, productionStartTime, productionCompleteAt,
+        repairStartTime, repairEndTime, broken, boostBuildingBudget,
+        boostRepairingBudget, partBeingBuilt, slotBeingBuilt, curZone,
+        moduleSlots, mainParts.
+
+        The stream mixes three string encodings within the same record —
+        cs-shifted keys (e.g. main_1, moduleSlots, productionStartTime,
+        broken, curZone), x2-encoded keys (e.g. FederationDesign at
+        offset 0x5b1 of the FD stream), and cleartext null-terminated
+        keys (e.g. defName, mainParts, FederationDesign at 0x5d0). At
+        least one ship record also contains a 160-byte opaque binary
+        hash-table header inside moduleSlots whose bytes are constant
+        across sessions.
+
+        Observed sizes: 4238 bytes (GD3F, 300-member clan) and 4168
+        bytes (TerraLuX, 254-member clan). Size varies with fitted/built
+        module counts per ship slot.
     types:
       member:
         seq:

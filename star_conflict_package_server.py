@@ -2517,7 +2517,23 @@ class StarConflictPackageServer(KaitaiStruct):
             for i in range(self.member_count):
                 self.members.append(StarConflictPackageServer.AcClanRequestDesc.Member(self._io, self, self._root))
 
-            self.dummy = self._io.read_u1()
+            self.invites_count = self._io.read_u4be()
+            self.invites = []
+            for i in range(self.invites_count):
+                self.invites.append(self._io.read_u8be())
+
+            self.joinreqs_count = self._io.read_u4be()
+            self.joinreqs = []
+            for i in range(self.joinreqs_count):
+                self.joinreqs.append(self._io.read_u8be())
+
+            self.upgrade_a = self._io.read_u1()
+            self.upgrade_b = self._io.read_u1()
+            self.resources = []
+            for i in range(4):
+                self.resources.append(self._io.read_u4be())
+
+            self.fed_design_tgp_stream_flags = self._io.read_u4be()
             self.fed_design_tgp_stream = self._io.read_bytes_full()
 
 
@@ -2526,6 +2542,15 @@ class StarConflictPackageServer(KaitaiStruct):
             for i in range(len(self.members)):
                 pass
                 self.members[i]._fetch_instances()
+
+            for i in range(len(self.invites)):
+                pass
+
+            for i in range(len(self.joinreqs)):
+                pass
+
+            for i in range(len(self.resources)):
+                pass
 
 
         class Member(KaitaiStruct):
