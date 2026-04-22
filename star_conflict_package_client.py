@@ -1558,6 +1558,7 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcAchievements(KaitaiStruct):
+        """Request achievements for player UID."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcAchievements, self).__init__(_io)
             self._parent = _parent
@@ -1565,7 +1566,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.uid = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -1829,6 +1830,7 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcBattleSlotChangeVessel(KaitaiStruct):
+        """Change vessel in a battle slot."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcBattleSlotChangeVessel, self).__init__(_io)
             self._parent = _parent
@@ -1836,7 +1838,9 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_u4be()
+            self.slot = self._io.read_u1()
+            self.vessel_id = self._io.read_u4be()
 
 
         def _fetch_instances(self):
@@ -2340,6 +2344,7 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcClanRequestProfile(KaitaiStruct):
+        """Request clan profile for player UID."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcClanRequestProfile, self).__init__(_io)
             self._parent = _parent
@@ -2347,7 +2352,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.uid = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -2700,6 +2705,7 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcFriendsAcceptRequest(KaitaiStruct):
+        """Accept friend request from player UID."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcFriendsAcceptRequest, self).__init__(_io)
             self._parent = _parent
@@ -2707,7 +2713,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.uid = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -3587,6 +3593,7 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcMottosSetActive(KaitaiStruct):
+        """Set active motto by name."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcMottosSetActive, self).__init__(_io)
             self._parent = _parent
@@ -3594,7 +3601,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.motto_id = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
 
 
         def _fetch_instances(self):
@@ -4008,6 +4015,7 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcSellVessel(KaitaiStruct):
+        """Sell vessel by ID."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcSellVessel, self).__init__(_io)
             self._parent = _parent
@@ -4015,7 +4023,8 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_u4be()
+            self.vessel_id = self._io.read_u4be()
 
 
         def _fetch_instances(self):
@@ -4174,6 +4183,7 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcSocialIgnoreAdd(KaitaiStruct):
+        """Request to add/remove player by UID."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcSocialIgnoreAdd, self).__init__(_io)
             self._parent = _parent
@@ -4181,7 +4191,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.uid = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -4189,6 +4199,7 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcSocialIgnoreRemove(KaitaiStruct):
+        """Request to add/remove player by UID."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcSocialIgnoreRemove, self).__init__(_io)
             self._parent = _parent
@@ -4196,7 +4207,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.uid = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -4249,6 +4260,7 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcSocialWatchAdd(KaitaiStruct):
+        """Request to add/remove player by UID."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcSocialWatchAdd, self).__init__(_io)
             self._parent = _parent
@@ -4256,7 +4268,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.uid = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -4264,6 +4276,7 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcSocialWatchRemove(KaitaiStruct):
+        """Request to add/remove player by UID."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcSocialWatchRemove, self).__init__(_io)
             self._parent = _parent
@@ -4271,7 +4284,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.uid = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -4446,6 +4459,7 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcSurveyGetNew(KaitaiStruct):
+        """Request new survey in specified language."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcSurveyGetNew, self).__init__(_io)
             self._parent = _parent
@@ -4453,7 +4467,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.lang = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
 
 
         def _fetch_instances(self):
@@ -4461,6 +4475,7 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcSurveyResults(KaitaiStruct):
+        """Request survey results in specified language."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcSurveyResults, self).__init__(_io)
             self._parent = _parent
@@ -4468,7 +4483,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.lang = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
 
 
         def _fetch_instances(self):
@@ -4521,6 +4536,7 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcTalentsAcquire(KaitaiStruct):
+        """Acquire talent by bitmask."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcTalentsAcquire, self).__init__(_io)
             self._parent = _parent
@@ -4528,7 +4544,9 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_u4be()
+            self.talent_mask = self._io.read_u4be()
+            self.reserved = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -4536,6 +4554,7 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcTalentsAssignSets(KaitaiStruct):
+        """Assign talent sets to 4 battle role slots."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcTalentsAssignSets, self).__init__(_io)
             self._parent = _parent
@@ -4543,11 +4562,17 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.set_ids = []
+            for i in range(4):
+                self.set_ids.append(self._io.read_u1())
+
 
 
         def _fetch_instances(self):
             pass
+            for i in range(len(self.set_ids)):
+                pass
+
 
 
     class AcTalentsReset(KaitaiStruct):
@@ -4885,6 +4910,7 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcUserNotesDelete(KaitaiStruct):
+        """Delete user note by UID and flags."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcUserNotesDelete, self).__init__(_io)
             self._parent = _parent
@@ -4892,7 +4918,8 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.flags = self._io.read_u2be()
+            self.uid = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -5140,6 +5167,7 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcVesselLevelup(KaitaiStruct):
+        """Level up vessel."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcVesselLevelup, self).__init__(_io)
             self._parent = _parent
@@ -5147,7 +5175,8 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_u4be()
+            self.vessel_id = self._io.read_u4be()
 
 
         def _fetch_instances(self):
@@ -5185,6 +5214,7 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcVesselRefillMunition(KaitaiStruct):
+        """Refill vessel munitions."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcVesselRefillMunition, self).__init__(_io)
             self._parent = _parent
@@ -5192,7 +5222,8 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_u4be()
+            self.vessel_id = self._io.read_u4be()
 
 
         def _fetch_instances(self):
@@ -5200,6 +5231,7 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcVesselRepair(KaitaiStruct):
+        """Repair vessel."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcVesselRepair, self).__init__(_io)
             self._parent = _parent
@@ -5207,7 +5239,9 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_u4be()
+            self.vessel_id = self._io.read_u4be()
+            self.flags = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -5367,6 +5401,7 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcZonesLuaActiveEventsUpdate(KaitaiStruct):
+        """Zone event subscription update with session identifier."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcZonesLuaActiveEventsUpdate, self).__init__(_io)
             self._parent = _parent
@@ -5374,7 +5409,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_u8be()
 
 
         def _fetch_instances(self):

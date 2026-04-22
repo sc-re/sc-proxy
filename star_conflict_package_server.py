@@ -1649,7 +1649,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcAdventures(KaitaiStruct):
-        """Available adventures list."""
+        """Available adventures list; status=0 ok, count=number of adventures."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcAdventures, self).__init__(_io)
             self._parent = _parent
@@ -1657,7 +1657,9 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.count = self._io.read_u1()
+            self.reserved = self._io.read_u2be()
 
 
         def _fetch_instances(self):
@@ -3950,6 +3952,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcReferrals(KaitaiStruct):
+        """Referral program info; flags=0x80 when no active referrer."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcReferrals, self).__init__(_io)
             self._parent = _parent
@@ -3957,7 +3960,9 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.flags = self._io.read_u1()
+            self.uid = self._io.read_u8be()
+            self.reserved = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -4665,6 +4670,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcTalentsAssignSets(KaitaiStruct):
+        """Confirmed talent set assignments for 4 role slots."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcTalentsAssignSets, self).__init__(_io)
             self._parent = _parent
@@ -4672,11 +4678,18 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.set_ids = []
+            for i in range(4):
+                self.set_ids.append(self._io.read_u1())
+
 
 
         def _fetch_instances(self):
             pass
+            for i in range(len(self.set_ids)):
+                pass
+
 
 
     class AcTalentsReset(KaitaiStruct):
@@ -5092,6 +5105,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcVesselBudgetActivate(KaitaiStruct):
+        """Budget vessel activation confirmation."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcVesselBudgetActivate, self).__init__(_io)
             self._parent = _parent
@@ -5099,7 +5113,9 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u4be()
+            self.vessel_id = self._io.read_u4be()
+            self.unknown = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -5317,6 +5333,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcVesselRefillMunition(KaitaiStruct):
+        """Munition refill confirmation; count = munitions restored."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcVesselRefillMunition, self).__init__(_io)
             self._parent = _parent
@@ -5324,7 +5341,11 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u4be()
+            self.unknown = self._io.read_u1()
+            self.vessel_id = self._io.read_u4be()
+            self.count = self._io.read_u2be()
+            self.reserved = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -5342,7 +5363,7 @@ class StarConflictPackageServer(KaitaiStruct):
         def _read(self):
             self.unknown = self._io.read_u4be()
             self.vessel_id = self._io.read_u4be()
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u2be()
 
 
         def _fetch_instances(self):
