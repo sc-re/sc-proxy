@@ -2447,13 +2447,17 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcClanRequestDesc(KaitaiStruct):
-        """Full clan description packet (0x009f). Structure up to `dummy` is fully
-        decoded. Everything after `dummy` is a TGP-encoded FedDesign K-V stream
-        that is NOT parsed here — served as opaque bytes by the masterserver.
+        """Full clan description (0x009f). Field names and types match the Lua
+        binding MasterServer_ClanGetDesc (fn at 0x086fc350), which delegates
+        to the clan_desc → Lua table converter at 0x088e1280. The converter
+        reads a singleton clan struct at 0x0945b430 and pushes ~20 named
+        top-level fields. The packet carries structured prefix fields (cid,
+        strings, timestamps, counters, quest state, members) followed by a
+        TGP-encoded FedDesign K-V stream that holds the invites, joinReqs,
+        upgrades, resources, clanShips and clanItemKeys arrays.
         
-        POST-DUMMY STRUCTURE (partial knowledge, not implemented in ksy):
-        The remainder is a TGP wire-format K-V stream. Keys use three different
-        encodings depending on first byte:
+        TGP stream format:
+        Keys use three different encodings depending on first byte:
           - cs-encoded (carry-shift-right): byte[i] = (char[i]>>1)|(carry<<7),
             null terminator when ((b0&0x7f)<<1)|(b1>>7)==0.
           - x2-encoded: byte = char*2, first byte >= 0x80 for uppercase.
@@ -2463,35 +2467,23 @@ class StarConflictPackageServer(KaitaiStruct):
           0x0a=x2-str, 0x0c=struct(u32be-header + K-V body), 0x14=marker,
           0x15=cs-string-value, 0x18=u32be.
         
-        Known top-level FedDesign fields (all cs0-encoded keys):
-          moduleSlots  — type 0x03 map; 160-byte constant binary header
-                         (same across captures, content unknown — binary hash
-                         table metadata) followed by variable K-V entries.
-                         Each slot key is x2-encoded (main_1..main_3,
-                         additional_1..additional_2, turret_1..turret_3).
-                         Slot values: type 0x0c struct with u32be header
-                         (= installed-module count) + K-V body containing
-                         "fit" (cs-string, fitted module name) and
-                         "built" (nested struct with additional_N entries).
-                         Some slots use type 0x03 instead (count=1 map).
-          partBeingBuilt      — cs0-string
-          slotBeingBuilt      — cs0-string
-          productionStartTime — cs0-string
-          productionCompleteAt — cs0-string
-          boostBuildingBudget — cs0-string
-          broken              — cs0-string
-          repairStartTime     — cs0-string
-          repairEndTime       — cs0-string
-          boostRepairingBudget — cs0-string
-          curZone             — cs0-string
+        The TGP stream contains one entry per clanShip (keyed by design name
+        e.g. EmpireDesign, FederationDesign, JerichoDesign) with per-ship
+        fields: defName, productionStartTime, productionCompleteAt,
+        repairStartTime, repairEndTime, broken, boostBuildingBudget,
+        boostRepairingBudget, partBeingBuilt, slotBeingBuilt, curZone,
+        moduleSlots, mainParts. Plus the top-level arrays invites (u64
+        uids), joinReqs (empty when none), upgrades (small u32 ids),
+        resources (4 u32 balances) and clanItemKeys.
         
-        The moduleSlots constant 160-byte header starts at block[0x000] after
-        the TGP map header (cs0("moduleSlots") + 0x03 + u32be count). It is
-        identical between the two captured sessions (captures/20260421_223139
-        and captures/20260422_063139). Its internal structure is unknown —
-        FNV-1a hashes of slot names do NOT match any bytes within it.
-        The variable K-V data begins at block[0x0a0] mid-cs-string (a cs-string
-        starting at block[0x0097] crosses the constant/variable boundary).
+        moduleSlots structure: type 0x03 map with a 160-byte constant
+        binary header (identical between captured sessions) followed by
+        variable K-V entries. Each slot key is x2-encoded (main_1..main_3,
+        additional_1..additional_2, turret_1..turret_3). Slot values: type
+        0x0c struct with u32be header (= installed-module count) + K-V body
+        containing "fit" (cs-string, fitted module name) and "built"
+        (nested struct with additional_N entries). Some slots use type
+        0x03 instead (count=1 map).
         """
 
         class Role(IntEnum):
@@ -2506,23 +2498,24 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.unknown = self._io.read_u4be()
-            self.clan_id = self._io.read_u4be()
-            self.clan_name = (self._io.read_bytes_term(0, False, True, True)).decode(u"UTF-8")
-            self.clan_tag = (self._io.read_bytes_term(0, False, True, True)).decode(u"UTF-8")
+            self.cid = self._io.read_u8be()
+            self.name = (self._io.read_bytes_term(0, False, True, True)).decode(u"UTF-8")
+            self.tag = (self._io.read_bytes_term(0, False, True, True)).decode(u"UTF-8")
             self.motd = (self._io.read_bytes_term(0, False, True, True)).decode(u"UTF-8")
-            self.description = (self._io.read_bytes_term(0, False, True, True)).decode(u"UTF-8")
-            self.clan_icon = (self._io.read_bytes_term(0, False, True, True)).decode(u"UTF-8")
-            self.clan_faction = (self._io.read_bytes_term(0, False, True, True)).decode(u"UTF-8")
-            self.unknown1 = self._io.read_u8be()
-            self.unknown2 = self._io.read_u8be()
-            self.unknown3 = self._io.read_u8be()
-            self.unknown4 = self._io.read_u2be()
-            self.unknown5 = self._io.read_u1()
+            self.desc = (self._io.read_bytes_term(0, False, True, True)).decode(u"UTF-8")
+            self.emblem = (self._io.read_bytes_term(0, False, True, True)).decode(u"UTF-8")
+            self.current_clan_ship = (self._io.read_bytes_term(0, False, True, True)).decode(u"UTF-8")
+            self.creation_date = self._io.read_u8be()
+            self.unknown_a = self._io.read_u4be()
+            self.counter_target = self._io.read_u4be()
+            self.counter_progress = self._io.read_u4be()
+            self.clan_quest_id = self._io.read_s4be()
+            self.clan_quest_progress = self._io.read_u2be()
+            self.recruiting = self._io.read_u1()
             self.member_count = self._io.read_u4be()
-            self.member_uids = []
+            self.members = []
             for i in range(self.member_count):
-                self.member_uids.append(StarConflictPackageServer.AcClanRequestDesc.Member(self._io, self, self._root))
+                self.members.append(StarConflictPackageServer.AcClanRequestDesc.Member(self._io, self, self._root))
 
             self.dummy = self._io.read_u1()
             self.fed_design_tgp_stream = self._io.read_bytes_full()
@@ -2530,9 +2523,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
         def _fetch_instances(self):
             pass
-            for i in range(len(self.member_uids)):
+            for i in range(len(self.members)):
                 pass
-                self.member_uids[i]._fetch_instances()
+                self.members[i]._fetch_instances()
 
 
         class Member(KaitaiStruct):
