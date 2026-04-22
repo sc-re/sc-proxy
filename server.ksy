@@ -657,9 +657,14 @@ types:
     - id: dummy
       type: u1
   ac_exchange_gold:
+    doc: Exchange gold for credits
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: credits
+      type: u4be
+    - id: gold
+      type: u4be
   ac_buy_gold:
     seq:
     - id: dummy

@@ -610,9 +610,19 @@ types:
     - id: dummy
       type: u1
   ac_exchange_gold:
+    doc: Request the exchange of gold for credits
     seq:
-    - id: dummy
+    - id: id
       type: u1
+      enum: credit_gs_level
+    enums:
+      credit_gs_level:
+        0: gs20_credits_140_000
+        1: gs100_credits_740_000
+        2: gs1_000_credits_7_700_000
+        3: gs2_500_credits_19_900_000
+        4: gs5_000_credits_41_200_000
+        5: gs10_000_credits_87_500_000
   ac_buy_gold:
     seq:
     - id: dummy
