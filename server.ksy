@@ -283,19 +283,53 @@ types:
     - id: dummy
       type: u1
   ac_server_info:
-    doc: Server metadata sent after initial connection
+    doc: |
+      Server metadata. The 20-byte canonical form is memcpy'd verbatim
+      into a singleton struct at 0x096285b4 from which Lua binding
+      MasterServer_GetServerInfo (fn at 0x086ff780) reads field-by-field.
+      Unlike most AC packets on this channel the scalar fields are
+      LITTLE-ENDIAN — the client reads them with native x86 loads
+      (fldl/mov), so the wire bytes are whatever the server had in memory.
+
+      Short-form variants also appear on this type code (e.g. 14-byte and
+      6-byte bodies) which look like periodic status updates with a
+      different shape; the fields below are gated on remaining bytes so
+      those don't fail to parse.
     seq:
-    - id: online_count
-      type: u4be
-    - id: server_time
-      type: u4be
-    - id: session_token
-      type: u2be
-    - id: server_id
-      type: u2be
-      doc: "Observed values: 0x8549, 0x8649"
-    - id: dummy
+    - id: server_time_ms
+      type: f8le
+      if: '_io.size - _io.pos >= 8'
+      doc: |
+        Milliseconds since the Unix epoch, as an IEEE 754 double (LE).
+        Lua binding truncates it to int64 and exposes it as `serverTime`.
+    - id: unknown_8
+      size: 4
+      if: '_io.size - _io.pos >= 4'
+      doc: |
+        4 bytes not surfaced by MasterServer_GetServerInfo. Differs per
+        session (observed 0x0bd18549 and 0xf7398e49). Possibly a session
+        token / world ID.
+    - id: sandbox_access
+      type: u4le
+      if: '_io.size - _io.pos >= 4'
+      doc: |
+        Sandbox access level. Lua exposes both `sandboxAccess` (raw value)
+        and `sandboxDisabled` (= sandboxAccess == 0). Observed: 4.
+    - id: mm_disabled
       type: u1
+      if: '_io.size - _io.pos >= 1'
+    - id: mm_enable_pve_raids
+      type: u1
+      if: '_io.size - _io.pos >= 1'
+    - id: mm_enable_league
+      type: u1
+      if: '_io.size - _io.pos >= 1'
+    - id: mm_enable_coop_vs_ai
+      type: u1
+      if: '_io.size - _io.pos >= 1'
+    - id: tail
+      size-eos: true
+      doc: Extra bytes on short-form variants (status updates).
   ac_enter_mm_queue:
     doc: Matchmaking queue update; flags=0x80 means queued
     seq:
