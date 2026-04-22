@@ -1230,26 +1230,63 @@ types:
     - id: fed_design_tgp_stream
       size-eos: true
       doc: |
-        Remaining bytes: a binary serialization of the `clanShips` map
-        (keyed by design name: EmpireDesign, FederationDesign, JerichoDesign
-        in the captured clans) and possibly `clanItemKeys`. Each ship entry
-        carries defName, productionStartTime, productionCompleteAt,
-        repairStartTime, repairEndTime, broken, boostBuildingBudget,
-        boostRepairingBudget, partBeingBuilt, slotBeingBuilt, curZone,
-        moduleSlots, mainParts.
+        Remaining bytes: a recursive, self-describing serialization of the
+        clan's `clanShips` map (keyed by design name — EmpireDesign,
+        FederationDesign, JerichoDesign in the captured clans) and
+        possibly `clanItemKeys`. The format is what the reader at
+        0x0088e7320 calls `lookupKey(container, "defName", type)`; the
+        container is built by the recursive parser rooted at 0x08b1ea40
+        (called from the 0x009f packet handler around 0x08239aea). Keys
+        and type tags are read inline as the parser descends; Kaitai
+        struct's static typing cannot encode this, so the stream stays as
+        opaque bytes here and is best decoded with a Python walker.
 
-        The stream mixes three string encodings within the same record —
-        cs-shifted keys (e.g. main_1, moduleSlots, productionStartTime,
-        broken, curZone), x2-encoded keys (e.g. FederationDesign at
-        offset 0x5b1 of the FD stream), and cleartext null-terminated
-        keys (e.g. defName, mainParts, FederationDesign at 0x5d0). At
-        least one ship record also contains a 160-byte opaque binary
-        hash-table header inside moduleSlots whose bytes are constant
-        across sessions.
+        What's known about the wire format:
+          * Keys appear in three different encodings within one record:
+            - cs-shifted (7-bit-per-byte carry-shifted strings) for most
+              field keys like main_1, moduleSlots, productionStartTime,
+              broken, curZone — e.g. cs("main_1\0") = 36 b0 b4 b7 2f 98 80
+            - x2-encoded (char<<1) for some names. Strings of this kind
+              observed in-stream: "ClanShip_Angar_t5" at offset 0x85,
+              "FederationDesign" at 0x58c, "fit" at 0x97.
+            - cleartext (null-terminated ASCII) — observed for "defName",
+              "mainParts", "built", and "FederationDesign" at 0x5a2.
+          * Type tags (after a key, before the value):
+            0x02 = cs-string value, 0x03 = map (u32be count), 0x04 = u64be,
+            0x05 = cleartext-string value, 0x06 = array (u32be count),
+            0x0a = x2-string value, 0x0c = struct (u32be header),
+            0x15 = cs-string value, 0x18 = u32be, 0x82 = cs-string-with-
+            array-first-element flag.
+          * Per-ship FedDesign struct (offsets in in-memory layout, from
+            the serializer at 0x088e7110):
+              +0x00  defName           std::string
+              +0x04  mainParts         4-item cs-string array (observed
+                                       values: Shipyard, Carcas, Engine,
+                                       Weapon)
+              +0x18  moduleSlots       map with a 160-byte opaque binary
+                                       hash-table header before the K-V
+                                       entries; slot keys are x2-encoded
+                                       (main_1..main_3, additional_1..2,
+                                       turret_1..3); slot values are
+                                       type 0x0c structs with a u32be
+                                       header + body containing "fit"
+                                       (cs-string, fitted module name)
+                                       and "built" (nested struct)
+              +0x2c  partBeingBuilt    std::string
+              +0x30  slotBeingBuilt    std::string
+              +0x34  productionStartTime     u64be (ms since epoch)
+              +0x3c  productionCompleteAt    u64be
+              +0x44  boostBuildingBudget     u64be
+              +0x4c  broken                  u8 (bool)
+              +0x50  repairStartTime         u64be
+              +0x58  repairEndTime           u64be
+              +0x60  boostRepairingBudget    u64be
+              +0x68  curZone                 u32 (low byte used as u8)
 
-        Observed sizes: 4238 bytes (GD3F, 300-member clan) and 4168
-        bytes (TerraLuX, 254-member clan). Size varies with fitted/built
-        module counts per ship slot.
+        Observed sizes: 4238 bytes (GD3F, 300 members) and 4168 bytes
+        (TerraLuX, 254 members). No bytes are stable across captures of
+        different clans — every byte in the stream depends on clan
+        identity and current clan state.
     types:
       member:
         seq:
