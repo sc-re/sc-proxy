@@ -521,8 +521,17 @@ types:
     - id: dummy
       type: u1
   ac_vessel_refill_munition:
+    doc: Munition refill confirmation; count = munitions restored
     seq:
-    - id: dummy
+    - id: status
+      type: u4be
+    - id: unknown
+      type: u1
+    - id: vessel_id
+      type: u4be
+    - id: count
+      type: u2be
+    - id: reserved
       type: u1
   ac_vessel_transfer_munition:
     seq:
@@ -551,8 +560,8 @@ types:
       type: u4be
     - id: vessel_id
       type: u4be
-    - id: dummy
-      type: u1
+    - id: status
+      type: u2be
   ac_vessel_repair_battle:
     seq:
     - id: dummy
@@ -595,8 +604,13 @@ types:
     - id: dummy
       type: u1
   ac_vessel_budget_activate:
+    doc: Budget vessel activation confirmation
     seq:
-    - id: dummy
+    - id: status
+      type: u4be
+    - id: vessel_id
+      type: u4be
+    - id: unknown
       type: u1
   ac_vessel_unlock_node:
     seq:
@@ -667,9 +681,14 @@ types:
     - id: dummy
       type: u1
   ac_talents_assign_sets:
+    doc: Confirmed talent set assignments for 4 role slots
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: set_ids
+      type: u1
+      repeat: expr
+      repeat-expr: 4
   ac_buy_talent_set:
     seq:
     - id: dummy
@@ -882,8 +901,13 @@ types:
     - id: dummy
       type: u1
   ac_referrals:
+    doc: Referral program info; flags=0x80 when no active referrer
     seq:
-    - id: dummy
+    - id: flags
+      type: u1
+    - id: uid
+      type: u8be
+    - id: reserved
       type: u1
   ac_set_referrer:
     seq:
@@ -1449,10 +1473,14 @@ types:
     - id: status
       type: u1
   ac_adventures:
-    doc: Available adventures list
+    doc: Available adventures list; status=0 ok, count=number of adventures
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: count
+      type: u1
+    - id: reserved
+      type: u2be
   ac_adventure_cancel:
     seq:
     - id: dummy

@@ -323,9 +323,11 @@ types:
     - id: dummy
       type: u1
   ac_mottos_set_active:
+    doc: Set active motto by name
     seq:
-    - id: dummy
-      type: u1
+    - id: motto_id
+      type: strz
+      encoding: ASCII
   ac_choose_starting_station:
     seq:
     - id: dummy
@@ -461,9 +463,12 @@ types:
     - id: dummy
       type: u1
   ac_sell_vessel:
+    doc: Sell vessel by ID
     seq:
-    - id: dummy
-      type: u1
+    - id: unknown
+      type: u4be
+    - id: vessel_id
+      type: u4be
   ac_vessel_change_equip:
     seq:
     - id: dummy
@@ -489,9 +494,12 @@ types:
     - id: dummy
       type: u1
   ac_vessel_refill_munition:
+    doc: Refill vessel munitions
     seq:
-    - id: dummy
-      type: u1
+    - id: unknown
+      type: u4be
+    - id: vessel_id
+      type: u4be
   ac_vessel_transfer_munition:
     seq:
     - id: dummy
@@ -509,12 +517,20 @@ types:
     - id: dummy
       type: u1
   ac_vessel_levelup:
+    doc: Level up vessel
     seq:
-    - id: dummy
-      type: u1
+    - id: unknown
+      type: u4be
+    - id: vessel_id
+      type: u4be
   ac_vessel_repair:
+    doc: Repair vessel
     seq:
-    - id: dummy
+    - id: unknown
+      type: u4be
+    - id: vessel_id
+      type: u4be
+    - id: flags
       type: u1
   ac_vessel_repair_battle:
     seq:
@@ -569,9 +585,14 @@ types:
     - id: dummy
       type: u1
   ac_battle_slot_change_vessel:
+    doc: Change vessel in a battle slot
     seq:
-    - id: dummy
+    - id: unknown
+      type: u4be
+    - id: slot
       type: u1
+    - id: vessel_id
+      type: u4be
   ac_battle_slot_swap_vessels:
     seq:
     - id: dummy
@@ -601,8 +622,13 @@ types:
     - id: dummy
       type: u1
   ac_talents_acquire:
+    doc: Acquire talent by bitmask
     seq:
-    - id: dummy
+    - id: unknown
+      type: u4be
+    - id: talent_mask
+      type: u4be
+    - id: reserved
       type: u1
   ac_talents_update:
     seq:
@@ -613,9 +639,12 @@ types:
     - id: dummy
       type: u1
   ac_talents_assign_sets:
+    doc: Assign talent sets to 4 battle role slots
     seq:
-    - id: dummy
+    - id: set_ids
       type: u1
+      repeat: expr
+      repeat-expr: 4
   ac_buy_talent_set:
     seq:
     - id: dummy
@@ -732,9 +761,10 @@ types:
   ac_friends_send_request:
     doc: Empty request, initiates friend request flow
   ac_friends_accept_request:
+    doc: Accept friend request from player UID
     seq:
-    - id: dummy
-      type: u1
+    - id: uid
+      type: u8be
   ac_friends_reject_request:
     seq:
     - id: dummy
@@ -748,21 +778,25 @@ types:
     - id: dummy
       type: u1
   ac_social_ignore_add:
+    doc: Request to add/remove player by UID
     seq:
-    - id: dummy
-      type: u1
+    - id: uid
+      type: u8be
   ac_social_ignore_remove:
+    doc: Request to add/remove player by UID
     seq:
-    - id: dummy
-      type: u1
+    - id: uid
+      type: u8be
   ac_social_watch_add:
+    doc: Request to add/remove player by UID
     seq:
-    - id: dummy
-      type: u1
+    - id: uid
+      type: u8be
   ac_social_watch_remove:
+    doc: Request to add/remove player by UID
     seq:
-    - id: dummy
-      type: u1
+    - id: uid
+      type: u8be
   ac_social_suggest_steam:
     seq:
     - id: dummy
@@ -902,9 +936,10 @@ types:
   ac_clan_request_desc:
     doc: Empty request, server responds with clan description
   ac_clan_request_profile:
+    doc: Request clan profile for player UID
     seq:
-    - id: dummy
-      type: u1
+    - id: uid
+      type: u8be
   ac_clan_joinreq_create:
     seq:
     - id: dummy
@@ -1042,9 +1077,10 @@ types:
     - id: dummy
       type: u1
   ac_achievements:
+    doc: Request achievements for player UID
     seq:
-    - id: dummy
-      type: u1
+    - id: uid
+      type: u8be
   ac_admin_cmd:
     seq:
     - id: dummy
@@ -1074,17 +1110,21 @@ types:
       type: strz
       encoding: ASCII
   ac_survey_get_new:
+    doc: Request new survey in specified language
     seq:
-    - id: dummy
-      type: u1
+    - id: lang
+      type: strz
+      encoding: ASCII
   ac_survey_vote:
     seq:
     - id: dummy
       type: u1
   ac_survey_results:
+    doc: Request survey results in specified language
     seq:
-    - id: dummy
-      type: u1
+    - id: lang
+      type: strz
+      encoding: ASCII
   ac_universe_get:
     doc: Empty request, server responds with universe data
   ac_universe_counters:
@@ -1262,17 +1302,21 @@ types:
       type: strz
       encoding: UTF-8
   ac_user_notes_delete:
+    doc: Delete user note by UID and flags
     seq:
-    - id: dummy
-      type: u1
+    - id: flags
+      type: u2be
+    - id: uid
+      type: u8be
   ac_battle_pass_unlock_level:
     seq:
     - id: dummy
       type: u1
   ac_zones_lua_active_events_update:
+    doc: Zone event subscription update with session identifier
     seq:
-    - id: dummy
-      type: u1
+    - id: unknown
+      type: u8be
   ac_adventures:
     doc: Empty request, server responds with adventures list
   ac_adventure_cancel:
