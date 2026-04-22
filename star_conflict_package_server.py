@@ -4330,7 +4330,18 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcServerInfo(KaitaiStruct):
-        """Server metadata sent after initial connection."""
+        """Server metadata. The 20-byte canonical form is memcpy'd verbatim
+        into a singleton struct at 0x096285b4 from which Lua binding
+        MasterServer_GetServerInfo (fn at 0x086ff780) reads field-by-field.
+        Unlike most AC packets on this channel the scalar fields are
+        LITTLE-ENDIAN — the client reads them with native x86 loads
+        (fldl/mov), so the wire bytes are whatever the server had in memory.
+        
+        Short-form variants also appear on this type code (e.g. 14-byte and
+        6-byte bodies) which look like periodic status updates with a
+        different shape; the fields below are gated on remaining bytes so
+        those don't fail to parse.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcServerInfo, self).__init__(_io)
             self._parent = _parent
@@ -4338,15 +4349,60 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.online_count = self._io.read_u4be()
-            self.server_time = self._io.read_u4be()
-            self.session_token = self._io.read_u2be()
-            self.server_id = self._io.read_u2be()
-            self.dummy = self._io.read_u1()
+            if self._io.size() - self._io.pos() >= 8:
+                pass
+                self.server_time_ms = self._io.read_f8le()
+
+            if self._io.size() - self._io.pos() >= 4:
+                pass
+                self.unknown_8 = self._io.read_bytes(4)
+
+            if self._io.size() - self._io.pos() >= 4:
+                pass
+                self.sandbox_access = self._io.read_u4le()
+
+            if self._io.size() - self._io.pos() >= 1:
+                pass
+                self.mm_disabled = self._io.read_u1()
+
+            if self._io.size() - self._io.pos() >= 1:
+                pass
+                self.mm_enable_pve_raids = self._io.read_u1()
+
+            if self._io.size() - self._io.pos() >= 1:
+                pass
+                self.mm_enable_league = self._io.read_u1()
+
+            if self._io.size() - self._io.pos() >= 1:
+                pass
+                self.mm_enable_coop_vs_ai = self._io.read_u1()
+
+            self.tail = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
             pass
+            if self._io.size() - self._io.pos() >= 8:
+                pass
+
+            if self._io.size() - self._io.pos() >= 4:
+                pass
+
+            if self._io.size() - self._io.pos() >= 4:
+                pass
+
+            if self._io.size() - self._io.pos() >= 1:
+                pass
+
+            if self._io.size() - self._io.pos() >= 1:
+                pass
+
+            if self._io.size() - self._io.pos() >= 1:
+                pass
+
+            if self._io.size() - self._io.pos() >= 1:
+                pass
+
 
 
     class AcSetFbToken(KaitaiStruct):
