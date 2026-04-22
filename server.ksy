@@ -1011,6 +1011,52 @@ types:
     - id: dummy
       type: u1
   ac_clan_request_desc:
+    doc: |
+      Full clan description packet (0x009f). Structure up to `dummy` is fully
+      decoded. Everything after `dummy` is a TGP-encoded FedDesign K-V stream
+      that is NOT parsed here — served as opaque bytes by the masterserver.
+
+      POST-DUMMY STRUCTURE (partial knowledge, not implemented in ksy):
+      The remainder is a TGP wire-format K-V stream. Keys use three different
+      encodings depending on first byte:
+        - cs-encoded (carry-shift-right): byte[i] = (char[i]>>1)|(carry<<7),
+          null terminator when ((b0&0x7f)<<1)|(b1>>7)==0.
+        - x2-encoded: byte = char*2, first byte >= 0x80 for uppercase.
+        - cleartext: raw ASCII, null-terminated.
+      TGP wire type tags: 0x02=cs-string, 0x03=counted K-V map,
+        0x04=u64be, 0x05=cleartext-str, 0x06=array-of-cs-strings,
+        0x0a=x2-str, 0x0c=struct(u32be-header + K-V body), 0x14=marker,
+        0x15=cs-string-value, 0x18=u32be.
+
+      Known top-level FedDesign fields (all cs0-encoded keys):
+        moduleSlots  — type 0x03 map; 160-byte constant binary header
+                       (same across captures, content unknown — binary hash
+                       table metadata) followed by variable K-V entries.
+                       Each slot key is x2-encoded (main_1..main_3,
+                       additional_1..additional_2, turret_1..turret_3).
+                       Slot values: type 0x0c struct with u32be header
+                       (= installed-module count) + K-V body containing
+                       "fit" (cs-string, fitted module name) and
+                       "built" (nested struct with additional_N entries).
+                       Some slots use type 0x03 instead (count=1 map).
+        partBeingBuilt      — cs0-string
+        slotBeingBuilt      — cs0-string
+        productionStartTime — cs0-string
+        productionCompleteAt — cs0-string
+        boostBuildingBudget — cs0-string
+        broken              — cs0-string
+        repairStartTime     — cs0-string
+        repairEndTime       — cs0-string
+        boostRepairingBudget — cs0-string
+        curZone             — cs0-string
+
+      The moduleSlots constant 160-byte header starts at block[0x000] after
+      the TGP map header (cs0("moduleSlots") + 0x03 + u32be count). It is
+      identical between the two captured sessions (captures/20260421_223139
+      and captures/20260422_063139). Its internal structure is unknown —
+      FNV-1a hashes of slot names do NOT match any bytes within it.
+      The variable K-V data begins at block[0x0a0] mid-cs-string (a cs-string
+      starting at block[0x0097] crosses the constant/variable boundary).
     seq:
     - id: unknown
       type: u4
@@ -1052,6 +1098,14 @@ types:
       repeat-expr: member_count
     - id: dummy
       type: u1
+    - id: fed_design_tgp_stream
+      size-eos: true
+      doc: |
+        TGP-encoded FedDesign K-V stream. See type doc above for partial
+        field map. Not parsed — opaque bytes. In the two captured sessions
+        this section is 4205 bytes (lo1, 7883-byte packet) and 3728 bytes
+        (lo2, 7381-byte packet). Differences reflect different numbers of
+        built/fitted modules per ship slot.
     types:
       member:
         seq:
