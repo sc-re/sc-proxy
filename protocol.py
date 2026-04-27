@@ -1,4 +1,24 @@
-"""TGPChannel packet framing and checksum."""
+"""TGPChannel packet framing and checksum.
+
+Header layout (big-endian, 12 bytes total):
+
+    [4B body_len][2B send_counter][2B echo_send_counter][2B scmd_pkt_type][2B checksum]
+
+Field meanings:
+- body_len:           length of the following body in bytes
+- send_counter:       per-direction monotonic counter (client starts 0x0001;
+                      real server starts ~0xe2ed). NOT a packet type.
+- echo_send_counter:  for responses, echoes the request's send_counter so the
+                      Lua client can match the response back to its request.
+                      Server-pushed packets leave this 0.
+- scmd_pkt_type:      the SCMD type small-index 0..38 (table at VMA 0x08fe7ac0
+                      in the binary). 0x000d = CSCMD_ASYNC_REQ, the wrapper
+                      for everything that carries an AC_* opcode in body[0:2].
+- checksum:           16-bit truncated MurmurHash2 (seed 0x1337533d).
+
+read_packet() returns both the new explicit names and legacy aliases
+(`type`, `seq`, `req_id`) so older callers keep working during the rename.
+"""
 import struct
 import socket
 
@@ -6,9 +26,16 @@ _M    = 0x5bd1e995
 _SEED = 0x1337533d
 
 
-def checksum(body_len: int, msg_type: int, seq: int, body: bytes) -> int:
-    """MurmurHash2-based 16-bit checksum used by TGPChannel."""
-    hdr = struct.pack("<IHHHxx", body_len, msg_type, (seq >> 16) & 0xffff, seq & 0xffff)
+def checksum(body_len: int, send_counter: int, echo_send_counter: int,
+             scmd_pkt_type: int, body: bytes) -> int:
+    """MurmurHash2-based 16-bit checksum used by TGPChannel.
+
+    Note the hashed-header layout is little-endian — the on-wire bytes are
+    big-endian but the original C++ code feeds the parsed header to murmur2
+    in native (LE) byte order, so we mirror that here.
+    """
+    hdr = struct.pack("<IHHHxx", body_len, send_counter,
+                      echo_send_counter, scmd_pkt_type)
     h = (12 ^ _SEED) & 0xffffffff
     for data in (hdr, body):
         i = 0
@@ -25,9 +52,13 @@ def checksum(body_len: int, msg_type: int, seq: int, body: bytes) -> int:
     return h & 0xffff
 
 
-def make_packet(msg_type: int, seq: int, body: bytes) -> bytes:
-    cs = checksum(len(body), msg_type, seq, body)
-    return struct.pack(">IHIH", len(body), msg_type, seq, cs) + body
+def make_packet(send_counter: int, echo_send_counter: int,
+                scmd_pkt_type: int, body: bytes) -> bytes:
+    """Build a TGP-framed packet with the four-field header."""
+    cs = checksum(len(body), send_counter, echo_send_counter,
+                  scmd_pkt_type, body)
+    return struct.pack(">IHHHH", len(body), send_counter,
+                       echo_send_counter, scmd_pkt_type, cs) + body
 
 
 def read_packet(sock: socket.socket) -> dict | None:
@@ -51,8 +82,19 @@ def read_packet(sock: socket.socket) -> dict | None:
         # leave recv_exact blocked forever trying to satisfy a garbage
         # body_len pulled from misaligned bytes.
         return {"special": True, "data": hdr[4:12]}
-    body_len, msg_type, seq, req_id = struct.unpack(">IHIH", hdr)
+    body_len, send_counter, echo, pkt_type, cs = struct.unpack(">IHHHH", hdr)
     body = recv_exact(body_len)
     if body is None:
         return None
-    return {"body_len": body_len, "type": msg_type, "seq": seq, "req_id": req_id, "body": body}
+    return {
+        "body_len": body_len,
+        "send_counter": send_counter,
+        "echo_send_counter": echo,
+        "scmd_pkt_type": pkt_type,
+        "checksum": cs,
+        "body": body,
+        # Legacy aliases — older callers still use these names.
+        "type":    send_counter,
+        "seq":     (echo << 16) | pkt_type,
+        "req_id":  cs,
+    }

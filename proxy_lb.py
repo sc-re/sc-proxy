@@ -22,8 +22,9 @@ log = logging.getLogger("proxy.lb")
 
 LISTEN_PORT = 3801
 
-_CVARS_TYPE      = 0x8108
-_SHARD_ADDR_TYPE = 0x8109
+# scmd_pkt_type values pushed by the LB.
+_PKT_LB_CVARS       = 2  # SCMD_LB_CVARS
+_PKT_ASSIGNED_SHARD = 0  # SCMD_ASSIGNED_SHARD
 
 
 class _BitReader:
