@@ -17,6 +17,29 @@ from star_conflict_package_client import StarConflictPackageClient
 from star_conflict_package_server import StarConflictPackageServer
 from kaitaistruct import KaitaiStream, BytesIO
 
+# scmd_pkt_type → name (mirrors the binary's table at VMA 0x08fe7ac0).
+# See Documentation/SCMD-protocol.md for the full mapping and how this is
+# different from the wire send_counter.
+_SCMD_NAMES = [
+    "SCMD_ASSIGNED_SHARD", "SCMD_LB_QUEUE_INFO", "SCMD_LB_CVARS",
+    "SCMD_AUTH_REQ", "CCMD_AUTH_REQUEST", "SCMD_AUTH_ACK",
+    "SCMD_STEAM_NOT_ATTACHED", "SCMD_ARC_NOT_ATTACHED", "CCMD_STORE",
+    "SCMD_STORE", "SCMD_STORE_SPOILED", "SCMD_CONNECT_DEDICATED_SERVER",
+    "SCMD_GAME_ENDED", "CSCMD_ASYNC_REQ", "SCMD_NOTIFICATION",
+    "SCMD_SQUAD_NOTIFICATION", "SCMD_SOCIAL_NOTIFICATION",
+    "SCMD_TEACH_NOTIFICATION", "SCMD_CLAN_NOTIFICATION",
+    "SCMD_USER_PROFILE_NOTIFICATION", "SCMD_QUEST_NOTIFICATION",
+    "SCMD_LEAGUE_NOTIFICATION", "SCMD_VESSEL_NOTIFICATION",
+    "SCMD_LOBBY_NOTIFICATION", "SCMD_KEEP_ALIVE", "SCMD_BAN_INFO",
+    "SCMD_WELCOME_MSG", "SCMD_DOCK_SPACE_STATION",
+    "SCMD_FREE_SPACE_DEBRIEFING", "SCMD_NEW_MOTD",
+    "SCMD_TOURNAMENT_TEAMS_INFO", "SCMD_BRAWL_SCHEDULE",
+    "SCMD_REWARD_SCHEDULE", "SCMD_PVE_SCHEDULE",
+    "SCMD_LEAGUE_FORBIDDEN_EQUIPMENT", "SCMD_BATTLE_PASS_ACTIVATION",
+    "SCMD_ZONES_WITH_DISABLED_QUESTS", "SCMD_ADVENTURE_NOTIFICATION",
+    "SCMD_REPLACE_CHAT_MSG",
+]
+
 log = logging.getLogger("proxy")
 
 # Shared state: the LB's response to the client contains the shard and chat
@@ -132,8 +155,12 @@ def log_packet(tag: str, pkt: dict, extra: str = ""):
     body = pkt.get("body", b"")
     kaitai_str, ok = _parse_kaitai(body, tag)
     ac_idx = int.from_bytes(body[:2], "big") if len(body) >= 2 else 0xffff
-    hdr = (f"[{tag}] type=0x{pkt['type']:04x} seq={pkt['seq']} "
-           f"req_id=0x{pkt['req_id']:04x} body_len={pkt['body_len']}"
+    pkt_t = pkt['scmd_pkt_type']
+    pkt_name = _SCMD_NAMES[pkt_t] if pkt_t < len(_SCMD_NAMES) else f"?{pkt_t}"
+    hdr = (f"[{tag}] send=0x{pkt['send_counter']:04x} "
+           f"echo=0x{pkt['echo_send_counter']:04x} "
+           f"pkt=0x{pkt_t:04x}({pkt_name}) "
+           f"cs=0x{pkt['checksum']:04x} body_len={pkt['body_len']}"
            f"{kaitai_str}")
     # Save the full body to disk for offline extraction — the log hexdump
     # is still truncated to keep the log readable.
@@ -178,7 +205,11 @@ def relay_loop(src: socket.socket, dst: socket.socket, tag: str,
                 dst.sendall(b"\xff\xff\xff\xfe" + b"\x00" * 8)
             else:
                 from protocol import make_packet
-                dst.sendall(make_packet(pkt["type"], pkt["seq"], pkt["body"]))
+                dst.sendall(make_packet(
+                    send_counter=pkt["send_counter"],
+                    echo_send_counter=pkt["echo_send_counter"],
+                    scmd_pkt_type=pkt["scmd_pkt_type"],
+                    body=pkt["body"]))
     except Exception as e:
         log.warning(f"[{tag}] relay error: {e}")
     finally:
