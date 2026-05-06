@@ -13,6 +13,10 @@ import os
 
 from protocol import read_packet
 from ac_types import pkt_type_name
+from sn_types import sn_name
+from notification import (decode as decode_notification,
+                          format_bag as _fmt_bag,
+                          format_issues as _fmt_issues)
 from star_conflict_package_client import StarConflictPackageClient
 from star_conflict_package_server import StarConflictPackageServer
 from kaitaistruct import KaitaiStream, BytesIO
@@ -153,15 +157,33 @@ def log_packet(tag: str, pkt: dict, extra: str = ""):
         log.info(f"[{tag}] SPECIAL (ff ff ff fe + 8 bytes) {extra}")
         return
     body = pkt.get("body", b"")
-    kaitai_str, ok = _parse_kaitai(body, tag)
-    ac_idx = int.from_bytes(body[:2], "big") if len(body) >= 2 else 0xffff
     pkt_t = pkt['scmd_pkt_type']
     pkt_name = _SCMD_NAMES[pkt_t] if pkt_t < len(_SCMD_NAMES) else f"?{pkt_t}"
+    is_async_req = pkt_name == "CSCMD_ASYNC_REQ"
+    is_notification = pkt_name == "SCMD_NOTIFICATION"
+    # For SCMD_NOTIFICATION skip kaitai entirely — notification.decode is the
+    # canonical decoder and lets us keep per-Variant colours unwrapped.
+    if is_notification:
+        kaitai_str, ok = "", True
+    else:
+        kaitai_str, ok = _parse_kaitai(body, tag)
+    sn_str = ""
+    if is_notification and len(body) >= 1:
+        sn_id = body[0]
+        sn_str = f" sn=0x{sn_id:02x}({sn_name(sn_id)})"
+        try:
+            n = decode_notification(body)
+            sn_str += f" {_fmt_bag(n.bag)}{_fmt_issues(n.validate())}"
+            if n.validate():
+                ok = False  # so the line as a whole reads as a fault
+        except Exception as e:
+            sn_str += f" {_RED}[decode_err: {type(e).__name__}: {e}]{_RESET}"
+            ok = False
     hdr = (f"[{tag}] send=0x{pkt['send_counter']:04x} "
            f"echo=0x{pkt['echo_send_counter']:04x} "
            f"pkt=0x{pkt_t:04x}({pkt_name}) "
            f"cs=0x{pkt['checksum']:04x} body_len={pkt['body_len']}"
-           f"{kaitai_str}")
+           f"{sn_str}{kaitai_str}")
     # Save the full body to disk for offline extraction — the log hexdump
     # is still truncated to keep the log readable.
     if body:
@@ -171,7 +193,18 @@ def log_packet(tag: str, pkt: dict, extra: str = ""):
         try:
             os.makedirs(CAPTURE_DIR, exist_ok=True)
             direction = tag.split()[-1].replace("→", "_to_")
-            fname = f"{idx:04d}_{direction}_ac{ac_idx:04x}_{pkt_type_name(ac_idx).lower()}_len{len(body)}.bin"
+            # Filename always carries the scmd_pkt_type. The "ac<idx>_<name>"
+            # suffix is only meaningful for CSCMD_ASYNC_REQ, where body[:2]
+            # actually IS the AC opcode; for other pkt types those bytes are
+            # arbitrary payload and must not be interpreted as an AC index.
+            sub_suffix = ""
+            if is_async_req and len(body) >= 2:
+                ac_idx = int.from_bytes(body[:2], "big")
+                sub_suffix = f"_ac{ac_idx:04x}_{pkt_type_name(ac_idx).lower()}"
+            elif is_notification and len(body) >= 1:
+                sub_suffix = f"_sn{body[0]:02x}_{sn_name(body[0]).lower()}"
+            fname = (f"{idx:04d}_{direction}_pkt{pkt_t:02x}_{pkt_name.lower()}"
+                     f"{sub_suffix}_len{len(body)}.bin")
             with open(os.path.join(CAPTURE_DIR, fname), "wb") as f:
                 f.write(body)
             hdr += f" saved={fname}"
