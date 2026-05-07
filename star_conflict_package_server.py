@@ -7,6 +7,7 @@ import bag_payload
 import fed_design_tgp_stream
 import ac_load_initial_player_data_body
 import ac_player_inventory_body
+import ac_universe_get_body
 from enum import IntEnum
 
 
@@ -5696,6 +5697,45 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcUniverseGet(KaitaiStruct):
+        """Sector-control snapshot — what `MasterServer.UniverseGet` returns
+        to Lua. Field names below come from the Lua-binding code at
+        FUN_0891de50 (per-zone) and FUN_08921210 (top-level). Wire reader
+        is FUN_089214b0; per-zone reader is FUN_0891e800. Bit-packed
+        because the per-zone record carries three u1 booleans
+        (hasConflict, isCivilian, enableLogic) interleaved between the
+        otherwise byte-sized fields.
+        
+          u8  unid
+          u2  num_zones
+          num_zones × {
+            u2  zone_slot                             (outer u2 used as
+                                                      array index; equals
+                                                      zoneId in captures)
+            u2  zoneId                                (pushed to Lua as
+                                                      "zoneId")
+            u1  hasConflict
+            u8  unknown_u64                           (read but not exposed
+                                                      by the Lua wrapper)
+            f32 retentionFactor
+            u1  isCivilian
+            u8  civilianTime                          (Lua userdata u64)
+            i4  race                                  (-1 = empty)
+            u1  enableLogic
+            u8  owner                                 (clan id u64)
+            f32 owner_pressure_total                  Lua: ownerPressureReal =
+                                                      total - virtual
+            f32 ownerPressureVirtual
+            u4  num_rivals
+            num_rivals × {
+              u8  cid
+              f32 pressure_total                      Lua: pressureReal =
+                                                      total - virtual
+              f32 pressureVirtual
+            }
+          }
+        
+        Implemented in `ac_universe_get_body.AcUniverseGetBody`.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcUniverseGet, self).__init__(_io)
             self._parent = _parent
@@ -5703,11 +5743,14 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self._raw_data = self._io.read_bytes_full()
+            _io__raw_data = KaitaiStream(BytesIO(self._raw_data))
+            self.data = ac_universe_get_body.AcUniverseGetBody(_io__raw_data)
 
 
         def _fetch_instances(self):
             pass
+            self.data._fetch_instances()
 
 
     class AcUnlimPveDisablePlayerBuffs(KaitaiStruct):
@@ -6390,6 +6433,12 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcWarmapGet(KaitaiStruct):
+        """Sector ownership map. Handler at 0x0822e0a7 → FUN_08929b80; per-sector
+        reader is FUN_08927420. All fields are byte-aligned (u4be/u8be/f4be),
+        so the layout maps cleanly to native kaitai. The requesting clan's
+        home sector (0x5fe = GD3F) appears with real coordinates and ~11
+        links; off-map sectors arrive with y=10000.0 / radius=0.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcWarmapGet, self).__init__(_io)
             self._parent = _parent
@@ -6397,11 +6446,88 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.num_sectors = self._io.read_u4be()
+            self.sectors = []
+            for i in range(self.num_sectors):
+                self.sectors.append(StarConflictPackageServer.AcWarmapGet.WarmapSector(self._io, self, self._root))
+
+            self.num_locations = self._io.read_u4be()
+            self.locations = []
+            for i in range(self.num_locations):
+                self.locations.append(StarConflictPackageServer.AcWarmapGet.WarmapLocation(self._io, self, self._root))
+
 
 
         def _fetch_instances(self):
             pass
+            for i in range(len(self.sectors)):
+                pass
+                self.sectors[i]._fetch_instances()
+
+            for i in range(len(self.locations)):
+                pass
+                self.locations[i]._fetch_instances()
+
+
+        class WarmapLink(KaitaiStruct):
+            def __init__(self, _io, _parent=None, _root=None):
+                super(StarConflictPackageServer.AcWarmapGet.WarmapLink, self).__init__(_io)
+                self._parent = _parent
+                self._root = _root
+                self._read()
+
+            def _read(self):
+                self.linked_id = self._io.read_u8be()
+                self.weight = self._io.read_f4be()
+
+
+            def _fetch_instances(self):
+                pass
+
+
+        class WarmapLocation(KaitaiStruct):
+            def __init__(self, _io, _parent=None, _root=None):
+                super(StarConflictPackageServer.AcWarmapGet.WarmapLocation, self).__init__(_io)
+                self._parent = _parent
+                self._root = _root
+                self._read()
+
+            def _read(self):
+                self.id = self._io.read_u8be()
+                self.x = self._io.read_f4be()
+                self.y = self._io.read_f4be()
+
+
+            def _fetch_instances(self):
+                pass
+
+
+        class WarmapSector(KaitaiStruct):
+            def __init__(self, _io, _parent=None, _root=None):
+                super(StarConflictPackageServer.AcWarmapGet.WarmapSector, self).__init__(_io)
+                self._parent = _parent
+                self._root = _root
+                self._read()
+
+            def _read(self):
+                self.sector_id = self._io.read_u8be()
+                self.x = self._io.read_f4be()
+                self.y = self._io.read_f4be()
+                self.radius = self._io.read_f4be()
+                self.num_links = self._io.read_u4be()
+                self.links = []
+                for i in range(self.num_links):
+                    self.links.append(StarConflictPackageServer.AcWarmapGet.WarmapLink(self._io, self, self._root))
+
+
+
+            def _fetch_instances(self):
+                pass
+                for i in range(len(self.links)):
+                    pass
+                    self.links[i]._fetch_instances()
+
+
 
 
     class AcWelcomeMsg(KaitaiStruct):

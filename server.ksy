@@ -2191,9 +2191,49 @@ types:
     - id: status
       type: u1
   ac_universe_get:
+    doc: |
+      Sector-control snapshot — what `MasterServer.UniverseGet` returns
+      to Lua. Field names below come from the Lua-binding code at
+      FUN_0891de50 (per-zone) and FUN_08921210 (top-level). Wire reader
+      is FUN_089214b0; per-zone reader is FUN_0891e800. Bit-packed
+      because the per-zone record carries three u1 booleans
+      (hasConflict, isCivilian, enableLogic) interleaved between the
+      otherwise byte-sized fields.
+
+        u8  unid
+        u2  num_zones
+        num_zones × {
+          u2  zone_slot                             (outer u2 used as
+                                                    array index; equals
+                                                    zoneId in captures)
+          u2  zoneId                                (pushed to Lua as
+                                                    "zoneId")
+          u1  hasConflict
+          u8  unknown_u64                           (read but not exposed
+                                                    by the Lua wrapper)
+          f32 retentionFactor
+          u1  isCivilian
+          u8  civilianTime                          (Lua userdata u64)
+          i4  race                                  (-1 = empty)
+          u1  enableLogic
+          u8  owner                                 (clan id u64)
+          f32 owner_pressure_total                  Lua: ownerPressureReal =
+                                                    total - virtual
+          f32 ownerPressureVirtual
+          u4  num_rivals
+          num_rivals × {
+            u8  cid
+            f32 pressure_total                      Lua: pressureReal =
+                                                    total - virtual
+            f32 pressureVirtual
+          }
+        }
+
+      Implemented in `ac_universe_get_body.AcUniverseGetBody`.
     seq:
-    - id: dummy
-      type: u1
+    - id: data
+      type: ac_universe_get_body
+      size-eos: true
   ac_universe_counters:
     doc: |
       Field sequence from handler at 0x0822e0f3 in OnRecieve dispatch.
@@ -2206,9 +2246,56 @@ types:
     - id: value
       type: f4be
   ac_warmap_get:
+    doc: |
+      Sector ownership map. Handler at 0x0822e0a7 → FUN_08929b80; per-sector
+      reader is FUN_08927420. All fields are byte-aligned (u4be/u8be/f4be),
+      so the layout maps cleanly to native kaitai. The requesting clan's
+      home sector (0x5fe = GD3F) appears with real coordinates and ~11
+      links; off-map sectors arrive with y=10000.0 / radius=0.
     seq:
-    - id: dummy
-      type: u1
+    - id: num_sectors
+      type: u4be
+    - id: sectors
+      type: warmap_sector
+      repeat: expr
+      repeat-expr: num_sectors
+    - id: num_locations
+      type: u4be
+    - id: locations
+      type: warmap_location
+      repeat: expr
+      repeat-expr: num_locations
+    types:
+      warmap_sector:
+        seq:
+          - id: sector_id
+            type: u8be
+          - id: x
+            type: f4be
+          - id: y
+            type: f4be
+          - id: radius
+            type: f4be
+          - id: num_links
+            type: u4be
+          - id: links
+            type: warmap_link
+            repeat: expr
+            repeat-expr: num_links
+      warmap_link:
+        seq:
+          - id: linked_id
+            type: u8be
+          - id: weight
+            type: f4be
+      warmap_location:
+        seq:
+          - id: id
+            type: u8be
+          - id: x
+            type: f4be
+          - id: y
+            type: f4be
   ac_mail_get:
     doc: |
       Mailbox listing. Handler at 0x0822e030 reads u8 status. Body is
