@@ -2041,6 +2041,11 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcBuyItem(KaitaiStruct):
+        """Item-purchase ACK. 30B form is fail/queued (item_def empty).
+        81B form is success: u4be amount + 8 zero bytes + cstring
+        item_def_name (e.g. "SpaceMissile_ChildRockets_T5_Mk3") + opaque
+        tail with new balances.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcBuyItem, self).__init__(_io)
             self._parent = _parent
@@ -2048,7 +2053,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u4be()
+            self.payload = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2432,6 +2438,11 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcClanRequestCredentials(KaitaiStruct):
+        """Tabular response: list of (cid, name, tag, emblem) for the
+        requested clans (typically 1, but recruiting list returns many).
+        Confirmed against captures of varying sizes (44B count=1,
+        274B count=7).
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcClanRequestCredentials, self).__init__(_io)
             self._parent = _parent
@@ -2439,11 +2450,37 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.count = self._io.read_u4be()
+            self.clans = []
+            for i in range(self.count):
+                self.clans.append(StarConflictPackageServer.AcClanRequestCredentials.ClanCredential(self._io, self, self._root))
+
 
 
         def _fetch_instances(self):
             pass
+            for i in range(len(self.clans)):
+                pass
+                self.clans[i]._fetch_instances()
+
+
+        class ClanCredential(KaitaiStruct):
+            def __init__(self, _io, _parent=None, _root=None):
+                super(StarConflictPackageServer.AcClanRequestCredentials.ClanCredential, self).__init__(_io)
+                self._parent = _parent
+                self._root = _root
+                self._read()
+
+            def _read(self):
+                self.cid = self._io.read_u8be()
+                self.name = (self._io.read_bytes_term(0, False, True, True)).decode(u"UTF-8")
+                self.tag = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
+                self.emblem = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
+
+
+            def _fetch_instances(self):
+                pass
+
 
 
     class AcClanRequestDesc(KaitaiStruct):
@@ -3467,6 +3504,11 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcLobbyCreate(KaitaiStruct):
+        """Newly-created lobby info. Layout from 88-114B captures:
+          u8be lobby_id (zero before creation completes) + cstring name +
+          u4be reserved + cstring level_def_name + opaque settings tail.
+        Tail contains mode + slot caps + flags but exact layout varies.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcLobbyCreate, self).__init__(_io)
             self._parent = _parent
@@ -3474,7 +3516,11 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.lobby_id = self._io.read_u8be()
+            self.name = (self._io.read_bytes_term(0, False, True, True)).decode(u"UTF-8")
+            self.reserved = self._io.read_u4be()
+            self.level_def_name = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
+            self.settings_payload = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3572,6 +3618,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcLobbyGroupList(KaitaiStruct):
+        """List of joinable lobby groups. 4B captures show empty list (count=0).
+        Per-entry layout for non-empty lists not yet documented.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcLobbyGroupList, self).__init__(_io)
             self._parent = _parent
@@ -3579,7 +3628,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.count = self._io.read_u2be()
+            self.payload = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3692,6 +3742,10 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcLobbyModify(KaitaiStruct):
+        """Lobby modification ACK. 5B FIXED — observed identical bytes
+        (0xd0, 0x80, 0x52) across captures, suggesting bit-packed flags
+        or reserved status. Layout not yet fully reversed.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcLobbyModify, self).__init__(_io)
             self._parent = _parent
@@ -3699,7 +3753,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.opaque_status = self._io.read_bytes(3)
 
 
         def _fetch_instances(self):
@@ -5355,6 +5409,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcVesselActivateNode(KaitaiStruct):
+        """Activate / unlock vessel skill node. 34B captures show:
+        u4be status + u8be vessel_id + opaque node-state tail.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcVesselActivateNode, self).__init__(_io)
             self._parent = _parent
@@ -5362,7 +5419,9 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u4be()
+            self.vessel_id = self._io.read_u8be()
+            self.payload = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -5583,6 +5642,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcVesselLevelup(KaitaiStruct):
+        """Vessel level-up confirmation. 29B FIXED:
+        u4be status + u8be vessel_id + opaque level/xp/credit data.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcVesselLevelup, self).__init__(_io)
             self._parent = _parent
@@ -5590,7 +5652,9 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u4be()
+            self.vessel_id = self._io.read_u8be()
+            self.payload = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -5719,6 +5783,10 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcVesselTransferEquip(KaitaiStruct):
+        """Transfer equipment between vessels. Confirmed against 38B captures:
+        u4be status + u8be vessel_id_from + u8be vessel_id_to + opaque
+        module-list tail.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcVesselTransferEquip, self).__init__(_io)
             self._parent = _parent
@@ -5726,7 +5794,10 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u4be()
+            self.vessel_id_from = self._io.read_u8be()
+            self.vessel_id_to = self._io.read_u8be()
+            self.payload = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -5734,6 +5805,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcVesselTransferMunition(KaitaiStruct):
+        """Transfer munition between vessels. 22B FIXED:
+        u4be status + u8be vessel_id_from + u8be vessel_id_to.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcVesselTransferMunition, self).__init__(_io)
             self._parent = _parent
@@ -5741,7 +5815,9 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u4be()
+            self.vessel_id_from = self._io.read_u8be()
+            self.vessel_id_to = self._io.read_u8be()
 
 
         def _fetch_instances(self):

@@ -555,9 +555,16 @@ types:
     - id: dummy
       type: u1
   ac_buy_item:
+    doc: |
+      Item-purchase ACK. 30B form is fail/queued (item_def empty).
+      81B form is success: u4be amount + 8 zero bytes + cstring
+      item_def_name (e.g. "SpaceMissile_ChildRockets_T5_Mk3") + opaque
+      tail with new balances.
     seq:
-    - id: dummy
-      type: u1
+    - id: status
+      type: u4be
+    - id: payload
+      size-eos: true
   ac_sell_item:
     seq:
     - id: dummy
@@ -615,9 +622,19 @@ types:
     - id: dummy
       type: u1
   ac_vessel_transfer_equip:
+    doc: |
+      Transfer equipment between vessels. Confirmed against 38B captures:
+      u4be status + u8be vessel_id_from + u8be vessel_id_to + opaque
+      module-list tail.
     seq:
-    - id: dummy
-      type: u1
+    - id: status
+      type: u4be
+    - id: vessel_id_from
+      type: u8be
+    - id: vessel_id_to
+      type: u8be
+    - id: payload
+      size-eos: true
   ac_vessel_strip_equip:
     seq:
     - id: dummy
@@ -640,9 +657,16 @@ types:
     - id: reserved
       type: u1
   ac_vessel_transfer_munition:
+    doc: |
+      Transfer munition between vessels. 22B FIXED:
+      u4be status + u8be vessel_id_from + u8be vessel_id_to.
     seq:
-    - id: dummy
-      type: u1
+    - id: status
+      type: u4be
+    - id: vessel_id_from
+      type: u8be
+    - id: vessel_id_to
+      type: u8be
   ac_vessel_autogen_destroy:
     seq:
     - id: dummy
@@ -656,9 +680,16 @@ types:
     - id: dummy
       type: u1
   ac_vessel_levelup:
+    doc: |
+      Vessel level-up confirmation. 29B FIXED:
+      u4be status + u8be vessel_id + opaque level/xp/credit data.
     seq:
-    - id: dummy
-      type: u1
+    - id: status
+      type: u4be
+    - id: vessel_id
+      type: u8be
+    - id: payload
+      size-eos: true
   ac_vessel_repair:
     doc: Repair confirmation; vessel_id identifies the repaired vessel
     seq:
@@ -723,9 +754,16 @@ types:
     - id: dummy
       type: u1
   ac_vessel_activate_node:
+    doc: |
+      Activate / unlock vessel skill node. 34B captures show:
+      u4be status + u8be vessel_id + opaque node-state tail.
     seq:
-    - id: dummy
-      type: u1
+    - id: status
+      type: u4be
+    - id: vessel_id
+      type: u8be
+    - id: payload
+      size-eos: true
   ac_battle_slots:
     doc: Battle loadout slots; slot_count active slots out of 6 total
     seq:
@@ -1069,9 +1107,24 @@ types:
     - id: dummy
       type: u1
   ac_lobby_create:
+    doc: |
+      Newly-created lobby info. Layout from 88-114B captures:
+        u8be lobby_id (zero before creation completes) + cstring name +
+        u4be reserved + cstring level_def_name + opaque settings tail.
+      Tail contains mode + slot caps + flags but exact layout varies.
     seq:
-    - id: dummy
-      type: u1
+    - id: lobby_id
+      type: u8be
+    - id: name
+      type: strz
+      encoding: UTF-8
+    - id: reserved
+      type: u4be
+    - id: level_def_name
+      type: strz
+      encoding: ASCII
+    - id: settings_payload
+      size-eos: true
   ac_lobby_info:
     seq:
     - id: dummy
@@ -1089,17 +1142,26 @@ types:
     - id: dummy
       type: u1
   ac_lobby_modify:
+    doc: |
+      Lobby modification ACK. 5B FIXED — observed identical bytes
+      (0xd0, 0x80, 0x52) across captures, suggesting bit-packed flags
+      or reserved status. Layout not yet fully reversed.
     seq:
-    - id: dummy
-      type: u1
+    - id: opaque_status
+      size: 3
   ac_lobby_start_game:
     seq:
     - id: dummy
       type: u1
   ac_lobby_group_list:
+    doc: |
+      List of joinable lobby groups. 4B captures show empty list (count=0).
+      Per-entry layout for non-empty lists not yet documented.
     seq:
-    - id: dummy
-      type: u1
+    - id: count
+      type: u2be
+    - id: payload
+      size-eos: true
   ac_lobby_group_info:
     seq:
     - id: dummy
@@ -1129,9 +1191,32 @@ types:
     - id: dummy
       type: u1
   ac_clan_request_credentials:
+    doc: |
+      Tabular response: list of (cid, name, tag, emblem) for the
+      requested clans (typically 1, but recruiting list returns many).
+      Confirmed against captures of varying sizes (44B count=1,
+      274B count=7).
     seq:
-    - id: dummy
-      type: u1
+    - id: count
+      type: u4be
+    - id: clans
+      type: clan_credential
+      repeat: expr
+      repeat-expr: count
+    types:
+      clan_credential:
+        seq:
+        - id: cid
+          type: u8be
+        - id: name
+          type: strz
+          encoding: UTF-8
+        - id: tag
+          type: strz
+          encoding: ASCII
+        - id: emblem
+          type: strz
+          encoding: ASCII
   ac_clan_request_desc:
     doc: |
       Full clan description (0x009f). Field names and types match the Lua
