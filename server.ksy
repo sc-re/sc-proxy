@@ -800,13 +800,32 @@ types:
     - id: dummy
       type: u1
   ac_inv_ext_buy:
+    doc: |
+      Inventory expansion purchase. 15B FIXED.
+      u1 status + u4be cost + u4be capacity + u4be timestamp.
+      Verified against capture (cost=1500, capacity=2_000_000).
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: cost
+      type: u4be
+    - id: capacity
+      type: u4be
+    - id: timestamp
+      type: u4be
   ac_autogen_inv_ext_buy:
+    doc: |
+      Autogen / seed-chip storage expansion purchase. 15B FIXED. Same
+      shape as ac_inv_ext_buy. Verified (cost=40, capacity=4_000_000).
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: cost
+      type: u4be
+    - id: capacity
+      type: u4be
+    - id: timestamp
+      type: u4be
   ac_exchange_gold:
     doc: Exchange gold for credits
      seq:
@@ -1134,8 +1153,10 @@ types:
     - id: dummy
       type: u1
   ac_lobby_leave:
+    doc: |
+      Lobby-leave ACK. 3B captures: echo + u1 status (0x00 = success).
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_lobby_invite:
     seq:
@@ -1511,9 +1532,14 @@ types:
     - id: dummy
       type: u1
   ac_clan_universe_move:
+    doc: |
+      Clan universe-zone move ACK. 5B FIXED.
+      u1 status + u2be zone_id (observed values vary by 1).
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: zone_id
+      type: u2be
   ac_clan_set_civilian_zone:
     seq:
     - id: dummy

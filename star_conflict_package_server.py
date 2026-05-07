@@ -1876,6 +1876,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcAutogenInvExtBuy(KaitaiStruct):
+        """Autogen / seed-chip storage expansion purchase. 15B FIXED. Same
+        shape as ac_inv_ext_buy. Verified (cost=40, capacity=4_000_000).
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcAutogenInvExtBuy, self).__init__(_io)
             self._parent = _parent
@@ -1883,7 +1886,10 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.cost = self._io.read_u4be()
+            self.capacity = self._io.read_u4be()
+            self.timestamp = self._io.read_u4be()
 
 
         def _fetch_instances(self):
@@ -2775,6 +2781,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcClanUniverseMove(KaitaiStruct):
+        """Clan universe-zone move ACK. 5B FIXED.
+        u1 status + u2be zone_id (observed values vary by 1).
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcClanUniverseMove, self).__init__(_io)
             self._parent = _parent
@@ -2782,7 +2791,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.zone_id = self._io.read_u2be()
 
 
         def _fetch_instances(self):
@@ -3231,6 +3241,10 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcInvExtBuy(KaitaiStruct):
+        """Inventory expansion purchase. 15B FIXED.
+        u1 status + u4be cost + u4be capacity + u4be timestamp.
+        Verified against capture (cost=1500, capacity=2_000_000).
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcInvExtBuy, self).__init__(_io)
             self._parent = _parent
@@ -3238,7 +3252,10 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.cost = self._io.read_u4be()
+            self.capacity = self._io.read_u4be()
+            self.timestamp = self._io.read_u4be()
 
 
         def _fetch_instances(self):
@@ -3712,6 +3729,8 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcLobbyLeave(KaitaiStruct):
+        """Lobby-leave ACK. 3B captures: echo + u1 status (0x00 = success).
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcLobbyLeave, self).__init__(_io)
             self._parent = _parent
@@ -3719,7 +3738,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
