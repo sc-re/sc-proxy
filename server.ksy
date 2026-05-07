@@ -1770,6 +1770,7 @@ types:
         reversed.
     - id: fed_design_tgp_stream
       size-eos: true
+      type: fed_design_tgp_stream
       doc: |
         Remaining bytes: a recursive, self-describing serialization of the
         clan's `clanShips` map (keyed by design name — EmpireDesign,
@@ -1779,8 +1780,12 @@ types:
         container is built by the recursive parser rooted at 0x08b1ea40
         (called from the 0x009f packet handler around 0x08239aea). Keys
         and type tags are read inline as the parser descends; Kaitai
-        struct's static typing cannot encode this, so the stream stays as
-        opaque bytes here and is best decoded with a Python walker.
+        struct's static typing cannot encode this, so we delegate to the
+        opaque type `fed_design_tgp_stream.FedDesignTgpStream` which walks
+        the stream and surfaces every ClanShip name, slot fit, and
+        per-slot build queue we could decode. Sections we don't yet model
+        (e.g. the ~80-byte hash-table-like outer header, sparse u64/u32
+        timestamp fields between ships) come back as `opaque=…` runs.
 
         What's known about the wire format:
           * Keys appear in three different encodings within one record:

@@ -4,6 +4,7 @@
 import kaitaistruct
 from kaitaistruct import KaitaiStruct, KaitaiStream, BytesIO
 import bag_payload
+import fed_design_tgp_stream
 import ac_load_initial_player_data_body
 from enum import IntEnum
 
@@ -2722,7 +2723,9 @@ class StarConflictPackageServer(KaitaiStruct):
                 self.resources.append(self._io.read_u4be())
 
             self.fed_design_tgp_stream_flags = self._io.read_u4be()
-            self.fed_design_tgp_stream = self._io.read_bytes_full()
+            self._raw_fed_design_tgp_stream = self._io.read_bytes_full()
+            _io__raw_fed_design_tgp_stream = KaitaiStream(BytesIO(self._raw_fed_design_tgp_stream))
+            self.fed_design_tgp_stream = fed_design_tgp_stream.FedDesignTgpStream(_io__raw_fed_design_tgp_stream)
 
 
         def _fetch_instances(self):
@@ -2740,6 +2743,7 @@ class StarConflictPackageServer(KaitaiStruct):
             for i in range(len(self.resources)):
                 pass
 
+            self.fed_design_tgp_stream._fetch_instances()
 
         class Member(KaitaiStruct):
             def __init__(self, _io, _parent=None, _root=None):
