@@ -17,6 +17,9 @@ from sn_types import sn_name
 from notification import (decode as decode_notification,
                           format_bag as _fmt_bag,
                           format_issues as _fmt_issues)
+from scmd_decoders import (decode as decode_scmd,
+                           format_payload as _fmt_scmd,
+                           DECODERS as _SCMD_DECODERS)
 from star_conflict_package_client import StarConflictPackageClient
 from star_conflict_package_server import StarConflictPackageServer
 from kaitaistruct import KaitaiStream, BytesIO
@@ -161,9 +164,11 @@ def log_packet(tag: str, pkt: dict, extra: str = ""):
     pkt_name = _SCMD_NAMES[pkt_t] if pkt_t < len(_SCMD_NAMES) else f"?{pkt_t}"
     is_async_req = pkt_name == "CSCMD_ASYNC_REQ"
     is_notification = pkt_name == "SCMD_NOTIFICATION"
-    # For SCMD_NOTIFICATION skip kaitai entirely — notification.decode is the
-    # canonical decoder and lets us keep per-Variant colours unwrapped.
-    if is_notification:
+    # Skip kaitai entirely for any pkt type that has a dedicated decoder
+    # (notification.decode or scmd_decoders.decode) so per-Variant colours
+    # don't get clobbered by an outer line wrap.
+    has_dedicated = is_notification or (pkt_t in _SCMD_DECODERS)
+    if has_dedicated:
         kaitai_str, ok = "", True
     else:
         kaitai_str, ok = _parse_kaitai(body, tag)
@@ -178,6 +183,12 @@ def log_packet(tag: str, pkt: dict, extra: str = ""):
                 ok = False  # so the line as a whole reads as a fault
         except Exception as e:
             sn_str += f" {_RED}[decode_err: {type(e).__name__}: {e}]{_RESET}"
+            ok = False
+    elif pkt_t in _SCMD_DECODERS and body:
+        try:
+            sn_str = " " + _fmt_scmd(decode_scmd(pkt_t, body))
+        except Exception as e:
+            sn_str = f" {_RED}[decode_err: {type(e).__name__}: {e}]{_RESET}"
             ok = False
     hdr = (f"[{tag}] send=0x{pkt['send_counter']:04x} "
            f"echo=0x{pkt['echo_send_counter']:04x} "

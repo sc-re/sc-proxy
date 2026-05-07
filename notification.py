@@ -88,6 +88,9 @@ class BitReader:
     def read_u8(self) -> int:
         return self.read_bits(8)
 
+    def read_u16(self) -> int:
+        return self.read_bits(16)
+
     def read_u32(self) -> int:
         return self.read_bits(32)
 
@@ -160,6 +163,7 @@ _BRRED   = "\033[91m"
 _BRYEL   = "\033[93m"
 
 _TAG_COLOURS: dict[str, str] = {
+    # Bag variant tags
     "nil":    _DIM,
     "i32":    _CYAN,
     "u64a":   _BLUE,
@@ -169,6 +173,13 @@ _TAG_COLOURS: dict[str, str] = {
     "bag":    _YELLOW,
     "blob12": _MAGENTA,
     "bool":   _BRYEL,
+    # Direct-read types used by non-notification SCMD decoders. Same hue
+    # family as their bag-variant equivalents so eye-grep stays consistent.
+    "u64":    _BLUE,
+    "u32":    _CYAN,
+    "u16":    _CYAN,
+    "u8":     _CYAN,
+    "u1":     _BRYEL,
 }
 
 
