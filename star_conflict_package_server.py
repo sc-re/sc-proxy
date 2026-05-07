@@ -1747,7 +1747,10 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcAdventures(KaitaiStruct):
-        """Available adventures list; status=0 ok, count=number of adventures."""
+        """Available adventures list. u1 status + u1 count + count×u2be
+        adventure_ids. Verified against 4B (count=0), 6B (count=1) and
+        20B (count=8 IDs: 4,2,3,1,6,7,5,?) captures.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcAdventures, self).__init__(_io)
             self._parent = _parent
@@ -1757,11 +1760,17 @@ class StarConflictPackageServer(KaitaiStruct):
         def _read(self):
             self.status = self._io.read_u1()
             self.count = self._io.read_u1()
-            self.reserved = self._io.read_u2be()
+            self.adventure_ids = []
+            for i in range(self.count):
+                self.adventure_ids.append(self._io.read_u2be())
+
 
 
         def _fetch_instances(self):
             pass
+            for i in range(len(self.adventure_ids)):
+                pass
+
 
 
     class AcAdvertCreate(KaitaiStruct):
@@ -2022,7 +2031,11 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcBattleSlots(KaitaiStruct):
-        """Battle loadout slots; slot_count active slots out of 6 total."""
+        """Battle loadout slots. u4be slot_count + variable-length slot list.
+        Captures show 54B (count=4 + 6 slots) and 46B (count=3 + 5 slots),
+        so the slot count != displayed slot count. Use `repeat: eos` to
+        consume all remaining battle_slot entries regardless of count.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcBattleSlots, self).__init__(_io)
             self._parent = _parent
@@ -2032,8 +2045,10 @@ class StarConflictPackageServer(KaitaiStruct):
         def _read(self):
             self.slot_count = self._io.read_u4be()
             self.slots = []
-            for i in range(6):
+            i = 0
+            while not self._io.is_eof():
                 self.slots.append(StarConflictPackageServer.AcBattleSlots.BattleSlot(self._io, self, self._root))
+                i += 1
 
 
 
@@ -4119,7 +4134,11 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcMailGet(KaitaiStruct):
-        """Mailbox response; contains zero or more mail messages."""
+        """Mailbox listing. Handler at 0x0822e030 reads u8 status. Body is
+        either 6B empty (`00 d0 00 00 00 00`) or 100B+ full mailbox with
+        bit-packed mail records the linear handler walk doesn't capture.
+        Status + opaque tail until per-mail layout is reversed.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcMailGet, self).__init__(_io)
             self._parent = _parent
@@ -4127,34 +4146,12 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.num_messages = self._io.read_u4be()
-            self.messages = []
-            for i in range(self.num_messages):
-                self.messages.append(StarConflictPackageServer.AcMailGet.MailMessage(self._io, self, self._root))
-
+            self.status = self._io.read_u1()
+            self.payload = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
             pass
-            for i in range(len(self.messages)):
-                pass
-                self.messages[i]._fetch_instances()
-
-
-        class MailMessage(KaitaiStruct):
-            def __init__(self, _io, _parent=None, _root=None):
-                super(StarConflictPackageServer.AcMailGet.MailMessage, self).__init__(_io)
-                self._parent = _parent
-                self._root = _root
-                self._read()
-
-            def _read(self):
-                self.dummy = self._io.read_u1()
-
-
-            def _fetch_instances(self):
-                pass
-
 
 
     class AcMailRemove(KaitaiStruct):
@@ -4348,8 +4345,11 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcPlayerInventory(KaitaiStruct):
-        """Field sequence from handler at 0x08233968 in OnRecieve dispatch.
-        Reads: u32 u8 u32
+        """Inventory load. Handler at 0x08233968 reads u4be count first; if
+        zero or read-fails (short body), the per-item u1+u4be inner reads
+        are skipped. Captures show 5B short-form (count read fails) and
+        multi-kB full-form. Wrap secondary fields with `if:` so short
+        bodies don't blow up.
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcPlayerInventory, self).__init__(_io)
@@ -4358,13 +4358,32 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.u32_0 = self._io.read_u4be()
-            self.field_1 = self._io.read_u1()
-            self.u32_2 = self._io.read_u4be()
+            if self._io.size() >= 6:
+                pass
+                self.count = self._io.read_u4be()
+
+            if self._io.size() >= 7:
+                pass
+                self.field_1 = self._io.read_u1()
+
+            if self._io.size() >= 11:
+                pass
+                self.u32_2 = self._io.read_u4be()
+
+            self.payload = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
             pass
+            if self._io.size() >= 6:
+                pass
+
+            if self._io.size() >= 7:
+                pass
+
+            if self._io.size() >= 11:
+                pass
+
 
 
     class AcPlayerStats(KaitaiStruct):

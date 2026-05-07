@@ -584,15 +584,23 @@ types:
       type: u8be
   ac_player_inventory:
     doc: |
-      Field sequence from handler at 0x08233968 in OnRecieve dispatch.
-      Reads: u32 u8 u32
+      Inventory load. Handler at 0x08233968 reads u4be count first; if
+      zero or read-fails (short body), the per-item u1+u4be inner reads
+      are skipped. Captures show 5B short-form (count read fails) and
+      multi-kB full-form. Wrap secondary fields with `if:` so short
+      bodies don't blow up.
     seq:
-    - id: u32_0
+    - id: count
       type: u4be
+      if: '_io.size >= 6'
     - id: field_1
       type: u1
+      if: '_io.size >= 7'
     - id: u32_2
       type: u4be
+      if: '_io.size >= 11'
+    - id: payload
+      size-eos: true
   ac_player_autogen_inventory:
     doc: |
       Field sequence from handler at 0x082342e0 in OnRecieve dispatch.
@@ -926,14 +934,17 @@ types:
     - id: payload
       size-eos: true
   ac_battle_slots:
-    doc: Battle loadout slots; slot_count active slots out of 6 total
+    doc: |
+      Battle loadout slots. u4be slot_count + variable-length slot list.
+      Captures show 54B (count=4 + 6 slots) and 46B (count=3 + 5 slots),
+      so the slot count != displayed slot count. Use `repeat: eos` to
+      consume all remaining battle_slot entries regardless of count.
     seq:
     - id: slot_count
       type: u4be
     - id: slots
       type: battle_slot
-      repeat: expr
-      repeat-expr: 6
+      repeat: eos
     types:
       battle_slot:
         seq:
@@ -2188,19 +2199,16 @@ types:
     - id: dummy
       type: u1
   ac_mail_get:
-    doc: Mailbox response; contains zero or more mail messages
+    doc: |
+      Mailbox listing. Handler at 0x0822e030 reads u8 status. Body is
+      either 6B empty (`00 d0 00 00 00 00`) or 100B+ full mailbox with
+      bit-packed mail records the linear handler walk doesn't capture.
+      Status + opaque tail until per-mail layout is reversed.
     seq:
-    - id: num_messages
-      type: u4be
-    - id: messages
-      type: mail_message
-      repeat: expr
-      repeat-expr: num_messages
-    types:
-      mail_message:
-        seq:
-        - id: dummy
-          type: u1
+    - id: status
+      type: u1
+    - id: payload
+      size-eos: true
   ac_mail_deliver:
     doc: |
       16 bytes. Push from server when mail arrives.
@@ -2480,14 +2488,19 @@ types:
     - id: status
       type: u1
   ac_adventures:
-    doc: Available adventures list; status=0 ok, count=number of adventures
+    doc: |
+      Available adventures list. u1 status + u1 count + count×u2be
+      adventure_ids. Verified against 4B (count=0), 6B (count=1) and
+      20B (count=8 IDs: 4,2,3,1,6,7,5,?) captures.
     seq:
     - id: status
       type: u1
     - id: count
       type: u1
-    - id: reserved
+    - id: adventure_ids
       type: u2be
+      repeat: expr
+      repeat-expr: count
   ac_adventure_cancel:
     seq:
     - id: dummy
