@@ -1,0 +1,59 @@
+"""Bit-stream parsers for AC response bodies that aren't pure bags but
+were left as `unknown: size-eos: true` placeholders.
+
+Each class is a kaitai opaque type — kaitai-struct-compiler with
+`--opaque-types true` produces `AcXxx(self._io)` calls that this module
+satisfies. Field names come from reverse-engineering the corresponding
+client-side reader in the binary (handler addresses noted on the class).
+"""
+from __future__ import annotations
+from dataclasses import dataclass, field
+from typing import List, Tuple
+
+from notification import BitReader
+
+
+def _read_cstring(br: BitReader, max_len: int = 256) -> str:
+    out = bytearray()
+    for _ in range(max_len):
+        if br.remaining() < 8:
+            break
+        b = br.read_u8()
+        if b == 0:
+            return out.decode("utf-8", errors="replace")
+        out.append(b)
+    return out.decode("utf-8", errors="replace")
+
+
+def _read_uid_list(br: BitReader) -> List[int]:
+    """u4be count + count × u8be UID."""
+    n = br.read_u32()
+    return [br.read_u64() for _ in range(n)]
+
+
+# ── ac_player_credits (handler 0x08231c56) ───────────────────────────────────
+class AcPlayerCreditsBody:
+    """Player wallet snapshot. Bit-packed flag-driven layout — handler
+    starts with a small struct read by FUN_088e9ec0 (a u16 flag word + four
+    optional u64 currency balances), then a sub-block by FUN_088ea0b0,
+    optional u64 / u32 by flag bits 5/6, then FUN_088ea050. Surfaced opaque
+    for now — we'd need to RE the inner sub-readers for clean field names."""
+
+    def __init__(self, _io, _parent=None, _root=None):
+        self._raw: bytes = _io.read_bytes_full()
+        self.error: str | None = None
+        try:
+            br = BitReader(self._raw)
+            # First 16 bits is the flag word that drives the rest.
+            self.flags = br.read_u16()
+        except Exception as e:
+            self.error = f"{type(e).__name__}: {e}"
+
+    def _fetch_instances(self):
+        pass
+
+    def __repr__(self) -> str:
+        if self.error:
+            return f"AcPlayerCreditsBody(<error: {self.error}>)"
+        return (f"AcPlayerCreditsBody({len(self._raw)}B, "
+                f"flags=0x{self.flags:04x}, raw={self._raw.hex()})")

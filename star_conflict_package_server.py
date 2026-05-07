@@ -6,8 +6,14 @@ from kaitaistruct import KaitaiStruct, KaitaiStream, BytesIO
 import bag_payload
 import prefixed_bag_payload
 import fed_design_tgp_stream
+import ac_friends_send_request_body
 import ac_load_initial_player_data_body
+import ac_lobby_info_body
+import ac_player_credits_body
 import ac_player_inventory_body
+import ac_quests_body
+import ac_ship_quests_body
+import ac_teaching_list_body
 import ac_universe_get_body
 from enum import IntEnum
 
@@ -3279,7 +3285,19 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcFriendsSendRequest(KaitaiStruct):
-        """Friends list with UIDs and per-friend data."""
+        """Despite the AC name, the response carries the player's full social
+        state. Handler 0x082338d8 → FUN_08901240 reads, byte-aligned:
+        
+          u1 num_friends,        num_friends × u8be UID
+          u1 num_requests_in,    num × u8be UID
+          u1 num_requests_out,   num × u8be UID
+          u1 num_ignored,        num × u8be UID
+          u1 num_watched,        num × u8be UID
+          u1 num_pairs_a,        num × {u8be uid, u8be uid}
+          u1 num_pairs_b,        num × {u8be uid, u8be uid}
+        
+        Surfaced through ac_unknown_bodies.AcFriendsSendRequestBody.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcFriendsSendRequest, self).__init__(_io)
             self._parent = _parent
@@ -3287,11 +3305,14 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.unknown = self._io.read_bytes_full()
+            self._raw_data = self._io.read_bytes_full()
+            _io__raw_data = KaitaiStream(BytesIO(self._raw_data))
+            self.data = ac_friends_send_request_body.AcFriendsSendRequestBody(_io__raw_data)
 
 
         def _fetch_instances(self):
             pass
+            self.data._fetch_instances()
 
 
     class AcGamesInfo(KaitaiStruct):
@@ -3985,6 +4006,12 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcLobbyInfo(KaitaiStruct):
+        """Lobby state — handler 0x0822b1c7 → FUN_088f1690. Inline reader:
+        u8 lobby_id, cstring name, u4 unknown, cstring desc, plus a long
+        tail (u8/u8/u8/6×u1/2×f32/u2/u4/u1/u8 + member array + 4 strings).
+        Surfaced through ac_unknown_bodies.AcLobbyInfoBody (header
+        decoded, tail kept opaque).
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcLobbyInfo, self).__init__(_io)
             self._parent = _parent
@@ -3992,11 +4019,14 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.unknown = self._io.read_bytes_full()
+            self._raw_data = self._io.read_bytes_full()
+            _io__raw_data = KaitaiStream(BytesIO(self._raw_data))
+            self.data = ac_lobby_info_body.AcLobbyInfoBody(_io__raw_data)
 
 
         def _fetch_instances(self):
             pass
+            self.data._fetch_instances()
 
 
     class AcLobbyInvite(KaitaiStruct):
@@ -4370,7 +4400,11 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcPlayerCredits(KaitaiStruct):
-        """All currency balances for the player; variable-length, structure not fully understood."""
+        """Player wallet snapshot. Handler 0x08231c56 reads a u16 flag word
+        then conditionally pulls u64 currency balances per flag bit, plus
+        two sub-readers for additional fields. Surfaced through
+        ac_unknown_bodies.AcPlayerCreditsBody (header decoded, tail opaque).
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcPlayerCredits, self).__init__(_io)
             self._parent = _parent
@@ -4378,11 +4412,14 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.unknown = self._io.read_bytes_full()
+            self._raw_data = self._io.read_bytes_full()
+            _io__raw_data = KaitaiStream(BytesIO(self._raw_data))
+            self.data = ac_player_credits_body.AcPlayerCreditsBody(_io__raw_data)
 
 
         def _fetch_instances(self):
             pass
+            self.data._fetch_instances()
 
 
     class AcPlayerInventory(KaitaiStruct):
@@ -4570,6 +4607,13 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcQuests(KaitaiStruct):
+        """Active and template quest list. Handler 0x0822d960 has a multi-section
+        inline reader: 3×u4 totals + 4×u1 flags, then a u4+u1 dailies array,
+        a per-quest array (FUN_088f8e20 prelude + u2 id + u1 status + u4
+        progress + 2 optional u8s), then a quest-desc array, two u2-prefixed
+        quest-id arrays, and a flag-byte/i32-pair stream terminated by 0xff.
+        Surfaced through ac_unknown_bodies.AcQuestsBody (top fields only).
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcQuests, self).__init__(_io)
             self._parent = _parent
@@ -4577,11 +4621,14 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.unknown = self._io.read_bytes_full()
+            self._raw_data = self._io.read_bytes_full()
+            _io__raw_data = KaitaiStream(BytesIO(self._raw_data))
+            self.data = ac_quests_body.AcQuestsBody(_io__raw_data)
 
 
         def _fetch_instances(self):
             pass
+            self.data._fetch_instances()
 
 
     class AcReactOnAbandonedGame(KaitaiStruct):
@@ -5032,6 +5079,10 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcShipQuests(KaitaiStruct):
+        """Per-ship quest list. Handler 0x0822bdf8 reads u1 flag + u1 num_records,
+        then num_records × {FUN_088f9340 prelude, u1, u1, u4, u8, 8×u8be}.
+        Surfaced through ac_unknown_bodies.AcShipQuestsBody.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcShipQuests, self).__init__(_io)
             self._parent = _parent
@@ -5039,11 +5090,14 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.unknown = self._io.read_bytes_full()
+            self._raw_data = self._io.read_bytes_full()
+            _io__raw_data = KaitaiStream(BytesIO(self._raw_data))
+            self.data = ac_ship_quests_body.AcShipQuestsBody(_io__raw_data)
 
 
         def _fetch_instances(self):
             pass
+            self.data._fetch_instances()
 
 
     class AcSocialIgnoreAdd(KaitaiStruct):
@@ -5577,6 +5631,12 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcTeachingList(KaitaiStruct):
+        """Teach/learn relationship state. Handler 0x0822bf58 → FUN_08917c10
+        calls a u4be-count + u8be-UID list reader six times, then reads two
+        u1 flag bits. Empty teaching state shows up as 6×0-count lists +
+        both flags=true (25-byte body). Surfaced through
+        ac_unknown_bodies.AcTeachingListBody.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcTeachingList, self).__init__(_io)
             self._parent = _parent
@@ -5584,11 +5644,14 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.unknown = self._io.read_bytes_full()
+            self._raw_data = self._io.read_bytes_full()
+            _io__raw_data = KaitaiStream(BytesIO(self._raw_data))
+            self.data = ac_teaching_list_body.AcTeachingListBody(_io__raw_data)
 
 
         def _fetch_instances(self):
             pass
+            self.data._fetch_instances()
 
 
     class AcTeachingReject(KaitaiStruct):
