@@ -34,7 +34,7 @@ fields rather than dumping every record.
 from __future__ import annotations
 from typing import Any
 
-from notification import BitReader, _read_bag
+from notification import BitReader, _read_bag, format_bag
 
 
 # ── Sub-readers (drop-in replacements for the binary's helpers) ───────────────
@@ -267,24 +267,40 @@ class AcLoadInitialPlayerDataBody:
             f"sec_c_y[{len(self.sec_c_y['pairs'])} pairs, {self.sec_c_y['name']!r}]")
         if hasattr(self, "sec_c_z"): parts.append(f"sec_c_z={len(self.sec_c_z)}")
 
-        # Tail — bag sizes + scalars.
+        # Tail — bags use format_bag so each Variant gets its tag-colour
+        # and value (matches notification.py / scmd_decoders rendering).
         for name in ("bag_10", "bag_11"):
             if name in self.__dict__:
-                v = getattr(self, name)
-                parts.append(f"{name}=bag({len(v)})")
+                parts.append(f"{name}={format_bag(getattr(self, name))}")
         for name in ("field_12", "flag_13", "field_14", "field_15",
                      "field_16", "flag_17"):
             if name in self.__dict__:
                 parts.append(f"{name}={getattr(self, name)!r}")
         for name in ("bag_18", "bag_19"):
             if name in self.__dict__:
-                parts.append(f"{name}=bag({len(getattr(self, name))})")
+                parts.append(f"{name}={format_bag(getattr(self, name))}")
         for name in ("field_20", "field_21", "flag_22", "field_23",
-                     "field_24", "field_25", "flag_26"):
+                     "field_24"):
+            if name in self.__dict__:
+                parts.append(f"{name}={getattr(self, name)!r}")
+        # Hidden bag + BattlePass sub-records that live between
+        # field_24 and field_25 in the binary's stream.
+        if "aux_bag" in self.__dict__:
+            parts.append(f"aux_bag={format_bag(self.aux_bag)}")
+        if "battle_pass_activation" in self.__dict__:
+            bp = self.battle_pass_activation
+            parts.append(
+                f"bp_activation=(token={bp['token']} stages={len(bp['stages'])})")
+        if "battle_pass_player" in self.__dict__:
+            bp = self.battle_pass_player
+            parts.append(
+                f"bp_player=(token={bp['token']} stages={len(bp['stages'])} "
+                f"strs={len(bp['strings'])} timed={len(bp['timed'])})")
+        for name in ("field_25", "flag_26"):
             if name in self.__dict__:
                 parts.append(f"{name}={getattr(self, name)!r}")
         if "bag_27" in self.__dict__:
-            parts.append(f"bag_27=bag({len(self.bag_27)})")
+            parts.append(f"bag_27={format_bag(self.bag_27)}")
         if "field_28" in self.__dict__:
             parts.append(f"field_28={self.field_28!r}")
 
