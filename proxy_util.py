@@ -93,8 +93,17 @@ def get_real_chat() -> tuple[str, int]:
 
 
 def _kaitai_repr(obj) -> str:
-    """Render non-private, non-dummy fields of a KaitaiStruct as key=value pairs."""
+    """Render non-private, non-dummy fields of a KaitaiStruct as key=value pairs.
+
+    Opaque types (e.g. BagPayload, AcLoadInitialPlayerDataBody) define their
+    own __repr__ — defer to it instead of walking __dict__ blindly, otherwise
+    placeholder/None attributes pre-set for failure paths leak out as noise.
+    """
     if not hasattr(obj, '__dict__'):
+        return repr(obj)
+    # If the value's class has a custom __repr__ (not the bare object default),
+    # trust it — opaque types use this to filter out None placeholders.
+    if type(obj).__repr__ is not object.__repr__:
         return repr(obj)
     fields = {k: v for k, v in obj.__dict__.items()
               if not k.startswith('_') and k != 'dummy'}
@@ -102,6 +111,8 @@ def _kaitai_repr(obj) -> str:
         return ""
     parts = []
     for k, v in fields.items():
+        if v is None:
+            continue
         if isinstance(v, (bytes, bytearray)):
             parts.append(f"{k}={v.hex()}")
         elif isinstance(v, list):
@@ -166,9 +177,12 @@ def log_packet(tag: str, pkt: dict, extra: str = ""):
     is_notification = pkt_name == "SCMD_NOTIFICATION"
     # Skip kaitai entirely for any pkt type that has a dedicated decoder
     # (notification.decode or scmd_decoders.decode) so per-Variant colours
-    # don't get clobbered by an outer line wrap.
+    # don't get clobbered by an outer line wrap. Also skip for non-AC packet
+    # types — the *.ksy switch is keyed on a u16 AC index, so feeding e.g. an
+    # SCMD_LB_CVARS body whose first u16 happens to be 0x0000 to it produces
+    # nonsense interpretations as ac_load_initial_player_data.
     has_dedicated = is_notification or (pkt_t in _SCMD_DECODERS)
-    if has_dedicated:
+    if has_dedicated or not is_async_req:
         kaitai_str, ok = "", True
     else:
         kaitai_str, ok = _parse_kaitai(body, tag)

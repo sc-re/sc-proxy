@@ -1,16 +1,5 @@
 """Opaque kaitai type — body of `ac_load_initial_player_data` (AC 0).
 
-WHAT THIS AC IS NOT:
-  This is *not* where the nickname or player UID live. They are sent in
-  separate packets:
-    * pkt 0x05 SCMD_AUTH_ACK — u64 uid + …  + cstring nickname (login)
-    * AC 0x09 ac_player_credentials — cstring nickname + tokens
-  Confirmed by exhaustive search — "k18" / "JohnDeDestructor" do not
-  appear in any 240 kB ac_load_initial_player_data body in any byte- or
-  bit-aligned form, in 5/6/7/8-bit char encodings, or in cs0 / x2
-  shifted forms. This AC carries the player's *state* (factions,
-  vessels, inventory, etc.), not their identity.
-
 WIRE FORMAT — 29-step bit-stream the handler at 0x0823103b walks:
 
   pos   tag    addr        notes
@@ -116,10 +105,9 @@ class AcLoadInitialPlayerDataBody:
     def __init__(self, _io, _parent=None, _root=None):
         self._io = _io
         self.raw: bytes = _io.read_bytes_full()
-        # Pre-init every field so they exist regardless of how far we get.
-        for name, _ in _FIELD_SEQUENCE:
-            setattr(self, name, None)
-
+        # Don't pre-init fields — only the ones we actually parse should
+        # appear as attributes, so getattr(obj, 'fieldN') raises
+        # AttributeError when truncated rather than yielding None garbage.
         self.ok = True
         self.error: str | None = None
         self.consumed_fields = 0
@@ -168,20 +156,32 @@ class AcLoadInitialPlayerDataBody:
         pass  # No lazy instances.
 
     def __repr__(self) -> str:
+        # The big captures' linear field walk diverges after field 9
+        # (handler dispatches into per-section sub-readers we don't model).
+        # Showing the bogus values past that point is misleading — instead,
+        # just summarise truncation and only print fully-consumed fields.
         if self.consumed_fields == 0 and not self.error:
-            return "AcLoadInitialPlayerDataBody(empty)"
-        head = f"AcLoadInitialPlayerDataBody(fields={self.consumed_fields}/{len(_FIELD_SEQUENCE)}"
-        if self.error:
-            head += f", err={self.error}"
-        if not self.ok:
-            head += ", truncated"
-        # Only show the cheap scalar fields; bags can be huge.
-        for name, tag in _FIELD_SEQUENCE:
+            if not self.raw:
+                return "AcLoadInitialPlayerDataBody(empty body)"
+            return f"AcLoadInitialPlayerDataBody(too short: {len(self.raw)}B body, no fields parsed)"
+        # Truncation summary; never print fields beyond consumed_fields.
+        # We also stop at the first BAG since past that the cursor is
+        # known-unreliable for big captures.
+        first_bag = next(
+            (i for i, (n, t) in enumerate(_FIELD_SEQUENCE) if t == "bag"),
+            len(_FIELD_SEQUENCE),
+        )
+        safe = min(self.consumed_fields, first_bag)
+        head = f"AcLoadInitialPlayerDataBody({len(self.raw)}B"
+        if safe < self.consumed_fields:
+            head += f", parsed_fields={safe} (cursor unreliable past first BAG)"
+        elif self.consumed_fields < len(_FIELD_SEQUENCE):
+            head += f", truncated at field {self.consumed_fields}/{len(_FIELD_SEQUENCE)}"
+        for name, tag in _FIELD_SEQUENCE[:safe]:
             v = getattr(self, name, None)
-            if v is None: continue
             if tag == "bag" and isinstance(v, dict):
-                head += f", {name}=bag({len(v)})"
+                head += f" {name}=bag({len(v)})"
             else:
-                head += f", {name}={v!r}"
+                head += f" {name}={v!r}"
         head += ")"
         return head

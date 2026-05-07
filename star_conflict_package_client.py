@@ -5465,8 +5465,7 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcZonesLuaActiveEventsUpdate(KaitaiStruct):
-        """Zone events poll. u64be request_id (monotonic counter at
-        MasterServerEndpoint+0x2bb214). Confirmed via FUN_0820c100
+        """Zone events poll. u64be timestamp (milliseconds). Confirmed via FUN_0820c100
         (single WriteU64 of the counter, then increments it).
         """
         def __init__(self, _io, _parent=None, _root=None):
@@ -5476,7 +5475,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.request_id = self._io.read_u8be()
+            self.timestamp = self._io.read_u8be()
 
 
         def _fetch_instances(self):
