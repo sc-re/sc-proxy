@@ -1,70 +1,103 @@
 """Opaque kaitai type — body of `ac_load_initial_player_data` (AC 0).
 
-The handler at 0x0823103b inside the AC dispatcher reads 22 fields from
-the bit-stream:
+WHAT THIS AC IS NOT:
+  This is *not* where the nickname or player UID live. They are sent in
+  separate packets:
+    * pkt 0x05 SCMD_AUTH_ACK — u64 uid + …  + cstring nickname (login)
+    * AC 0x09 ac_player_credentials — cstring nickname + tokens
+  Confirmed by exhaustive search — "k18" / "JohnDeDestructor" do not
+  appear in any 240 kB ac_load_initial_player_data body in any byte- or
+  bit-aligned form, in 5/6/7/8-bit char encodings, or in cs0 / x2
+  shifted forms. This AC carries the player's *state* (factions,
+  vessels, inventory, etc.), not their identity.
 
-  pos   tag   purpose (best-guess)
-  ---   ---   ----------------------------------
-   0    u64   field_0   (timestamp / session token)
-   1    u32   field_1
-   2    u32   field_2
-   3    u64   uid
-   4    cstr  nickname            (length-bounded ≤ ~60)
-   5    u32   field_5
-   6    u32   field_6
-   7    u32   field_7
-   8    BAG   bag_8                (factions / auras?)
-   9    BAG   bag_9                (achievements?)
-  10    u32   field_10
-  11    u8    field_11
-  12    u8    field_12
-  13    i32   field_13
-  14    BAG   bag_14               (player vessels?)
-  15    BAG   bag_15               (inventory?)
-  16    i32   field_16
-  17    i32   field_17
-  18    i32   field_18
-  19    u64   field_19
-  20    i32   field_20
-  21    BAG   bag_21               (mail / leaderboards?)
+WIRE FORMAT — 29-step bit-stream the handler at 0x0823103b walks:
 
-The handler tolerates short bodies: each BitStream reader returns 0 and
-sets a "lastReadOK=false" flag rather than throwing. We mirror that
-here — on EOFError we stop, leaving subsequent fields as None and
-recording how far we got in `.consumed_fields`.
+  pos   tag    addr        notes
+  ---   ----   ----------  ----------------------------------
+   0    u64    0x08231044
+   1    u32    0x08231050  → stored at endpoint+0x5f8
+   2    u1     0x08231064  early-return error gate
+   3    u32    0x0823108e
+   4    u1     0x082310a8
+   5    u64    0x082310bc
+   6    cstr60 0x082310ee  60-byte length-bound buffer
+   7    u32    0x082311f5
+   8    u32    0x08231362
+   9    u32    0x082314c9
+  10    BAG    0x082315bb
+  11    BAG    0x08231648
+  12    u32    0x082316c5
+  13    u1     0x08231703
+  14    u8     0x08231717
+  15    u8     0x08231736
+  16    i32    0x08231747
+  17    u1     0x08231755
+  18    BAG    0x0823177b
+  19    BAG    0x082317a7
+  20    i32    0x082317af
+  21    i32    0x082317bd
+  22    u1     0x082317cb
+  23    i32    0x082317d9
+  24    u64    0x0823181c
+  25    i32    0x08231a01
+  26    u1     0x08231a15
+  27    BAG    0x08231a2d
+  28    u8     0x08231a91
 
-Captured sizes range from 2B (echo-only) and 8B (~6 body bytes — only
-the first read succeeds) all the way to 240 kB full-state responses.
+KNOWN LIMITATIONS:
+* Between the visible reader CALLs the handler invokes per-section
+  helpers (FUN_0824c9f0, FUN_08249a80, FUN_088fc1e0, FUN_088fcea0,
+  FUN_088fe1c0, FUN_088fe450) that *also consume bits from the same
+  stream*. Without recursively reverse-engineering each, our linear
+  walk drifts after the first BAG — 240 kB captures parse cleanly up
+  through field 9 (the third u32) and then diverge from the binary's
+  cursor, so bag_10 onward show garbage.
+* The handler tolerates short bodies via its m_lastReadOK flag — each
+  reader returns 0 on overflow rather than throwing. We mirror that by
+  catching EOFError on every field and stopping.
+* Sizes range from 2 B (echo-only) and 8 B (only first u64 read
+  succeeds) to ~240 kB full-state responses.
 """
 from __future__ import annotations
 from typing import Any
 
 from notification import BitReader, _read_bag, format_bag, Variant
 
-# Field-read sequence per the binary's handler at 0x0823103b
+# Field-read sequence per the binary's handler at 0x0823103b. Re-extracted
+# after discovering 0x08b1b6d0 is a 2nd ReadBit alias the earlier walker
+# missed; the bit reads are critical because the bit-stream cursor would
+# otherwise drift and break every subsequent read.
 _FIELD_SEQUENCE = [
-    ("field_0",  "u64"),
-    ("field_1",  "u32"),
-    ("field_2",  "u32"),
-    ("uid",      "u64"),
-    ("nickname", "cstr"),
-    ("field_5",  "u32"),
-    ("field_6",  "u32"),
-    ("field_7",  "u32"),
-    ("bag_8",    "bag"),
-    ("bag_9",    "bag"),
-    ("field_10", "u32"),
-    ("field_11", "u8"),
-    ("field_12", "u8"),
-    ("field_13", "i32"),
-    ("bag_14",   "bag"),
-    ("bag_15",   "bag"),
-    ("field_16", "i32"),
-    ("field_17", "i32"),
-    ("field_18", "i32"),
-    ("field_19", "u64"),
-    ("field_20", "i32"),
-    ("bag_21",   "bag"),
+    ("field_0",   "u64"),    # 0x08231044  ReadU64
+    ("field_1",   "u32"),    # 0x08231050  ReadU32
+    ("flag_2",    "u1"),     # 0x08231064  ReadBit
+    ("field_3",   "u32"),    # 0x0823108e  ReadU32
+    ("flag_4",    "u1"),     # 0x082310a8  ReadBit
+    ("uid",       "u64"),    # 0x082310bc  ReadU64
+    ("nickname",  "cstr60"), # 0x082310ee  ReadCStringLen(60)
+    ("field_7",   "u32"),    # 0x082311f5  ReadU32
+    ("field_8",   "u32"),    # 0x08231362  ReadU32
+    ("field_9",   "u32"),    # 0x082314c9  ReadU32
+    ("bag_10",    "bag"),    # 0x082315bb  Bag_Deserialize
+    ("bag_11",    "bag"),    # 0x08231648  Bag_Deserialize
+    ("field_12",  "u32"),    # 0x082316c5  ReadU32
+    ("flag_13",   "u1"),     # 0x08231703  ReadBit
+    ("field_14",  "u8"),     # 0x08231717  ReadU8
+    ("field_15",  "u8"),     # 0x08231736  ReadU8
+    ("field_16",  "i32"),    # 0x08231747  ReadI32
+    ("flag_17",   "u1"),     # 0x08231755  ReadBit
+    ("bag_18",    "bag"),    # 0x0823177b  Bag_Deserialize
+    ("bag_19",    "bag"),    # 0x082317a7  Bag_Deserialize
+    ("field_20",  "i32"),    # 0x082317af  ReadI32
+    ("field_21",  "i32"),    # 0x082317bd  ReadI32
+    ("flag_22",   "u1"),     # 0x082317cb  ReadBit
+    ("field_23",  "i32"),    # 0x082317d9  ReadI32
+    ("field_24",  "u64"),    # 0x0823181c  ReadU64
+    ("field_25",  "i32"),    # 0x08231a01  ReadI32
+    ("flag_26",   "u1"),     # 0x08231a15  ReadBit
+    ("bag_27",    "bag"),    # 0x08231a2d  Bag_Deserialize
+    ("field_28",  "u8"),     # 0x08231a91  ReadU8
 ]
 
 
@@ -98,7 +131,9 @@ class AcLoadInitialPlayerDataBody:
         br = BitReader(self.raw)
         try:
             for name, tag in _FIELD_SEQUENCE:
-                if tag == "u8":
+                if tag == "u1":
+                    val = br.read_bool()
+                elif tag == "u8":
                     val = br.read_u8()
                 elif tag == "u32":
                     val = br.read_u32()
@@ -106,8 +141,14 @@ class AcLoadInitialPlayerDataBody:
                     val = br.read_i32()
                 elif tag == "u64":
                     val = br.read_u64()
-                elif tag == "cstr":
-                    val = br.read_cstring(max_len=2048)
+                elif tag.startswith("cstr"):
+                    # cstrN means up-to-N-byte length-bounded read. The
+                    # handler's BitStream_ReadCStringLen reads byte-by-
+                    # byte and stops at the FIRST of: NUL, the byte cap,
+                    # or end-of-stream. Match that semantics here so the
+                    # cursor advances by min(len(string)+1, cap) bytes.
+                    cap = int(tag[4:]) if tag != "cstr" else 2048
+                    val = br.read_cstring(max_len=cap)
                 elif tag == "bag":
                     val = _read_bag(br)
                 else:
