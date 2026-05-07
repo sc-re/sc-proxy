@@ -1726,6 +1726,10 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcAttachEmail(KaitaiStruct):
+        """Attach email account credentials. Four ASCII strings:
+        auth_token, email, password, system_id.
+        Confirmed via FUN_082078c0 (writes 4 cstrings via WriteCString).
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcAttachEmail, self).__init__(_io)
             self._parent = _parent
@@ -1733,7 +1737,10 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.auth_token = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
+            self.email = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
+            self.password = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
+            self.system_id = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
 
 
         def _fetch_instances(self):
@@ -2747,6 +2754,9 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcFriendsRejectRequest(KaitaiStruct):
+        """Reject incoming friend request by player UID.
+        Confirmed via FUN_08210a20 ("/friends reject" CLI handler).
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcFriendsRejectRequest, self).__init__(_io)
             self._parent = _parent
@@ -2754,7 +2764,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.uid = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -2762,6 +2772,9 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcFriendsRemove(KaitaiStruct):
+        """Remove existing friend by player UID.
+        Confirmed via FUN_08210a20 ("/friends remove" CLI handler).
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcFriendsRemove, self).__init__(_io)
             self._parent = _parent
@@ -2769,7 +2782,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.uid = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -3512,6 +3525,9 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcMailDeliver(KaitaiStruct):
+        """Confirm pickup of a mail item. u64be mail_id + u1 flag (bit-packed).
+        Confirmed via FUN_08208e30 (WriteU64 + WriteBit).
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcMailDeliver, self).__init__(_io)
             self._parent = _parent
@@ -3519,7 +3535,8 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.mail_id = self._io.read_u8be()
+            self.flag_byte = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -3846,6 +3863,12 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcReactOnAbandonedGame(KaitaiStruct):
+        """Player's reaction to a previously-abandoned game (sub of single-player
+        practice cleanup). gameMode determines result code: 5→0 (abandon),
+        7→3 (request review), 6→1 (dismiss; only when payload flag is set).
+        Wire format: u8 result + u64be ship_id_pair + u8(0).
+        Confirmed via FUN_082051a0 (WriteU8 + WriteU64 + WriteU8).
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcReactOnAbandonedGame, self).__init__(_io)
             self._parent = _parent
@@ -3853,7 +3876,9 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.result = self._io.read_u1()
+            self.ship_id = self._io.read_u8be()
+            self.reserved = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -4119,6 +4144,10 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcSetVisitedZone(KaitaiStruct):
+        """Mark a zone as visited. u16be zone_id + u1 flag (bit-packed; 17 bits
+        total, padded to 3 bytes). Validated zone_id in [1, 0x200].
+        Confirmed via FUN_08208930 (WriteU16 + WriteBit).
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcSetVisitedZone, self).__init__(_io)
             self._parent = _parent
@@ -4126,7 +4155,8 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.zone_id = self._io.read_u2be()
+            self.flag_byte = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -4922,7 +4952,11 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcUserNotesDelete(KaitaiStruct):
-        """Delete user note by UID and flags."""
+        """Delete one or more user notes. Wire format: u16be count + count×u64be uid.
+        Single-uid form (count=1) is used by FUN_0820b340; the multi-uid array
+        form is used by FUN_0820b450 / FUN_0820b5c0.
+        Confirmed via WriteU16 + N× WriteU64 in those builders.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcUserNotesDelete, self).__init__(_io)
             self._parent = _parent
@@ -4930,12 +4964,18 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.flags = self._io.read_u2be()
-            self.uid = self._io.read_u8be()
+            self.count = self._io.read_u2be()
+            self.uids = []
+            for i in range(self.count):
+                self.uids.append(self._io.read_u8be())
+
 
 
         def _fetch_instances(self):
             pass
+            for i in range(len(self.uids)):
+                pass
+
 
 
     class AcUserProfileGet(KaitaiStruct):
@@ -5425,7 +5465,10 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcZonesLuaActiveEventsUpdate(KaitaiStruct):
-        """Zone event subscription update with session identifier."""
+        """Zone events poll. u64be request_id (monotonic counter at
+        MasterServerEndpoint+0x2bb214). Confirmed via FUN_0820c100
+        (single WriteU64 of the counter, then increments it).
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcZonesLuaActiveEventsUpdate, self).__init__(_io)
             self._parent = _parent
@@ -5433,7 +5476,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.unknown = self._io.read_u8be()
+            self.request_id = self._io.read_u8be()
 
 
         def _fetch_instances(self):

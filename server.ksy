@@ -414,11 +414,18 @@ types:
       type: u1
   ac_mottos_set_active:
     doc: |
-      List of acquired motto / taunt strings the player can equip.
-      Confirmed against capture ac_000f_taunts.bin (62B, 6 entries).
+      Currently-active motto plus the list of acquired motto / taunt names.
+      Confirmed via two capture variants:
+        62B: status=0 + empty active_motto + count=6 + 6 entries.
+        70B: status=0 + active_motto="Taunt_68" + count=6 + 6 entries.
     seq:
+    - id: status
+      type: u1
+    - id: active_motto
+      type: strz
+      encoding: ASCII
     - id: count
-      type: u4be
+      type: u2be
     - id: taunts
       type: strz
       encoding: ASCII

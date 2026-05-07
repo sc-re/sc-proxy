@@ -3885,8 +3885,10 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcMottosSetActive(KaitaiStruct):
-        """List of acquired motto / taunt strings the player can equip.
-        Confirmed against capture ac_000f_taunts.bin (62B, 6 entries).
+        """Currently-active motto plus the list of acquired motto / taunt names.
+        Confirmed via two capture variants:
+          62B: status=0 + empty active_motto + count=6 + 6 entries.
+          70B: status=0 + active_motto="Taunt_68" + count=6 + 6 entries.
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcMottosSetActive, self).__init__(_io)
@@ -3895,7 +3897,9 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.count = self._io.read_u4be()
+            self.status = self._io.read_u1()
+            self.active_motto = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
+            self.count = self._io.read_u2be()
             self.taunts = []
             for i in range(self.count):
                 self.taunts.append((self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII"))

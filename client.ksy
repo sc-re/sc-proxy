@@ -684,8 +684,18 @@ types:
     - id: dummy
       type: u1
   ac_react_on_abandoned_game:
+    doc: |
+      Player's reaction to a previously-abandoned game (sub of single-player
+      practice cleanup). gameMode determines result code: 5→0 (abandon),
+      7→3 (request review), 6→1 (dismiss; only when payload flag is set).
+      Wire format: u8 result + u64be ship_id_pair + u8(0).
+      Confirmed via FUN_082051a0 (WriteU8 + WriteU64 + WriteU8).
     seq:
-    - id: dummy
+    - id: result
+      type: u1
+    - id: ship_id
+      type: u8be
+    - id: reserved
       type: u1
   ac_squad_info:
     doc: Empty request, server responds with squad info
@@ -801,13 +811,19 @@ types:
     - id: uid
       type: u8be
   ac_friends_reject_request:
+    doc: |
+      Reject incoming friend request by player UID.
+      Confirmed via FUN_08210a20 ("/friends reject" CLI handler).
     seq:
-    - id: dummy
-      type: u1
+    - id: uid
+      type: u8be
   ac_friends_remove:
+    doc: |
+      Remove existing friend by player UID.
+      Confirmed via FUN_08210a20 ("/friends remove" CLI handler).
     seq:
-    - id: dummy
-      type: u1
+    - id: uid
+      type: u8be
   ac_friends_list:
     seq:
     - id: dummy
@@ -895,9 +911,23 @@ types:
     - id: dummy
       type: u1
   ac_attach_email:
+    doc: |
+      Attach email account credentials. Four ASCII strings:
+      auth_token, email, password, system_id.
+      Confirmed via FUN_082078c0 (writes 4 cstrings via WriteCString).
     seq:
-    - id: dummy
-      type: u1
+    - id: auth_token
+      type: strz
+      encoding: ASCII
+    - id: email
+      type: strz
+      encoding: ASCII
+    - id: password
+      type: strz
+      encoding: ASCII
+    - id: system_id
+      type: strz
+      encoding: ASCII
   ac_lobby_list:
     seq:
     - id: dummy
@@ -1178,9 +1208,15 @@ types:
       type: strz
       encoding: ASCII
   ac_mail_deliver:
+    doc: |
+      Confirm pickup of a mail item. u64be mail_id + u1 flag (bit-packed).
+      Confirmed via FUN_08208e30 (WriteU64 + WriteBit).
     seq:
-    - id: dummy
+    - id: mail_id
+      type: u8be
+    - id: flag_byte
       type: u1
+      doc: Top bit (0x80) = u1 flag; remaining bits padding.
   ac_mail_send:
     seq:
     - id: dummy
@@ -1206,9 +1242,16 @@ types:
     - id: dummy
       type: u1
   ac_set_visited_zone:
+    doc: |
+      Mark a zone as visited. u16be zone_id + u1 flag (bit-packed; 17 bits
+      total, padded to 3 bytes). Validated zone_id in [1, 0x200].
+      Confirmed via FUN_08208930 (WriteU16 + WriteBit).
     seq:
-    - id: dummy
+    - id: zone_id
+      type: u2be
+    - id: flag_byte
       type: u1
+      doc: High bit (0x80) carries the u1 flag; remaining bits padding.
   ac_zone_coordinator_gm_command:
     seq:
     - id: dummy
@@ -1337,20 +1380,29 @@ types:
       type: strz
       encoding: UTF-8
   ac_user_notes_delete:
-    doc: Delete user note by UID and flags
+    doc: |
+      Delete one or more user notes. Wire format: u16be count + count×u64be uid.
+      Single-uid form (count=1) is used by FUN_0820b340; the multi-uid array
+      form is used by FUN_0820b450 / FUN_0820b5c0.
+      Confirmed via WriteU16 + N× WriteU64 in those builders.
     seq:
-    - id: flags
+    - id: count
       type: u2be
-    - id: uid
+    - id: uids
       type: u8be
+      repeat: expr
+      repeat-expr: count
   ac_battle_pass_unlock_level:
     seq:
     - id: dummy
       type: u1
   ac_zones_lua_active_events_update:
-    doc: Zone event subscription update with session identifier
+    doc: |
+      Zone events poll. u64be request_id (monotonic counter at
+      MasterServerEndpoint+0x2bb214). Confirmed via FUN_0820c100
+      (single WriteU64 of the counter, then increments it).
     seq:
-    - id: unknown
+    - id: request_id
       type: u8be
   ac_adventures:
     doc: Empty request, server responds with adventures list
