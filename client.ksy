@@ -491,23 +491,48 @@ types:
       type: u1
   ac_vessel_change_munition:
     seq:
-    - id: dummy
+    - id: vessel_id
+      type: u8be
+    - id: slot
       type: u1
+      enum: slot_type
+    - id: resource
+      type: u1
+    - id: def_name
+      type: strz
+      encoding: ASCII
+    enums:
+      slot_type:
+        0: ammunition
+        1: missile
   ac_vessel_refill_munition:
     doc: Refill vessel munitions
     seq:
-    - id: unknown
-      type: u4be
     - id: vessel_id
-      type: u4be
+      type: u8be
   ac_vessel_transfer_munition:
+    doc: Switch Munition between two vessels
     seq:
-    - id: dummy
+    - id: vessel_id1
+      doc: Vessel ID 1
+      type: u8be
+    - id: vessel_id2
+      doc: Vessel ID 2
+      type: u8be
+    - id: slot1
       type: u1
+      enum: slot_type
+    - id: slot2
+      type: u1
+      enum: slot_type
+    enums:
+      slot_type:
+        0: ammunition
+        1: missile
   ac_vessel_autogen_destroy:
     seq:
-    - id: dummy
-      type: u1
+    - id: iid
+      type: u8be
   ac_vessel_autogen_dismantle:
     seq:
     - id: dummy
@@ -519,17 +544,13 @@ types:
   ac_vessel_levelup:
     doc: Level up vessel
     seq:
-    - id: unknown
-      type: u4be
     - id: vessel_id
-      type: u4be
+      type: u8be
   ac_vessel_repair:
     doc: Repair vessel
     seq:
-    - id: unknown
-      type: u4be
     - id: vessel_id
-      type: u4be
+      type: u8be
     - id: flags
       type: u1
   ac_vessel_repair_battle:
@@ -587,20 +608,23 @@ types:
   ac_battle_slot_change_vessel:
     doc: Change vessel in a battle slot
     seq:
-    - id: unknown
-      type: u4be
     - id: slot
       type: u1
     - id: vessel_id
-      type: u4be
+      type: u8be
   ac_battle_slot_swap_vessels:
     seq:
-    - id: dummy
+    - id: slot1
+      type: u1
+    - id: slot2
       type: u1
   ac_battle_slot_cheat_change_vessel:
     seq:
-    - id: dummy
+    - id: slot
       type: u1
+    - id: def_name
+      type: strz
+      encoding: ASCII
   ac_inv_ext_buy:
     seq:
     - id: dummy
@@ -646,8 +670,8 @@ types:
       type: u1
   ac_talents_reset:
     seq:
-    - id: dummy
-      type: u1
+    - id: talent_set
+      type: u4be
   ac_talents_assign_sets:
     doc: Assign talent sets to 4 battle role slots
     seq:
@@ -678,14 +702,15 @@ types:
     - id: dummy
       type: u1
   ac_squad_invite_send:
+    doc: Request to invite player by UID into the player's squad.
     seq:
-    - id: dummy
-      type: u1
+    - id: uid
+      type: u8be
   ac_squad_invite_cancel:
-    doc: Cancel Squad invite
+    doc: Cancel a pending outbound squad-invite by UID.
     seq:
-     - id: dummy
-       type: u1
+    - id: uid
+      type: u8be
   ac_squad_kick:
     seq:
     - id: dummy

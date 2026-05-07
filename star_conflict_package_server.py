@@ -3389,6 +3389,10 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcLearnBlueprint(KaitaiStruct):
+        """ACK for learning a blueprint. status=0 success.
+        Confirmed against capture ac_00e7_unknown.bin (33B): blueprint name
+        "BP_Module_AdvancedHeal_T5_Rel".
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcLearnBlueprint, self).__init__(_io)
             self._parent = _parent
@@ -3396,7 +3400,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.blueprint_def_name = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
 
 
         def _fetch_instances(self):
@@ -3437,7 +3442,16 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcLoadInitialPlayerData(KaitaiStruct):
-        """Server response to initial load; variable content (login data or keepalive)."""
+        """Server response to initial load. ENORMOUS body — captured at
+        236850 bytes (ac_0000_load_initial_player_data.bin). Carries the
+        full player snapshot: vessel inventory, modules, equipment loadouts,
+        quest progress, factions, account info, etc. Format is a deeply
+        nested bit-packed/cs0-encoded stream produced by the same
+        Bag/BitStream library as SCMD_NOTIFICATION but with per-field
+        structures rather than uniform property bags. Beyond a single-byte
+        probe at the start the layout cannot be modelled in static kaitai
+        without per-section custom processors — left opaque.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcLoadInitialPlayerData, self).__init__(_io)
             self._parent = _parent
@@ -3445,7 +3459,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.payload = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3871,6 +3885,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcMottosSetActive(KaitaiStruct):
+        """List of acquired motto / taunt strings the player can equip.
+        Confirmed against capture ac_000f_taunts.bin (62B, 6 entries).
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcMottosSetActive, self).__init__(_io)
             self._parent = _parent
@@ -3878,11 +3895,18 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.count = self._io.read_u4be()
+            self.taunts = []
+            for i in range(self.count):
+                self.taunts.append((self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII"))
+
 
 
         def _fetch_instances(self):
             pass
+            for i in range(len(self.taunts)):
+                pass
+
 
 
     class AcObtainReferralKey(KaitaiStruct):
@@ -4040,6 +4064,10 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcQuestAccept(KaitaiStruct):
+        """19 bytes. Same shape as ac_quest_change (just shorter opaque tail):
+        echo + u8(status=0) + u16be(quest_id_echo) + 14B opaque payload.
+        Confirmed against capture ac_0019_unknown.bin (quest_id=0x035a).
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcQuestAccept, self).__init__(_io)
             self._parent = _parent
@@ -4047,7 +4075,9 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.quest_id = self._io.read_u2be()
+            self.opaque = self._io.read_bytes(14)
 
 
         def _fetch_instances(self):
@@ -4716,7 +4746,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcSquadInviteCancel(KaitaiStruct):
-        """Cancel Squad invite."""
+        """ACK for cancelling an outbound squad-invite. 11 bytes: status + invitee uid.
+        Confirmed against capture ac_0060_unknown.bin (status=0 = success).
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcSquadInviteCancel, self).__init__(_io)
             self._parent = _parent
@@ -4724,7 +4756,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.uid = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -4747,6 +4780,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcSquadInviteSend(KaitaiStruct):
+        """ACK for outbound squad-invite. 11 bytes: status + invitee uid.
+        Confirmed against capture ac_005f_unknown.bin.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcSquadInviteSend, self).__init__(_io)
             self._parent = _parent
@@ -4754,7 +4790,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.uid = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -5225,6 +5262,12 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcUseBlueprint(KaitaiStruct):
+        """ACK for using a blueprint (crafting). Header is well-defined; the
+        remaining payload is a long bit-packed structure (cs0-encoded
+        strings + counts) — left opaque pending RE.
+        Confirmed against capture ac_00e3_unknown.bin (7440B): blueprint
+        name "BP_Iridium_plate".
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcUseBlueprint, self).__init__(_io)
             self._parent = _parent
@@ -5232,7 +5275,9 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.blueprint_def_name = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
+            self.payload = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):

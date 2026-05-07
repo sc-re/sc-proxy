@@ -3,6 +3,7 @@
 
 import kaitaistruct
 from kaitaistruct import KaitaiStruct, KaitaiStream, BytesIO
+from enum import IntEnum
 
 
 if getattr(kaitaistruct, 'API_VERSION', (0, 9)) < (0, 11):
@@ -1838,9 +1839,8 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.unknown = self._io.read_u4be()
             self.slot = self._io.read_u1()
-            self.vessel_id = self._io.read_u4be()
+            self.vessel_id = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -1855,7 +1855,8 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.slot = self._io.read_u1()
+            self.def_name = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
 
 
         def _fetch_instances(self):
@@ -1870,7 +1871,8 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.slot1 = self._io.read_u1()
+            self.slot2 = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -2645,6 +2647,15 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcExchangeGold(KaitaiStruct):
+        """Request the exchange of gold for credits."""
+
+        class CreditGsLevel(IntEnum):
+            gs20_credits_140_000 = 0
+            gs100_credits_740_000 = 1
+            gs1_000_credits_7_700_000 = 2
+            gs2_500_credits_19_900_000 = 3
+            gs5_000_credits_41_200_000 = 4
+            gs10_000_credits_87_500_000 = 5
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcExchangeGold, self).__init__(_io)
             self._parent = _parent
@@ -2652,7 +2663,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.id = KaitaiStream.resolve_enum(StarConflictPackageClient.AcExchangeGold.CreditGsLevel, self._io.read_u1())
 
 
         def _fetch_instances(self):
@@ -4353,7 +4364,7 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcSquadInviteCancel(KaitaiStruct):
-        """Cancel Squad invite."""
+        """Cancel a pending outbound squad-invite by UID."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcSquadInviteCancel, self).__init__(_io)
             self._parent = _parent
@@ -4361,7 +4372,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.uid = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -4384,6 +4395,7 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcSquadInviteSend(KaitaiStruct):
+        """Request to invite player by UID into the player's squad."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcSquadInviteSend, self).__init__(_io)
             self._parent = _parent
@@ -4391,7 +4403,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.uid = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -4583,7 +4595,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.talent_set = self._io.read_u4be()
 
 
         def _fetch_instances(self):
@@ -4964,7 +4976,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.iid = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -5047,6 +5059,10 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcVesselChangeMunition(KaitaiStruct):
+
+        class SlotType(IntEnum):
+            ammunition = 0
+            missile = 1
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcVesselChangeMunition, self).__init__(_io)
             self._parent = _parent
@@ -5054,7 +5070,10 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.vessel_id = self._io.read_u8be()
+            self.slot = KaitaiStream.resolve_enum(StarConflictPackageClient.AcVesselChangeMunition.SlotType, self._io.read_u1())
+            self.resource = self._io.read_u1()
+            self.def_name = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
 
 
         def _fetch_instances(self):
@@ -5175,8 +5194,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.unknown = self._io.read_u4be()
-            self.vessel_id = self._io.read_u4be()
+            self.vessel_id = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -5222,8 +5240,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.unknown = self._io.read_u4be()
-            self.vessel_id = self._io.read_u4be()
+            self.vessel_id = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -5239,8 +5256,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.unknown = self._io.read_u4be()
-            self.vessel_id = self._io.read_u4be()
+            self.vessel_id = self._io.read_u8be()
             self.flags = self._io.read_u1()
 
 
@@ -5309,6 +5325,11 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcVesselTransferMunition(KaitaiStruct):
+        """Switch Munition between two vessels."""
+
+        class SlotType(IntEnum):
+            ammunition = 0
+            missile = 1
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcVesselTransferMunition, self).__init__(_io)
             self._parent = _parent
@@ -5316,7 +5337,10 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.vessel_id1 = self._io.read_u8be()
+            self.vessel_id2 = self._io.read_u8be()
+            self.slot1 = KaitaiStream.resolve_enum(StarConflictPackageClient.AcVesselTransferMunition.SlotType, self._io.read_u1())
+            self.slot2 = KaitaiStream.resolve_enum(StarConflictPackageClient.AcVesselTransferMunition.SlotType, self._io.read_u1())
 
 
         def _fetch_instances(self):

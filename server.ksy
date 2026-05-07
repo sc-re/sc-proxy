@@ -278,10 +278,19 @@ seq:
         0x6800: zone_player_status     # brief player status: 3B id + varying value (19B)
 types:
   ac_load_initial_player_data:
-    doc: Server response to initial load; variable content (login data or keepalive)
+    doc: |
+      Server response to initial load. ENORMOUS body — captured at
+      236850 bytes (ac_0000_load_initial_player_data.bin). Carries the
+      full player snapshot: vessel inventory, modules, equipment loadouts,
+      quest progress, factions, account info, etc. Format is a deeply
+      nested bit-packed/cs0-encoded stream produced by the same
+      Bag/BitStream library as SCMD_NOTIFICATION but with per-field
+      structures rather than uniform property bags. Beyond a single-byte
+      probe at the start the layout cannot be modelled in static kaitai
+      without per-section custom processors — left opaque.
     seq:
-    - id: dummy
-      type: u1
+    - id: payload
+      size-eos: true
   ac_server_info:
     doc: |
       Server metadata. The 20-byte canonical form is memcpy'd verbatim
@@ -404,9 +413,17 @@ types:
     - id: dummy
       type: u1
   ac_mottos_set_active:
+    doc: |
+      List of acquired motto / taunt strings the player can equip.
+      Confirmed against capture ac_000f_taunts.bin (62B, 6 entries).
     seq:
-    - id: dummy
-      type: u1
+    - id: count
+      type: u4be
+    - id: taunts
+      type: strz
+      encoding: ASCII
+      repeat: expr
+      repeat-expr: count
   ac_choose_starting_station:
     seq:
     - id: dummy
@@ -445,9 +462,17 @@ types:
     - id: dummy
       type: u1
   ac_quest_accept:
+    doc: |
+      19 bytes. Same shape as ac_quest_change (just shorter opaque tail):
+      echo + u8(status=0) + u16be(quest_id_echo) + 14B opaque payload.
+      Confirmed against capture ac_0019_unknown.bin (quest_id=0x035a).
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: quest_id
+      type: u2be
+    - id: opaque
+      size: 14
   ac_quest_change:
     doc: |
       21 bytes. Request: echo + u16be(quest_id).
@@ -803,14 +828,23 @@ types:
     - id: dummy
       type: u1
   ac_squad_invite_send:
+    doc: |
+      ACK for outbound squad-invite. 11 bytes: status + invitee uid.
+      Confirmed against capture ac_005f_unknown.bin.
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: uid
+      type: u8be
   ac_squad_invite_cancel:
-    doc: Cancel Squad invite
+    doc: |
+      ACK for cancelling an outbound squad-invite. 11 bytes: status + invitee uid.
+      Confirmed against capture ac_0060_unknown.bin (status=0 = success).
     seq:
-     - id: dummy
-       type: u1
+    - id: status
+      type: u1
+    - id: uid
+      type: u8be
   ac_squad_kick:
     seq:
     - id: dummy
@@ -1615,9 +1649,20 @@ types:
     - id: dummy
       type: u1
   ac_use_blueprint:
+    doc: |
+      ACK for using a blueprint (crafting). Header is well-defined; the
+      remaining payload is a long bit-packed structure (cs0-encoded
+      strings + counts) — left opaque pending RE.
+      Confirmed against capture ac_00e3_unknown.bin (7440B): blueprint
+      name "BP_Iridium_plate".
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: blueprint_def_name
+      type: strz
+      encoding: ASCII
+    - id: payload
+      size-eos: true
   ac_sell_craft_resource:
     seq:
     - id: dummy
@@ -1631,9 +1676,16 @@ types:
     - id: dummy
       type: u1
   ac_learn_blueprint:
+    doc: |
+      ACK for learning a blueprint. status=0 success.
+      Confirmed against capture ac_00e7_unknown.bin (33B): blueprint name
+      "BP_Module_AdvancedHeal_T5_Rel".
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: blueprint_def_name
+      type: strz
+      encoding: ASCII
   ac_get_free_space_save_data:
     seq:
     - id: dummy
