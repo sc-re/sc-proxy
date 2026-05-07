@@ -738,12 +738,30 @@ types:
     - id: value
       type: f4be
   ac_vessel_change_equip:
+    doc: |
+      Server response to a vessel-equip change. Handler 0x082352c8 reads,
+      bit-packed:
+        u8   status                                (0 = success)
+        u8be vessel_id
+        if status == 0:
+          35 × u8be slot_module_id                 (full vessel loadout)
+          u1   has_inventory_update
+          if has_inventory_update:
+            u4 num_items
+            num_items × {u8be id, cstring name (≤60), u4 quantity,
+                          u1 flag, u8be misc}    (same record as inventory)
+      Implemented in `ac_vessel_change_equip_body.AcVesselChangeEquipResponseBody`.
     seq:
-    - id: unknown
+    - id: data
+      type: ac_vessel_change_equip_response_body
       size-eos: true
   ac_vessel_change_equip_multi:
+    doc: |
+      Same server handler as ac_vessel_change_equip (0x082352c8) — body
+      shape identical.
     seq:
-    - id: unknown
+    - id: data
+      type: ac_vessel_change_equip_response_body
       size-eos: true
   ac_vessel_cheat_change_equip:
     doc: |

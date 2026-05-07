@@ -4,6 +4,7 @@
 import kaitaistruct
 from kaitaistruct import KaitaiStruct, KaitaiStream, BytesIO
 import bag_payload
+import ac_vessel_change_equip_request_body
 from enum import IntEnum
 
 
@@ -5093,6 +5094,9 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcVesselChangeEquip(KaitaiStruct):
+        """Equip a single module into one of the vessel's slots: u8be vessel_id +
+        u8 slot_idx + u8be module_id (17-byte body).
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcVesselChangeEquip, self).__init__(_io)
             self._parent = _parent
@@ -5100,14 +5104,21 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.unknown = self._io.read_bytes_full()
+            self._raw_data = self._io.read_bytes_full()
+            _io__raw_data = KaitaiStream(BytesIO(self._raw_data))
+            self.data = ac_vessel_change_equip_request_body.AcVesselChangeEquipRequestBody(_io__raw_data)
 
 
         def _fetch_instances(self):
             pass
+            self.data._fetch_instances()
 
 
     class AcVesselChangeEquipMulti(KaitaiStruct):
+        """Multi-slot equip. Same server handler as ac_vessel_change_equip
+        (0x082352c8); modelled identically here until we capture a multi
+        request to verify against.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcVesselChangeEquipMulti, self).__init__(_io)
             self._parent = _parent
@@ -5115,11 +5126,14 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.unknown = self._io.read_bytes_full()
+            self._raw_data = self._io.read_bytes_full()
+            _io__raw_data = KaitaiStream(BytesIO(self._raw_data))
+            self.data = ac_vessel_change_equip_request_body.AcVesselChangeEquipRequestBody(_io__raw_data)
 
 
         def _fetch_instances(self):
             pass
+            self.data._fetch_instances()
 
 
     class AcVesselChangeMunition(KaitaiStruct):

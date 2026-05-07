@@ -15,6 +15,7 @@ import ac_quests_body
 import ac_ship_quests_body
 import ac_teaching_list_body
 import ac_universe_get_body
+import ac_vessel_change_equip_response_body
 from enum import IntEnum
 
 
@@ -6120,6 +6121,19 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcVesselChangeEquip(KaitaiStruct):
+        """Server response to a vessel-equip change. Handler 0x082352c8 reads,
+        bit-packed:
+          u8   status                                (0 = success)
+          u8be vessel_id
+          if status == 0:
+            35 × u8be slot_module_id                 (full vessel loadout)
+            u1   has_inventory_update
+            if has_inventory_update:
+              u4 num_items
+              num_items × {u8be id, cstring name (≤60), u4 quantity,
+                            u1 flag, u8be misc}    (same record as inventory)
+        Implemented in `ac_vessel_change_equip_body.AcVesselChangeEquipResponseBody`.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcVesselChangeEquip, self).__init__(_io)
             self._parent = _parent
@@ -6127,14 +6141,20 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.unknown = self._io.read_bytes_full()
+            self._raw_data = self._io.read_bytes_full()
+            _io__raw_data = KaitaiStream(BytesIO(self._raw_data))
+            self.data = ac_vessel_change_equip_response_body.AcVesselChangeEquipResponseBody(_io__raw_data)
 
 
         def _fetch_instances(self):
             pass
+            self.data._fetch_instances()
 
 
     class AcVesselChangeEquipMulti(KaitaiStruct):
+        """Same server handler as ac_vessel_change_equip (0x082352c8) — body
+        shape identical.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcVesselChangeEquipMulti, self).__init__(_io)
             self._parent = _parent
@@ -6142,11 +6162,14 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.unknown = self._io.read_bytes_full()
+            self._raw_data = self._io.read_bytes_full()
+            _io__raw_data = KaitaiStream(BytesIO(self._raw_data))
+            self.data = ac_vessel_change_equip_response_body.AcVesselChangeEquipResponseBody(_io__raw_data)
 
 
         def _fetch_instances(self):
             pass
+            self.data._fetch_instances()
 
 
     class AcVesselChangeMunition(KaitaiStruct):

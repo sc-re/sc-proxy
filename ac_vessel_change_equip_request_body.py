@@ -1,0 +1,3 @@
+"""Re-export of AcVesselChangeEquipRequestBody for the kaitai opaque-type
+naming convention (one module per type, lowercase snake_case)."""
+from ac_vessel_change_equip_body import AcVesselChangeEquipRequestBody
