@@ -2100,10 +2100,14 @@ types:
     - id: bag
       type: bag_payload
   ac_clan_history_get:
-    doc: Clan action history — a bag entry per event.
+    doc: |
+      Clan action history. Handler 0x0822f2da reads a u1 flag first; if
+      set, a bag follows with a numbered entry per event (each entry is
+      itself a bag with `action`, `time`, `params`). When the flag is 0
+      the body is just the single bit. See `prefixed_bag_payload`.
     seq:
     - id: bag
-      type: bag_payload
+      type: prefixed_bag_payload
   ac_related_quest_enable:
     doc: |
       Field sequence from handler at 0x0822d3f8 in OnRecieve dispatch.
@@ -2455,10 +2459,13 @@ types:
     - id: status
       type: u1
   ac_get_blueprints:
-    doc: Player blueprint inventory — a bag.
+    doc: |
+      Player blueprint inventory. Handler 0x0822d434 reads a u1 flag
+      first (negated and stored as an internal "loaded" state) then the
+      bag, so the body is `u1 + bag`. See `prefixed_bag_payload`.
     seq:
     - id: bag
-      type: bag_payload
+      type: prefixed_bag_payload
   ac_learn_blueprint:
     doc: |
       ACK for learning a blueprint. status=0 success.

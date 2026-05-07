@@ -4,6 +4,7 @@
 import kaitaistruct
 from kaitaistruct import KaitaiStruct, KaitaiStream, BytesIO
 import bag_payload
+import prefixed_bag_payload
 import fed_design_tgp_stream
 import ac_load_initial_player_data_body
 import ac_player_inventory_body
@@ -2395,7 +2396,11 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcClanHistoryGet(KaitaiStruct):
-        """Clan action history — a bag entry per event."""
+        """Clan action history. Handler 0x0822f2da reads a u1 flag first; if
+        set, a bag follows with a numbered entry per event (each entry is
+        itself a bag with `action`, `time`, `params`). When the flag is 0
+        the body is just the single bit. See `prefixed_bag_payload`.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcClanHistoryGet, self).__init__(_io)
             self._parent = _parent
@@ -2403,7 +2408,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.bag = bag_payload.BagPayload(self._io)
+            self.bag = prefixed_bag_payload.PrefixedBagPayload(self._io)
 
 
         def _fetch_instances(self):
@@ -3308,7 +3313,10 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcGetBlueprints(KaitaiStruct):
-        """Player blueprint inventory — a bag."""
+        """Player blueprint inventory. Handler 0x0822d434 reads a u1 flag
+        first (negated and stored as an internal "loaded" state) then the
+        bag, so the body is `u1 + bag`. See `prefixed_bag_payload`.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcGetBlueprints, self).__init__(_io)
             self._parent = _parent
@@ -3316,7 +3324,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.bag = bag_payload.BagPayload(self._io)
+            self.bag = prefixed_bag_payload.PrefixedBagPayload(self._io)
 
 
         def _fetch_instances(self):
