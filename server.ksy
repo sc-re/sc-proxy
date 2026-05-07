@@ -368,8 +368,8 @@ types:
       type: bag_payload
   ac_leave_tournament:
     seq:
-    - id: dummy
-      type: u1
+    - id: unknown
+      size-eos: true
   ac_get_userdata:
     doc: User-data dict (UI layout, preferences) — bag.
     seq:
@@ -387,13 +387,13 @@ types:
     - id: nickname
       type: strz
       encoding: ASCII
-    - id: dummy
-      type: u1
+    - id: unknown
+      size-eos: true
   ac_player_credits:
     doc: All currency balances for the player; variable-length, structure not fully understood
     seq:
-    - id: dummy
-      type: u1
+    - id: unknown
+      size-eos: true
   ac_player_stats:
     doc: 92B FIXED. Player stat record encoded as a bag.
     seq:
@@ -486,16 +486,16 @@ types:
       type: u1
   ac_add_account_aura:
     seq:
-    - id: dummy
-      type: u1
+    - id: unknown
+      size-eos: true
   ac_cancel_account_aura:
     seq:
-    - id: dummy
-      type: u1
+    - id: unknown
+      size-eos: true
   ac_quests:
     seq:
-    - id: dummy
-      type: u1
+    - id: unknown
+      size-eos: true
   ac_quest_accept:
     doc: |
       19 bytes. Same shape as ac_quest_change (just shorter opaque tail):
@@ -535,12 +535,12 @@ types:
       size-eos: true
   ac_quest_complete_all:
     seq:
-    - id: dummy
-      type: u1
+    - id: unknown
+      size-eos: true
   ac_ship_quests:
     seq:
-    - id: dummy
-      type: u1
+    - id: unknown
+      size-eos: true
   ac_ship_quest_start:
     doc: |
       Field sequence from handler at 0x082340f8 in OnRecieve dispatch.
@@ -559,8 +559,8 @@ types:
       type: u1
   ac_ship_quest_end:
     seq:
-    - id: dummy
-      type: u1
+    - id: unknown
+      size-eos: true
   ac_rewarded_tutorials:
     doc: List of tutorial IDs that have been completed and rewarded
     seq:
@@ -623,8 +623,8 @@ types:
       type: f4be
   ac_vessel_equipment:
     seq:
-    - id: dummy
-      type: u1
+    - id: unknown
+      size-eos: true
   ac_buy_item:
     doc: |
       Item-purchase ACK. 30B form is fail/queued (item_def empty).
@@ -638,12 +638,12 @@ types:
       size-eos: true
   ac_sell_item:
     seq:
-    - id: dummy
-      type: u1
+    - id: unknown
+      size-eos: true
   ac_sell_items:
     seq:
-    - id: dummy
-      type: u1
+    - id: unknown
+      size-eos: true
   ac_enchant_item:
     doc: |
       Field sequence from handler at 0x08234d86 in OnRecieve dispatch.
@@ -721,12 +721,12 @@ types:
       type: f4be
   ac_vessel_change_equip:
     seq:
-    - id: dummy
-      type: u1
+    - id: unknown
+      size-eos: true
   ac_vessel_change_equip_multi:
     seq:
-    - id: dummy
-      type: u1
+    - id: unknown
+      size-eos: true
   ac_vessel_cheat_change_equip:
     doc: |
       Field sequence from handler at 0x0823010c in OnRecieve dispatch.
@@ -922,8 +922,8 @@ types:
       type: u1
   ac_vessel_unlock_node:
     seq:
-    - id: dummy
-      type: u1
+    - id: unknown
+      size-eos: true
   ac_vessel_activate_node:
     doc: |
       Activate / unlock vessel skill node. 34B captures show:
@@ -1268,8 +1268,8 @@ types:
       type: u1
   ac_update_yup_purchases:
     seq:
-    - id: dummy
-      type: u1
+    - id: unknown
+      size-eos: true
   ac_check_yup_purchases:
     doc: |
       Field sequence from handler at 0x0822c796 in OnRecieve dispatch.
@@ -1287,8 +1287,8 @@ types:
   ac_friends_send_request:
     doc: Friends list with UIDs and per-friend data
     seq:
-    - id: dummy
-      type: u1
+    - id: unknown
+      size-eos: true
   ac_friends_accept_request:
     doc: Result of accepting a friend request; uid is the new friend
     seq:
@@ -1349,20 +1349,20 @@ types:
       type: u8be
   ac_social_suggest_steam:
     seq:
-    - id: dummy
-      type: u1
+    - id: unknown
+      size-eos: true
   ac_social_suggest_fb:
     seq:
-    - id: dummy
-      type: u1
+    - id: unknown
+      size-eos: true
   ac_social_suggest_vk:
     seq:
-    - id: dummy
-      type: u1
+    - id: unknown
+      size-eos: true
   ac_teaching_list:
     seq:
-    - id: dummy
-      type: u1
+    - id: unknown
+      size-eos: true
   ac_teaching_request_to_teacher:
     doc: |
       Field sequence from handler at 0x0822be79 in OnRecieve dispatch.
@@ -1480,8 +1480,8 @@ types:
       type: u1
   ac_lobby_list:
     seq:
-    - id: dummy
-      type: u1
+    - id: unknown
+      size-eos: true
   ac_lobby_join:
     doc: |
       Field sequence from handler at 0x0822b264 in OnRecieve dispatch.
@@ -1510,8 +1510,8 @@ types:
       size-eos: true
   ac_lobby_info:
     seq:
-    - id: dummy
-      type: u1
+    - id: unknown
+      size-eos: true
   ac_lobby_kick:
     doc: |
       Field sequence from handler at 0x0822b42a in OnRecieve dispatch.
@@ -1558,8 +1558,8 @@ types:
       size-eos: true
   ac_lobby_group_info:
     seq:
-    - id: dummy
-      type: u1
+    - id: unknown
+      size-eos: true
   ac_lobby_group_create:
     doc: |
       Field sequence from handler at 0x0822ac9c in OnRecieve dispatch.
@@ -1966,8 +1966,8 @@ types:
       encoding: ASCII
   ac_clan_ship_boost_building:
     seq:
-    - id: dummy
-      type: u1
+    - id: unknown
+      size-eos: true
   ac_clan_ship_repair:
     doc: |
       Field sequence from handler at 0x0822a4d0 in OnRecieve dispatch.
@@ -2354,8 +2354,8 @@ types:
       type: u4be
   ac_send_early_player_log:
     seq:
-    - id: dummy
-      type: u1
+    - id: unknown
+      size-eos: true
   ac_auto_pilot_space_station:
     doc: |
       Field sequence from handler at 0x0822cfb0 in OnRecieve dispatch.
@@ -2379,8 +2379,8 @@ types:
       type: u2be
   ac_zone_coordinator_gm_command:
     seq:
-    - id: dummy
-      type: u1
+    - id: unknown
+      size-eos: true
   ac_space_stations_population:
     doc: Per-station population dict — a bag.
     seq:
@@ -2416,8 +2416,8 @@ types:
       type: bag_payload
   ac_set_fb_token:
     seq:
-    - id: dummy
-      type: u1
+    - id: unknown
+      size-eos: true
   ac_get_fb_token:
     doc: Facebook token (18-byte blob, all-zero when not linked)
     seq:
@@ -2425,8 +2425,8 @@ types:
       size: 18
   ac_log_fb_event:
     seq:
-    - id: dummy
-      type: u1
+    - id: unknown
+      size-eos: true
   ac_get_craft_resources:
     doc: Craft-resource balances — a bag of u64 amounts.
     seq:
@@ -2449,8 +2449,8 @@ types:
       size-eos: true
   ac_sell_craft_resource:
     seq:
-    - id: dummy
-      type: u1
+    - id: unknown
+      size-eos: true
   ac_sell_craft_resources:
     doc: |
       Field sequence from handler at 0x0822c816 in OnRecieve dispatch.
@@ -2543,8 +2543,8 @@ types:
       type: u1
   ac_emm_change_ready:
     seq:
-    - id: dummy
-      type: u1
+    - id: unknown
+      size-eos: true
   ac_unlim_pve_upgrade_player_level:
     doc: |
       Field sequence from handler at 0x08233710 in OnRecieve dispatch.
@@ -2561,12 +2561,12 @@ types:
       type: u1
   ac_ta_stats_send_tutorial_entter:
     seq:
-    - id: dummy
-      type: u1
+    - id: unknown
+      size-eos: true
   ac_ta_stats_send_tutorial_exit:
     seq:
-    - id: dummy
-      type: u1
+    - id: unknown
+      size-eos: true
   ac_user_notes:
     doc: |
       Field sequence from handler at 0x0822f662 in OnRecieve dispatch.
@@ -2621,8 +2621,8 @@ types:
       repeat-expr: count
   ac_adventure_cancel:
     seq:
-    - id: dummy
-      type: u1
+    - id: unknown
+      size-eos: true
 
   # ── Open-space / zone session packet types ────────────────────────────────
   # These types are pushed by the server during open-space play.

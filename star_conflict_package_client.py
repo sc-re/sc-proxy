@@ -1552,7 +1552,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -1584,7 +1584,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -1599,7 +1599,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -1614,7 +1614,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -1629,7 +1629,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -1644,7 +1644,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -1675,7 +1675,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -1690,7 +1690,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -1705,7 +1705,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -1720,7 +1720,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -1757,7 +1757,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -1772,7 +1772,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -1787,7 +1787,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -1802,7 +1802,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -1817,7 +1817,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -1832,7 +1832,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -1896,7 +1896,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -1911,7 +1911,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -1926,7 +1926,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -1941,7 +1941,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -1956,7 +1956,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -1971,7 +1971,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -1986,7 +1986,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2001,7 +2001,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2016,7 +2016,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2031,7 +2031,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2046,7 +2046,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2061,7 +2061,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2076,7 +2076,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2091,7 +2091,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2106,7 +2106,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2121,7 +2121,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2136,7 +2136,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2151,7 +2151,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2166,7 +2166,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2181,7 +2181,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2196,7 +2196,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2211,7 +2211,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2226,7 +2226,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2241,7 +2241,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2256,7 +2256,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2271,7 +2271,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2286,7 +2286,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2301,7 +2301,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2316,7 +2316,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2391,7 +2391,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2406,7 +2406,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2421,7 +2421,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2436,7 +2436,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2451,7 +2451,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2466,7 +2466,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2481,7 +2481,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2496,7 +2496,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2511,7 +2511,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2526,7 +2526,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2541,7 +2541,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2556,7 +2556,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2571,7 +2571,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2586,7 +2586,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2601,7 +2601,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2616,7 +2616,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2631,7 +2631,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2646,7 +2646,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2661,7 +2661,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2700,7 +2700,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2715,7 +2715,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2730,7 +2730,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2761,7 +2761,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2828,7 +2828,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2843,7 +2843,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2858,7 +2858,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2873,7 +2873,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2888,7 +2888,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2929,7 +2929,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2944,7 +2944,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2959,7 +2959,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2974,7 +2974,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -2989,7 +2989,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3004,7 +3004,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3056,7 +3056,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3087,7 +3087,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3102,7 +3102,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3117,7 +3117,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3132,7 +3132,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3147,7 +3147,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3162,7 +3162,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3177,7 +3177,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3192,7 +3192,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3207,7 +3207,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3222,7 +3222,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3256,7 +3256,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3271,7 +3271,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3286,7 +3286,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3301,7 +3301,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3316,7 +3316,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3331,7 +3331,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3346,7 +3346,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3361,7 +3361,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3376,7 +3376,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3407,7 +3407,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3422,7 +3422,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3437,7 +3437,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3452,7 +3452,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3467,7 +3467,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3482,7 +3482,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3497,7 +3497,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3512,7 +3512,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3527,7 +3527,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3577,7 +3577,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3592,7 +3592,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3607,7 +3607,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3654,7 +3654,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3669,7 +3669,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3684,7 +3684,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3699,7 +3699,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3714,7 +3714,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3729,7 +3729,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3744,7 +3744,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3759,7 +3759,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3774,7 +3774,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3789,7 +3789,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3804,7 +3804,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3819,7 +3819,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3834,7 +3834,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3849,7 +3849,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3903,7 +3903,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3918,7 +3918,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3933,7 +3933,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3948,7 +3948,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3963,7 +3963,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3978,7 +3978,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -3993,7 +3993,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -4008,7 +4008,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -4023,7 +4023,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -4038,7 +4038,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -4053,7 +4053,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -4085,7 +4085,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -4116,7 +4116,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -4131,7 +4131,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -4187,7 +4187,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -4202,7 +4202,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -4217,7 +4217,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -4232,7 +4232,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -4279,7 +4279,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -4294,7 +4294,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -4309,7 +4309,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -4356,7 +4356,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -4371,7 +4371,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -4402,7 +4402,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -4433,7 +4433,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -4464,7 +4464,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -4479,7 +4479,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -4494,7 +4494,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -4509,7 +4509,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -4556,7 +4556,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -4571,7 +4571,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -4586,7 +4586,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -4656,7 +4656,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -4671,7 +4671,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -4686,7 +4686,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -4701,7 +4701,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -4732,7 +4732,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -4747,7 +4747,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -4762,7 +4762,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -4777,7 +4777,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -4792,7 +4792,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -4807,7 +4807,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -4838,7 +4838,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -4853,7 +4853,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -4868,7 +4868,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -4883,7 +4883,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -4898,7 +4898,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -4913,7 +4913,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -4928,7 +4928,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -4943,7 +4943,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -5010,7 +5010,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -5025,7 +5025,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -5055,7 +5055,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -5070,7 +5070,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -5085,7 +5085,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -5100,7 +5100,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -5115,7 +5115,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -5152,7 +5152,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -5167,7 +5167,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -5182,7 +5182,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -5197,7 +5197,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -5212,7 +5212,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -5227,7 +5227,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -5242,7 +5242,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -5273,7 +5273,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -5288,7 +5288,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -5336,7 +5336,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -5351,7 +5351,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -5366,7 +5366,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -5381,7 +5381,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -5419,7 +5419,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -5469,7 +5469,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -5484,7 +5484,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.unknown = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
