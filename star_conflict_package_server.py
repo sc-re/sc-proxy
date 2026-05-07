@@ -9,12 +9,13 @@ import fed_design_tgp_stream
 import ac_friends_send_request_body
 import ac_load_initial_player_data_body
 import ac_lobby_info_body
-import ac_player_credits_body
 import ac_player_inventory_body
 import ac_quests_body
 import ac_ship_quests_body
 import ac_teaching_list_body
 import ac_universe_get_body
+import ac_use_blueprint_response_body
+import ac_user_profile_get_response_body
 import ac_vessel_change_equip_response_body
 from enum import IntEnum
 
@@ -4401,10 +4402,12 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcPlayerCredits(KaitaiStruct):
-        """Player wallet snapshot. Handler 0x08231c56 reads a u16 flag word
-        then conditionally pulls u64 currency balances per flag bit, plus
-        two sub-readers for additional fields. Surfaced through
-        ac_unknown_bodies.AcPlayerCreditsBody (header decoded, tail opaque).
+        """Player wallet snapshot. Handler 0x08231c56 → FUN_088e9ec0 reads
+        a u16 flag word then byte-aligned per-bit currency balances:
+        bit 1 → credits, bit 2 → goldCredits, bit 3 → tokenCredits,
+        bit 4 → loyalty + loyalty_time, bit 5 → vid, bit 6 → premium,
+        bit 7 → 5 × craft resources. All fields are byte-sized so the
+        layout maps cleanly to native kaitai.
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcPlayerCredits, self).__init__(_io)
@@ -4413,14 +4416,73 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self._raw_data = self._io.read_bytes_full()
-            _io__raw_data = KaitaiStream(BytesIO(self._raw_data))
-            self.data = ac_player_credits_body.AcPlayerCreditsBody(_io__raw_data)
+            self.flags = self._io.read_u2be()
+            if self.flags & 2 != 0:
+                pass
+                self.credits = self._io.read_u8be()
+
+            if self.flags & 4 != 0:
+                pass
+                self.gold_credits = self._io.read_u8be()
+
+            if self.flags & 8 != 0:
+                pass
+                self.token_credits = self._io.read_u8be()
+
+            if self.flags & 16 != 0:
+                pass
+                self.loyalty = self._io.read_u8be()
+
+            if self.flags & 16 != 0:
+                pass
+                self.loyalty_time = self._io.read_u8be()
+
+            if self.flags & 32 != 0:
+                pass
+                self.vid = self._io.read_u8be()
+
+            if self.flags & 64 != 0:
+                pass
+                self.premium = self._io.read_u4be()
+
+            if self.flags & 128 != 0:
+                pass
+                self.craft_resources = []
+                for i in range(5):
+                    self.craft_resources.append(self._io.read_u4be())
+
+
 
 
         def _fetch_instances(self):
             pass
-            self.data._fetch_instances()
+            if self.flags & 2 != 0:
+                pass
+
+            if self.flags & 4 != 0:
+                pass
+
+            if self.flags & 8 != 0:
+                pass
+
+            if self.flags & 16 != 0:
+                pass
+
+            if self.flags & 16 != 0:
+                pass
+
+            if self.flags & 32 != 0:
+                pass
+
+            if self.flags & 64 != 0:
+                pass
+
+            if self.flags & 128 != 0:
+                pass
+                for i in range(len(self.craft_resources)):
+                    pass
+
+
 
 
     class AcPlayerInventory(KaitaiStruct):
@@ -5931,11 +5993,23 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcUseBlueprint(KaitaiStruct):
-        """ACK for using a blueprint (crafting). Header is well-defined; the
-        remaining payload is a long bit-packed structure (cs0-encoded
-        strings + counts) — left opaque pending RE.
-        Confirmed against capture ac_00e3_unknown.bin (7440B): blueprint
-        name "BP_Iridium_plate".
+        """ACK for using a blueprint. Handler 0x0822c85a reads, when
+        status == 0:
+          u1   status
+          cstring blueprint_def_name        (e.g. "BP_Iridium_plate")
+          u1   ui_flag                      (controls UI notification)
+          bag  result                       (a property bag with crafted
+                                             item details — bit-aligned)
+          cstring secondary_name
+          u1   misc_a
+          u1   num_item_ids
+          num_item_ids × u4 item_id
+          u1   has_extra
+          if has_extra: i4 + u4 + u8        (bonus / overflow data)
+        
+        The bag-in-the-middle makes everything after it bit-aligned, so we
+        cannot natively express the trailing fields in kaitai. Surfaced
+        through `ac_use_blueprint_response_body` for the bit-aligned tail.
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcUseBlueprint, self).__init__(_io)
@@ -5944,13 +6018,14 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.status = self._io.read_u1()
-            self.blueprint_def_name = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
-            self.payload = self._io.read_bytes_full()
+            self._raw_data = self._io.read_bytes_full()
+            _io__raw_data = KaitaiStream(BytesIO(self._raw_data))
+            self.data = ac_use_blueprint_response_body.AcUseBlueprintResponseBody(_io__raw_data)
 
 
         def _fetch_instances(self):
             pass
+            self.data._fetch_instances()
 
 
     class AcUserNotes(KaitaiStruct):
@@ -6008,8 +6083,15 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcUserProfileGet(KaitaiStruct):
-        """Field sequence from handler at 0x0822ed43 in OnRecieve dispatch.
-        Reads: u16
+        """Bulk player-profile dump. Handler 0x0822ed43 reads u2 num_records
+        then `num_records` × per-profile records via FUN_08922e60 (init) +
+        FUN_08924e60 (the heavy reader). Each record is bit-packed and
+        flag-driven: the inner reader exposes u8 uid, then a u32 flags
+        word, then optional fields per bit (clan, alliance, rating, big
+        ship-stats arrays at offsets +0x4ee and +0x26b4 of the in-memory
+        struct, leaderboard entries, achievements). Surfaced through
+        `ac_user_profile_get_response_body`; only the leading u2 count is
+        currently exposed cleanly.
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcUserProfileGet, self).__init__(_io)
@@ -6018,11 +6100,14 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.value = self._io.read_u2be()
+            self._raw_data = self._io.read_bytes_full()
+            _io__raw_data = KaitaiStream(BytesIO(self._raw_data))
+            self.data = ac_user_profile_get_response_body.AcUserProfileGetResponseBody(_io__raw_data)
 
 
         def _fetch_instances(self):
             pass
+            self.data._fetch_instances()
 
 
     class AcVesselActivateNode(KaitaiStruct):
@@ -6281,8 +6366,10 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcVesselExtractExp(KaitaiStruct):
-        """Field sequence from handler at 0x0822f3ad in OnRecieve dispatch.
-        Reads: u8
+        """Server response after a vessel-XP extraction. Handler 0x0822f3ad
+        reads u1 status; on success, follows with a u4 extracted_amount,
+        a u4 count, and `count` × {u8 vessel_id, u4 new_xp_value} records.
+        Fully byte-aligned.
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcVesselExtractExp, self).__init__(_io)
@@ -6292,10 +6379,54 @@ class StarConflictPackageServer(KaitaiStruct):
 
         def _read(self):
             self.status = self._io.read_u1()
+            if self.status == 0:
+                pass
+                self.extracted_amount = self._io.read_u4be()
+
+            if self.status == 0:
+                pass
+                self.num_vessels = self._io.read_u4be()
+
+            if self.status == 0:
+                pass
+                self.vessels = []
+                for i in range(self.num_vessels):
+                    self.vessels.append(StarConflictPackageServer.AcVesselExtractExp.VesselXpUpdate(self._io, self, self._root))
+
+
 
 
         def _fetch_instances(self):
             pass
+            if self.status == 0:
+                pass
+
+            if self.status == 0:
+                pass
+
+            if self.status == 0:
+                pass
+                for i in range(len(self.vessels)):
+                    pass
+                    self.vessels[i]._fetch_instances()
+
+
+
+        class VesselXpUpdate(KaitaiStruct):
+            def __init__(self, _io, _parent=None, _root=None):
+                super(StarConflictPackageServer.AcVesselExtractExp.VesselXpUpdate, self).__init__(_io)
+                self._parent = _parent
+                self._root = _root
+                self._read()
+
+            def _read(self):
+                self.vessel_id = self._io.read_u8be()
+                self.new_xp = self._io.read_u4be()
+
+
+            def _fetch_instances(self):
+                pass
+
 
 
     class AcVesselFreeCustomElements(KaitaiStruct):

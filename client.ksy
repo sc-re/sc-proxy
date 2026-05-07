@@ -534,21 +534,27 @@ types:
       type: u4be
   ac_vessel_change_equip:
     doc: |
-      Equip a single module into one of the vessel's slots: u8be vessel_id +
-      u8 slot_idx + u8be module_id (17-byte body).
+      Equip a single module into one of the vessel's slots — fully
+      byte-aligned, no bit-packing.
     seq:
-    - id: data
-      type: ac_vessel_change_equip_request_body
-      size-eos: true
+    - id: vessel_id
+      type: u8be
+    - id: slot_idx
+      type: u1
+    - id: module_id
+      type: u8be
   ac_vessel_change_equip_multi:
     doc: |
       Multi-slot equip. Same server handler as ac_vessel_change_equip
       (0x082352c8); modelled identically here until we capture a multi
       request to verify against.
     seq:
-    - id: data
-      type: ac_vessel_change_equip_request_body
-      size-eos: true
+    - id: vessel_id
+      type: u8be
+    - id: slot_idx
+      type: u1
+    - id: module_id
+      type: u8be
   ac_vessel_cheat_change_equip:
     seq:
     - id: unknown
@@ -610,9 +616,18 @@ types:
     - id: unknown
       size-eos: true
   ac_vessel_extract_exp:
+    doc: |
+      Request to extract experience from a list of vessels.
+      Fully byte-aligned: u4 count + count × u8 vessel_id + u4 amount.
     seq:
-    - id: unknown
-      size-eos: true
+    - id: num_vessels
+      type: u4be
+    - id: vessel_ids
+      type: u8be
+      repeat: expr
+      repeat-expr: num_vessels
+    - id: amount
+      type: u4be
   ac_vessel_levelup:
     doc: Level up vessel
     seq:
@@ -1386,9 +1401,14 @@ types:
     - id: unknown
       size-eos: true
   ac_use_blueprint:
+    doc: |
+      Use (craft from) a blueprint by name. Fully byte-aligned.
     seq:
-    - id: unknown
-      size-eos: true
+    - id: blueprint_name
+      type: strz
+      encoding: ASCII
+    - id: count
+      type: u4be
   ac_sell_craft_resource:
     seq:
     - id: unknown

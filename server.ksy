@@ -391,14 +391,41 @@ types:
       size-eos: true
   ac_player_credits:
     doc: |
-      Player wallet snapshot. Handler 0x08231c56 reads a u16 flag word
-      then conditionally pulls u64 currency balances per flag bit, plus
-      two sub-readers for additional fields. Surfaced through
-      ac_unknown_bodies.AcPlayerCreditsBody (header decoded, tail opaque).
+      Player wallet snapshot. Handler 0x08231c56 → FUN_088e9ec0 reads
+      a u16 flag word then byte-aligned per-bit currency balances:
+      bit 1 → credits, bit 2 → goldCredits, bit 3 → tokenCredits,
+      bit 4 → loyalty + loyalty_time, bit 5 → vid, bit 6 → premium,
+      bit 7 → 5 × craft resources. All fields are byte-sized so the
+      layout maps cleanly to native kaitai.
     seq:
-    - id: data
-      type: ac_player_credits_body
-      size-eos: true
+    - id: flags
+      type: u2be
+    - id: credits
+      type: u8be
+      if: 'flags & 0x02 != 0'
+    - id: gold_credits
+      type: u8be
+      if: 'flags & 0x04 != 0'
+    - id: token_credits
+      type: u8be
+      if: 'flags & 0x08 != 0'
+    - id: loyalty
+      type: u8be
+      if: 'flags & 0x10 != 0'
+    - id: loyalty_time
+      type: u8be
+      if: 'flags & 0x10 != 0'
+    - id: vid
+      type: u8be
+      if: 'flags & 0x20 != 0'
+    - id: premium
+      type: u4be
+      if: 'flags & 0x40 != 0'
+    - id: craft_resources
+      type: u4be
+      repeat: expr
+      repeat-expr: 5
+      if: 'flags & 0x80 != 0'
   ac_player_stats:
     doc: 92B FIXED. Player stat record encoded as a bag.
     seq:
@@ -851,11 +878,31 @@ types:
       size-eos: true
   ac_vessel_extract_exp:
     doc: |
-      Field sequence from handler at 0x0822f3ad in OnRecieve dispatch.
-      Reads: u8
+      Server response after a vessel-XP extraction. Handler 0x0822f3ad
+      reads u1 status; on success, follows with a u4 extracted_amount,
+      a u4 count, and `count` × {u8 vessel_id, u4 new_xp_value} records.
+      Fully byte-aligned.
     seq:
     - id: status
       type: u1
+    - id: extracted_amount
+      type: u4be
+      if: status == 0
+    - id: num_vessels
+      type: u4be
+      if: status == 0
+    - id: vessels
+      type: vessel_xp_update
+      repeat: expr
+      repeat-expr: num_vessels
+      if: status == 0
+    types:
+      vessel_xp_update:
+        seq:
+          - id: vessel_id
+            type: u8be
+          - id: new_xp
+            type: u4be
   ac_vessel_levelup:
     doc: |
       Vessel level-up confirmation. 29B FIXED:
@@ -2180,11 +2227,19 @@ types:
       type: u1
   ac_user_profile_get:
     doc: |
-      Field sequence from handler at 0x0822ed43 in OnRecieve dispatch.
-      Reads: u16
+      Bulk player-profile dump. Handler 0x0822ed43 reads u2 num_records
+      then `num_records` × per-profile records via FUN_08922e60 (init) +
+      FUN_08924e60 (the heavy reader). Each record is bit-packed and
+      flag-driven: the inner reader exposes u8 uid, then a u32 flags
+      word, then optional fields per bit (clan, alliance, rating, big
+      ship-stats arrays at offsets +0x4ee and +0x26b4 of the in-memory
+      struct, leaderboard entries, achievements). Surfaced through
+      `ac_user_profile_get_response_body`; only the leading u2 count is
+      currently exposed cleanly.
     seq:
-    - id: value
-      type: u2be
+    - id: data
+      type: ac_user_profile_get_response_body
+      size-eos: true
   ac_achievements:
     doc: |
       Field sequence from handler at 0x0822dd00 in OnRecieve dispatch.
@@ -2497,18 +2552,26 @@ types:
       type: bag_payload
   ac_use_blueprint:
     doc: |
-      ACK for using a blueprint (crafting). Header is well-defined; the
-      remaining payload is a long bit-packed structure (cs0-encoded
-      strings + counts) — left opaque pending RE.
-      Confirmed against capture ac_00e3_unknown.bin (7440B): blueprint
-      name "BP_Iridium_plate".
+      ACK for using a blueprint. Handler 0x0822c85a reads, when
+      status == 0:
+        u1   status
+        cstring blueprint_def_name        (e.g. "BP_Iridium_plate")
+        u1   ui_flag                      (controls UI notification)
+        bag  result                       (a property bag with crafted
+                                           item details — bit-aligned)
+        cstring secondary_name
+        u1   misc_a
+        u1   num_item_ids
+        num_item_ids × u4 item_id
+        u1   has_extra
+        if has_extra: i4 + u4 + u8        (bonus / overflow data)
+
+      The bag-in-the-middle makes everything after it bit-aligned, so we
+      cannot natively express the trailing fields in kaitai. Surfaced
+      through `ac_use_blueprint_response_body` for the bit-aligned tail.
     seq:
-    - id: status
-      type: u1
-    - id: blueprint_def_name
-      type: strz
-      encoding: ASCII
-    - id: payload
+    - id: data
+      type: ac_use_blueprint_response_body
       size-eos: true
   ac_sell_craft_resource:
     seq:

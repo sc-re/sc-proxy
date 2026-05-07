@@ -4,7 +4,6 @@
 import kaitaistruct
 from kaitaistruct import KaitaiStruct, KaitaiStream, BytesIO
 import bag_payload
-import ac_vessel_change_equip_request_body
 from enum import IntEnum
 
 
@@ -4922,6 +4921,8 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcUseBlueprint(KaitaiStruct):
+        """Use (craft from) a blueprint by name. Fully byte-aligned.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcUseBlueprint, self).__init__(_io)
             self._parent = _parent
@@ -4929,7 +4930,8 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.unknown = self._io.read_bytes_full()
+            self.blueprint_name = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
+            self.count = self._io.read_u4be()
 
 
         def _fetch_instances(self):
@@ -5094,8 +5096,8 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcVesselChangeEquip(KaitaiStruct):
-        """Equip a single module into one of the vessel's slots: u8be vessel_id +
-        u8 slot_idx + u8be module_id (17-byte body).
+        """Equip a single module into one of the vessel's slots — fully
+        byte-aligned, no bit-packing.
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcVesselChangeEquip, self).__init__(_io)
@@ -5104,14 +5106,13 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self._raw_data = self._io.read_bytes_full()
-            _io__raw_data = KaitaiStream(BytesIO(self._raw_data))
-            self.data = ac_vessel_change_equip_request_body.AcVesselChangeEquipRequestBody(_io__raw_data)
+            self.vessel_id = self._io.read_u8be()
+            self.slot_idx = self._io.read_u1()
+            self.module_id = self._io.read_u8be()
 
 
         def _fetch_instances(self):
             pass
-            self.data._fetch_instances()
 
 
     class AcVesselChangeEquipMulti(KaitaiStruct):
@@ -5126,14 +5127,13 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self._raw_data = self._io.read_bytes_full()
-            _io__raw_data = KaitaiStream(BytesIO(self._raw_data))
-            self.data = ac_vessel_change_equip_request_body.AcVesselChangeEquipRequestBody(_io__raw_data)
+            self.vessel_id = self._io.read_u8be()
+            self.slot_idx = self._io.read_u1()
+            self.module_id = self._io.read_u8be()
 
 
         def _fetch_instances(self):
             pass
-            self.data._fetch_instances()
 
 
     class AcVesselChangeMunition(KaitaiStruct):
@@ -5234,6 +5234,9 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcVesselExtractExp(KaitaiStruct):
+        """Request to extract experience from a list of vessels.
+        Fully byte-aligned: u4 count + count × u8 vessel_id + u4 amount.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcVesselExtractExp, self).__init__(_io)
             self._parent = _parent
@@ -5241,11 +5244,19 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.unknown = self._io.read_bytes_full()
+            self.num_vessels = self._io.read_u4be()
+            self.vessel_ids = []
+            for i in range(self.num_vessels):
+                self.vessel_ids.append(self._io.read_u8be())
+
+            self.amount = self._io.read_u4be()
 
 
         def _fetch_instances(self):
             pass
+            for i in range(len(self.vessel_ids)):
+                pass
+
 
 
     class AcVesselFreeCustomElements(KaitaiStruct):
