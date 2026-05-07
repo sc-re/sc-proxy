@@ -1,92 +1,61 @@
 """Opaque kaitai type — body of `ac_load_initial_player_data` (AC 0).
 
-WIRE FORMAT — 29-step bit-stream the handler at 0x0823103b walks:
+WIRE FORMAT — head of the bit-stream the handler at 0x0823103b walks:
 
-  pos   tag    addr        notes
-  ---   ----   ----------  ----------------------------------
-   0    u64    0x08231044
-   1    u32    0x08231050  → stored at endpoint+0x5f8
-   2    u1     0x08231064  early-return error gate
-   3    u32    0x0823108e
-   4    u1     0x082310a8
-   5    u64    0x082310bc
-   6    cstr60 0x082310ee  60-byte length-bound buffer
-   7    u32    0x082311f5
-   8    u32    0x08231362
-   9    u32    0x082314c9
-  10    BAG    0x082315bb
-  11    BAG    0x08231648
-  12    u32    0x082316c5
-  13    u1     0x08231703
-  14    u8     0x08231717
-  15    u8     0x08231736
-  16    i32    0x08231747
-  17    u1     0x08231755
-  18    BAG    0x0823177b
-  19    BAG    0x082317a7
-  20    i32    0x082317af
-  21    i32    0x082317bd
-  22    u1     0x082317cb
-  23    i32    0x082317d9
-  24    u64    0x0823181c
-  25    i32    0x08231a01
-  26    u1     0x08231a15
-  27    BAG    0x08231a2d
-  28    u8     0x08231a91
+  pos   tag      addr        stored at        notes
+  ---   ------   ----------  ---------------  ------------------------
+   0    u64      0x08231044
+   1    u32      0x08231050  endpoint+0x5f8
+   2    u1       0x08231064                   early-return error gate
+   3    u32      0x0823108e  endpoint+0x28e77c
+   4    u1       0x082310a8  endpoint+0xb632c
+   5    u64      0x082310bc  endpoint+0xb6324  (NOT the player's uid in
+                                               real captures — empirically
+                                               zero in 240 kB bodies)
+   6    cstr60   0x082310ee                   60-byte length-bound buffer
+                                               (NOT the player's nickname —
+                                               empirically empty in 240 kB
+                                               bodies; the nickname lives in
+                                               SCMD_AUTH_ACK / ac_player_
+                                               credentials instead)
 
-KNOWN LIMITATIONS:
-* Between the visible reader CALLs the handler invokes per-section
-  helpers (FUN_0824c9f0, FUN_08249a80, FUN_088fc1e0, FUN_088fcea0,
-  FUN_088fe1c0, FUN_088fe450) that *also consume bits from the same
-  stream*. Without recursively reverse-engineering each, our linear
-  walk drifts after the first BAG — 240 kB captures parse cleanly up
-  through field 9 (the third u32) and then diverge from the binary's
-  cursor, so bag_10 onward show garbage.
-* The handler tolerates short bodies via its m_lastReadOK flag — each
-  reader returns 0 on overflow rather than throwing. We mirror that by
-  catching EOFError on every field and stopping.
-* Sizes range from 2 B (echo-only) and 8 B (only first u64 read
-  succeeds) to ~240 kB full-state responses.
+…then 22 more reads (u32, BAG, i32, u8, etc.) which we no longer
+attempt to enumerate, because between every pair of visible reader
+CALLs the handler invokes deep sub-readers that *also consume bits*:
+
+  FUN_088fc1e0 — reads 3×cstr256 + 5×u32 + 3×f32 + 2×u1 + u64 +
+                 four count-prefixed lists, in a single call.
+  FUN_088fcea0, FUN_088fe1c0, FUN_088fe450 — similar shapes.
+
+So a linear walk past field 6 immediately drifts off the real cursor
+position; values past that point are garbage. Properly modelling those
+sub-readers is a multi-session RE task (each is hundreds of lines of
+dense pcode and several layers deep). Until then this opaque type only
+exposes the first 7 fields and stops.
+
+The handler tolerates short bodies via its m_lastReadOK flag — each
+reader returns 0 on overflow rather than throwing. We mirror that by
+catching EOFError on every field and stopping. Sizes range from 2 B
+(echo-only) and 8 B (only first u64 read succeeds) to ~240 kB full-
+state responses.
 """
 from __future__ import annotations
 from typing import Any
 
 from notification import BitReader, _read_bag, format_bag, Variant
 
-# Field-read sequence per the binary's handler at 0x0823103b. Re-extracted
-# after discovering 0x08b1b6d0 is a 2nd ReadBit alias the earlier walker
-# missed; the bit reads are critical because the bit-stream cursor would
-# otherwise drift and break every subsequent read.
+# Field-read sequence — only the prefix that's known reliable. Past field
+# `text_6` the handler invokes deep sub-readers that consume bits we
+# don't model, so any read past that point would yield misaligned junk.
+# (See the module docstring for the full 29-step list and why we stop.)
 _FIELD_SEQUENCE = [
-    ("field_0",   "u64"),    # 0x08231044  ReadU64
-    ("field_1",   "u32"),    # 0x08231050  ReadU32
-    ("flag_2",    "u1"),     # 0x08231064  ReadBit
-    ("field_3",   "u32"),    # 0x0823108e  ReadU32
-    ("flag_4",    "u1"),     # 0x082310a8  ReadBit
-    ("uid",       "u64"),    # 0x082310bc  ReadU64
-    ("nickname",  "cstr60"), # 0x082310ee  ReadCStringLen(60)
-    ("field_7",   "u32"),    # 0x082311f5  ReadU32
-    ("field_8",   "u32"),    # 0x08231362  ReadU32
-    ("field_9",   "u32"),    # 0x082314c9  ReadU32
-    ("bag_10",    "bag"),    # 0x082315bb  Bag_Deserialize
-    ("bag_11",    "bag"),    # 0x08231648  Bag_Deserialize
-    ("field_12",  "u32"),    # 0x082316c5  ReadU32
-    ("flag_13",   "u1"),     # 0x08231703  ReadBit
-    ("field_14",  "u8"),     # 0x08231717  ReadU8
-    ("field_15",  "u8"),     # 0x08231736  ReadU8
-    ("field_16",  "i32"),    # 0x08231747  ReadI32
-    ("flag_17",   "u1"),     # 0x08231755  ReadBit
-    ("bag_18",    "bag"),    # 0x0823177b  Bag_Deserialize
-    ("bag_19",    "bag"),    # 0x082317a7  Bag_Deserialize
-    ("field_20",  "i32"),    # 0x082317af  ReadI32
-    ("field_21",  "i32"),    # 0x082317bd  ReadI32
-    ("flag_22",   "u1"),     # 0x082317cb  ReadBit
-    ("field_23",  "i32"),    # 0x082317d9  ReadI32
-    ("field_24",  "u64"),    # 0x0823181c  ReadU64
-    ("field_25",  "i32"),    # 0x08231a01  ReadI32
-    ("flag_26",   "u1"),     # 0x08231a15  ReadBit
-    ("bag_27",    "bag"),    # 0x08231a2d  Bag_Deserialize
-    ("field_28",  "u8"),     # 0x08231a91  ReadU8
+    ("field_0",  "u64"),     # 0x08231044  ReadU64
+    ("field_1",  "u32"),     # 0x08231050  ReadU32           → endpoint+0x5f8
+    ("flag_2",   "u1"),      # 0x08231064  ReadBit           early-error gate
+    ("field_3",  "u32"),     # 0x0823108e  ReadU32           → endpoint+0x28e77c
+    ("flag_4",   "u1"),      # 0x082310a8  ReadBit           → endpoint+0xb632c
+    ("field_5",  "u64"),     # 0x082310bc  ReadU64           → endpoint+0xb6324
+    ("text_6",   "cstr60"),  # 0x082310ee  ReadCStringLen(60)
 ]
 
 
@@ -156,32 +125,17 @@ class AcLoadInitialPlayerDataBody:
         pass  # No lazy instances.
 
     def __repr__(self) -> str:
-        # The big captures' linear field walk diverges after field 9
-        # (handler dispatches into per-section sub-readers we don't model).
-        # Showing the bogus values past that point is misleading — instead,
-        # just summarise truncation and only print fully-consumed fields.
-        if self.consumed_fields == 0 and not self.error:
-            if not self.raw:
-                return "AcLoadInitialPlayerDataBody(empty body)"
-            return f"AcLoadInitialPlayerDataBody(too short: {len(self.raw)}B body, no fields parsed)"
-        # Truncation summary; never print fields beyond consumed_fields.
-        # We also stop at the first BAG since past that the cursor is
-        # known-unreliable for big captures.
-        first_bag = next(
-            (i for i, (n, t) in enumerate(_FIELD_SEQUENCE) if t == "bag"),
-            len(_FIELD_SEQUENCE),
-        )
-        safe = min(self.consumed_fields, first_bag)
+        if not self.raw:
+            return "AcLoadInitialPlayerDataBody(empty body)"
+        if self.consumed_fields == 0:
+            return f"AcLoadInitialPlayerDataBody({len(self.raw)}B, header too short)"
         head = f"AcLoadInitialPlayerDataBody({len(self.raw)}B"
-        if safe < self.consumed_fields:
-            head += f", parsed_fields={safe} (cursor unreliable past first BAG)"
-        elif self.consumed_fields < len(_FIELD_SEQUENCE):
-            head += f", truncated at field {self.consumed_fields}/{len(_FIELD_SEQUENCE)}"
-        for name, tag in _FIELD_SEQUENCE[:safe]:
-            v = getattr(self, name, None)
-            if tag == "bag" and isinstance(v, dict):
-                head += f" {name}=bag({len(v)})"
-            else:
-                head += f" {name}={v!r}"
+        if self.consumed_fields < len(_FIELD_SEQUENCE):
+            head += f", head={self.consumed_fields}/{len(_FIELD_SEQUENCE)}"
+        for name, _ in _FIELD_SEQUENCE[: self.consumed_fields]:
+            head += f" {name}={getattr(self, name)!r}"
+        # Be honest about what we don't decode, in one phrase rather than 22 None= lines.
+        if len(self.raw) > 256:
+            head += " <body+remainder not decoded; sub-readers consume bits>"
         head += ")"
         return head
