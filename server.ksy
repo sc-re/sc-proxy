@@ -356,27 +356,26 @@ types:
     - id: status
       type: u2be
   ac_mm_info:
-    doc: |
-      Matchmaking queue state update. Variable 213–305 bytes. Bit-packed,
-      structure not fully reversed. Byte 2 = flags (0x80 = in queue).
-      Subsequent bytes: player list + team compositions, encoded.
+    doc: Matchmaking queue state. Body is a single property bag.
     seq:
-    - id: flags
-      type: u1
-    - id: payload
-      size-eos: true
+    - id: bag
+      type: bag_payload
   ac_enter_tournament:
+    doc: Tournament entry ACK — u8 status + bag of state.
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: bag
+      type: bag_payload
   ac_leave_tournament:
     seq:
     - id: dummy
       type: u1
   ac_get_userdata:
+    doc: User-data dict (UI layout, preferences) — bag.
     seq:
-    - id: dummy
-      type: u1
+    - id: bag
+      type: bag_payload
   ac_set_userdata:
     seq:
     - id: unknown
@@ -397,9 +396,10 @@ types:
     - id: dummy
       type: u1
   ac_player_stats:
+    doc: 92B FIXED. Player stat record encoded as a bag.
     seq:
-    - id: dummy
-      type: u1
+    - id: bag
+      type: bag_payload
   ac_player_arc_balance:
     doc: |
       Field sequence from handler at 0x08232318 in OnRecieve dispatch.
@@ -2086,13 +2086,17 @@ types:
     - id: status
       type: u1
   ac_clan_list_recruiting:
+    doc: Recruiting clans — u8 status + bag list.
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: bag
+      type: bag_payload
   ac_clan_history_get:
+    doc: Clan action history — a bag entry per event.
     seq:
-    - id: dummy
-      type: u1
+    - id: bag
+      type: bag_payload
   ac_related_quest_enable:
     doc: |
       Field sequence from handler at 0x0822d3f8 in OnRecieve dispatch.
@@ -2280,9 +2284,10 @@ types:
     - id: dummy
       type: u1
   ac_space_stations_population:
+    doc: Per-station population dict — a bag.
     seq:
-    - id: dummy
-      type: u1
+    - id: bag
+      type: bag_payload
   ac_karma_reset:
     doc: |
       Field sequence from handler at 0x0822cdb6 in OnRecieve dispatch.
@@ -2298,13 +2303,19 @@ types:
     - id: status
       type: u1
   ac_leaderboard_get:
+    doc: Leaderboard — u8 status + bag of entries.
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: bag
+      type: bag_payload
   ac_leaderboard_get_descs:
+    doc: Leaderboard descriptors — u4be header + bag list.
     seq:
-    - id: dummy
-      type: u1
+    - id: header
+      type: u4be
+    - id: bag
+      type: bag_payload
   ac_set_fb_token:
     seq:
     - id: dummy
@@ -2319,9 +2330,10 @@ types:
     - id: dummy
       type: u1
   ac_get_craft_resources:
+    doc: Craft-resource balances — a bag of u64 amounts.
     seq:
-    - id: dummy
-      type: u1
+    - id: bag
+      type: bag_payload
   ac_use_blueprint:
     doc: |
       ACK for using a blueprint (crafting). Header is well-defined; the
@@ -2349,9 +2361,10 @@ types:
     - id: status
       type: u1
   ac_get_blueprints:
+    doc: Player blueprint inventory — a bag.
     seq:
-    - id: dummy
-      type: u1
+    - id: bag
+      type: bag_payload
   ac_learn_blueprint:
     doc: |
       ACK for learning a blueprint. status=0 success.
@@ -2364,9 +2377,10 @@ types:
       type: strz
       encoding: ASCII
   ac_get_free_space_save_data:
+    doc: Free-space save data — a bag.
     seq:
-    - id: dummy
-      type: u1
+    - id: bag
+      type: bag_payload
   ac_disassemble_item:
     doc: |
       Field sequence from handler at 0x0822ee0b in OnRecieve dispatch.
@@ -2390,9 +2404,10 @@ types:
     - id: result_flags
       type: u2be
   ac_get_visited_free_space_zones:
+    doc: Visited-zones bitmap — a bag.
     seq:
-    - id: dummy
-      type: u1
+    - id: bag
+      type: bag_payload
   ac_advert_create:
     doc: |
       3B (fail) or 61B (success).
@@ -2411,13 +2426,15 @@ types:
     - id: status
       type: u1
   ac_advert_header_get:
+    doc: Advert headers — a bag.
     seq:
-    - id: dummy
-      type: u1
+    - id: bag
+      type: bag_payload
   ac_advert_get:
+    doc: Single advert payload — a bag (advertId, vsender, …).
     seq:
-    - id: dummy
-      type: u1
+    - id: bag
+      type: bag_payload
   ac_buy_product_from_advert:
     doc: Simple ACK — echo(2B) + result byte (0 = success).
     seq:

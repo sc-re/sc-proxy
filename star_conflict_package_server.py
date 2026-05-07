@@ -3,6 +3,7 @@
 
 import kaitaistruct
 from kaitaistruct import KaitaiStruct, KaitaiStream, BytesIO
+import bag_payload
 from enum import IntEnum
 
 
@@ -1812,6 +1813,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcAdvertGet(KaitaiStruct):
+        """Single advert payload — a bag (advertId, vsender, …)."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcAdvertGet, self).__init__(_io)
             self._parent = _parent
@@ -1819,14 +1821,16 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.bag = bag_payload.BagPayload(self._io)
 
 
         def _fetch_instances(self):
             pass
+            self.bag._fetch_instances()
 
 
     class AcAdvertHeaderGet(KaitaiStruct):
+        """Advert headers — a bag."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcAdvertHeaderGet, self).__init__(_io)
             self._parent = _parent
@@ -1834,11 +1838,12 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.bag = bag_payload.BagPayload(self._io)
 
 
         def _fetch_instances(self):
             pass
+            self.bag._fetch_instances()
 
 
     class AcAttachEmail(KaitaiStruct):
@@ -2386,6 +2391,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcClanHistoryGet(KaitaiStruct):
+        """Clan action history — a bag entry per event."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcClanHistoryGet, self).__init__(_io)
             self._parent = _parent
@@ -2393,11 +2399,12 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.bag = bag_payload.BagPayload(self._io)
 
 
         def _fetch_instances(self):
             pass
+            self.bag._fetch_instances()
 
 
     class AcClanInviteAccept(KaitaiStruct):
@@ -2545,6 +2552,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcClanListRecruiting(KaitaiStruct):
+        """Recruiting clans — u8 status + bag list."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcClanListRecruiting, self).__init__(_io)
             self._parent = _parent
@@ -2552,11 +2560,13 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.bag = bag_payload.BagPayload(self._io)
 
 
         def _fetch_instances(self):
             pass
+            self.bag._fetch_instances()
 
 
     class AcClanQuestAccept(KaitaiStruct):
@@ -3092,6 +3102,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcEnterTournament(KaitaiStruct):
+        """Tournament entry ACK — u8 status + bag of state."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcEnterTournament, self).__init__(_io)
             self._parent = _parent
@@ -3099,11 +3110,13 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.bag = bag_payload.BagPayload(self._io)
 
 
         def _fetch_instances(self):
             pass
+            self.bag._fetch_instances()
 
 
     class AcExchangeGold(KaitaiStruct):
@@ -3288,6 +3301,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcGetBlueprints(KaitaiStruct):
+        """Player blueprint inventory — a bag."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcGetBlueprints, self).__init__(_io)
             self._parent = _parent
@@ -3295,14 +3309,16 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.bag = bag_payload.BagPayload(self._io)
 
 
         def _fetch_instances(self):
             pass
+            self.bag._fetch_instances()
 
 
     class AcGetCraftResources(KaitaiStruct):
+        """Craft-resource balances — a bag of u64 amounts."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcGetCraftResources, self).__init__(_io)
             self._parent = _parent
@@ -3310,11 +3326,12 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.bag = bag_payload.BagPayload(self._io)
 
 
         def _fetch_instances(self):
             pass
+            self.bag._fetch_instances()
 
 
     class AcGetFbToken(KaitaiStruct):
@@ -3334,6 +3351,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcGetFreeSpaceSaveData(KaitaiStruct):
+        """Free-space save data — a bag."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcGetFreeSpaceSaveData, self).__init__(_io)
             self._parent = _parent
@@ -3341,11 +3359,12 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.bag = bag_payload.BagPayload(self._io)
 
 
         def _fetch_instances(self):
             pass
+            self.bag._fetch_instances()
 
 
     class AcGetNicknames(KaitaiStruct):
@@ -3426,6 +3445,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcGetUserdata(KaitaiStruct):
+        """User-data dict (UI layout, preferences) — bag."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcGetUserdata, self).__init__(_io)
             self._parent = _parent
@@ -3433,14 +3453,16 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.bag = bag_payload.BagPayload(self._io)
 
 
         def _fetch_instances(self):
             pass
+            self.bag._fetch_instances()
 
 
     class AcGetVisitedFreeSpaceZones(KaitaiStruct):
+        """Visited-zones bitmap — a bag."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcGetVisitedFreeSpaceZones, self).__init__(_io)
             self._parent = _parent
@@ -3448,11 +3470,12 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.bag = bag_payload.BagPayload(self._io)
 
 
         def _fetch_instances(self):
             pass
+            self.bag._fetch_instances()
 
 
     class AcInvExtBuy(KaitaiStruct):
@@ -3496,6 +3519,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcLeaderboardGet(KaitaiStruct):
+        """Leaderboard — u8 status + bag of entries."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcLeaderboardGet, self).__init__(_io)
             self._parent = _parent
@@ -3503,14 +3527,17 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.bag = bag_payload.BagPayload(self._io)
 
 
         def _fetch_instances(self):
             pass
+            self.bag._fetch_instances()
 
 
     class AcLeaderboardGetDescs(KaitaiStruct):
+        """Leaderboard descriptors — u4be header + bag list."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcLeaderboardGetDescs, self).__init__(_io)
             self._parent = _parent
@@ -3518,11 +3545,13 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.header = self._io.read_u4be()
+            self.bag = bag_payload.BagPayload(self._io)
 
 
         def _fetch_instances(self):
             pass
+            self.bag._fetch_instances()
 
 
     class AcLeagueTeamCreate(KaitaiStruct):
@@ -4192,10 +4221,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcMmInfo(KaitaiStruct):
-        """Matchmaking queue state update. Variable 213–305 bytes. Bit-packed,
-        structure not fully reversed. Byte 2 = flags (0x80 = in queue).
-        Subsequent bytes: player list + team compositions, encoded.
-        """
+        """Matchmaking queue state. Body is a single property bag."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcMmInfo, self).__init__(_io)
             self._parent = _parent
@@ -4203,12 +4229,12 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.flags = self._io.read_u1()
-            self.payload = self._io.read_bytes_full()
+            self.bag = bag_payload.BagPayload(self._io)
 
 
         def _fetch_instances(self):
             pass
+            self.bag._fetch_instances()
 
 
     class AcMotd(KaitaiStruct):
@@ -4387,6 +4413,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcPlayerStats(KaitaiStruct):
+        """92B FIXED. Player stat record encoded as a bag."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcPlayerStats, self).__init__(_io)
             self._parent = _parent
@@ -4394,11 +4421,12 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.bag = bag_payload.BagPayload(self._io)
 
 
         def _fetch_instances(self):
             pass
+            self.bag._fetch_instances()
 
 
     class AcPlayerVessels(KaitaiStruct):
@@ -5120,6 +5148,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcSpaceStationsPopulation(KaitaiStruct):
+        """Per-station population dict — a bag."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcSpaceStationsPopulation, self).__init__(_io)
             self._parent = _parent
@@ -5127,11 +5156,12 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.bag = bag_payload.BagPayload(self._io)
 
 
         def _fetch_instances(self):
             pass
+            self.bag._fetch_instances()
 
 
     class AcSquadConvertToWing(KaitaiStruct):
