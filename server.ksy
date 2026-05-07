@@ -583,22 +583,25 @@ types:
       type: u8be
   ac_player_inventory:
     doc: |
-      Inventory load. Handler at 0x08233968 reads u4be count first; if
-      zero or read-fails (short body), the per-item u1+u4be inner reads
-      are skipped. Captures show 5B short-form (count read fails) and
-      multi-kB full-form. Wrap secondary fields with `if:` so short
-      bodies don't blow up.
+      Inventory dump. Handler at 0x08233968 reads, bit-packed:
+
+        u4be  num_items
+        num_items × {
+          u8be  item_id           (server-side primary key, small dense u64)
+          cstring  name (≤60 ch)  (8-bit chars in the bit-stream)
+          u4be  quantity          (1 for unique gear; >1 for stacked
+                                   ammo/consumables)
+          u1    flag              (set on a small subset — looks like
+                                   "currently equipped"/active state)
+          u8be  misc              (0 in our captures; probably expiry)
+        }
+        u8    cur_size            (matches captured 25 ↔ 10)
+        u4be  max_size            (matches captured 1500 ↔ 450)
+
+      Implemented in `ac_player_inventory_body.AcPlayerInventoryBody`.
     seq:
-    - id: count
-      type: u4be
-      if: '_io.size >= 6'
-    - id: field_1
-      type: u1
-      if: '_io.size >= 7'
-    - id: u32_2
-      type: u4be
-      if: '_io.size >= 11'
-    - id: payload
+    - id: data
+      type: ac_player_inventory_body
       size-eos: true
   ac_player_autogen_inventory:
     doc: |

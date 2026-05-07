@@ -6,6 +6,7 @@ from kaitaistruct import KaitaiStruct, KaitaiStream, BytesIO
 import bag_payload
 import fed_design_tgp_stream
 import ac_load_initial_player_data_body
+import ac_player_inventory_body
 from enum import IntEnum
 
 
@@ -4376,11 +4377,22 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcPlayerInventory(KaitaiStruct):
-        """Inventory load. Handler at 0x08233968 reads u4be count first; if
-        zero or read-fails (short body), the per-item u1+u4be inner reads
-        are skipped. Captures show 5B short-form (count read fails) and
-        multi-kB full-form. Wrap secondary fields with `if:` so short
-        bodies don't blow up.
+        """Inventory dump. Handler at 0x08233968 reads, bit-packed:
+        
+          u4be  num_items
+          num_items × {
+            u8be  item_id           (server-side primary key, small dense u64)
+            cstring  name (≤60 ch)  (8-bit chars in the bit-stream)
+            u4be  quantity          (1 for unique gear; >1 for stacked
+                                     ammo/consumables)
+            u1    flag              (set on a small subset — looks like
+                                     "currently equipped"/active state)
+            u8be  misc              (0 in our captures; probably expiry)
+          }
+          u8    cur_size            (matches captured 25 ↔ 10)
+          u4be  max_size            (matches captured 1500 ↔ 450)
+        
+        Implemented in `ac_player_inventory_body.AcPlayerInventoryBody`.
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcPlayerInventory, self).__init__(_io)
@@ -4389,32 +4401,14 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            if self._io.size() >= 6:
-                pass
-                self.count = self._io.read_u4be()
-
-            if self._io.size() >= 7:
-                pass
-                self.field_1 = self._io.read_u1()
-
-            if self._io.size() >= 11:
-                pass
-                self.u32_2 = self._io.read_u4be()
-
-            self.payload = self._io.read_bytes_full()
+            self._raw_data = self._io.read_bytes_full()
+            _io__raw_data = KaitaiStream(BytesIO(self._raw_data))
+            self.data = ac_player_inventory_body.AcPlayerInventoryBody(_io__raw_data)
 
 
         def _fetch_instances(self):
             pass
-            if self._io.size() >= 6:
-                pass
-
-            if self._io.size() >= 7:
-                pass
-
-            if self._io.size() >= 11:
-                pass
-
+            self.data._fetch_instances()
 
 
     class AcPlayerStats(KaitaiStruct):
