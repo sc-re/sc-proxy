@@ -5,12 +5,18 @@ C→S request (handler-implicit, 17B observed):
     u8   slot_idx
     u8be module_id
 
-S→C response (handler 0x082352c8, 296B observed):
+S→C response (handler 0x082352c8). The handler reads:
     u8   status                         (0 = success)
     u8be vessel_id
     if status == 0:
         35 × u8be slot_module_id        (full vessel loadout after change)
-        u1  has_inventory_update
+        cstring main_def_name (≤59)     ← FUN_08926690 #1
+        u8 main_qty
+        u8 main_flag
+        cstring secondary_def_name      ← FUN_08926690 #2
+        u8 secondary_qty
+        u8 secondary_flag
+        u1   has_inventory_update
         if has_inventory_update:
             u4  num_items
             num_items × {                (same record shape as ac_player_inventory)
@@ -84,9 +90,23 @@ class _InventoryDelta:
     items: List[tuple] = field(default_factory=list)
 
 
+def _read_change_record(br: BitReader):
+    """Reader matching FUN_08926690: cstring (max 59) + u8 + u8."""
+    name = bytearray()
+    for _ in range(59):
+        b = br.read_u8()
+        if b == 0:
+            break
+        name.append(b)
+    qty = br.read_u8()
+    flag = br.read_u8()
+    return (name.decode("utf-8", errors="replace"), qty, flag)
+
+
 class AcVesselChangeEquipResponseBody:
-    """Server response: status + full vessel loadout (35 slots) + optional
-    inventory delta. Same handler is reused for ac_vessel_change_equip_multi."""
+    """Server response: status + full vessel loadout (35 slots) +
+    two cstring change records (FUN_08926690 ×2) + optional inventory
+    delta. Same handler is reused for ac_vessel_change_equip_multi."""
 
     def __init__(self, _io, _parent=None, _root=None):
         self._raw: bytes = _io.read_bytes_full()
@@ -94,6 +114,8 @@ class AcVesselChangeEquipResponseBody:
         self.status: int = 0
         self.vessel_id: int = 0
         self.slots: List[int] = []
+        self.main_change: Optional[tuple] = None
+        self.secondary_change: Optional[tuple] = None
         self.has_inventory_update: bool = False
         self.inventory: Optional[_InventoryDelta] = None
         self.bits_consumed: int = 0
@@ -103,6 +125,8 @@ class AcVesselChangeEquipResponseBody:
             self.vessel_id = br.read_u64()
             if self.status == 0:
                 self.slots = [br.read_u64() for _ in range(35)]
+                self.main_change = _read_change_record(br)
+                self.secondary_change = _read_change_record(br)
                 self.has_inventory_update = br.read_bool()
                 if self.has_inventory_update:
                     n = br.read_u32()
@@ -123,7 +147,13 @@ class AcVesselChangeEquipResponseBody:
         slack = len(self._raw) * 8 - self.bits_consumed
         nonzero = sum(1 for s in self.slots if s != 0)
         inv_n = len(self.inventory.items) if self.inventory else 0
+        chg = []
+        if self.main_change and self.main_change[0]:
+            chg.append(f"main={self.main_change[0]!r}")
+        if self.secondary_change and self.secondary_change[0]:
+            chg.append(f"secondary={self.secondary_change[0]!r}")
+        chg_str = ", ".join(chg) if chg else "(no changes)"
         return (f"AcVesselChangeEquipResponse({len(self._raw)}B, "
                 f"status={self.status}, vessel=0x{self.vessel_id:x}, "
                 f"slots={nonzero}/{len(self.slots)} fitted, "
-                f"inv_delta={inv_n}, slack={slack}b)")
+                f"{chg_str}, inv_delta={inv_n}, slack={slack}b)")

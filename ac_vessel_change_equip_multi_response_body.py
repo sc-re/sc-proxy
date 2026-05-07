@@ -1,37 +1,33 @@
 """Bit-stream parser for ac_vessel_change_equip_multi server-to-client response.
 
-The multi-change response shares handler 0x082352c8 with the single-equip
-variant but, after the standard prefix, includes a per-change list and a
-much longer tail (sometimes the entire inventory at ~65 KB).
-
-Confirmed prefix (same as single-equip):
-    u8   status                 (0 = success)
+Shares handler 0x082352c8 with the single-equip variant; layout is
+identical:
+    u8   status
     u8be vessel_id
-    35 × u8be slot_module_id    (full vessel loadout after the changes)
+    if status == 0:
+        35 × u8be slot_module_id
+        cstring main_def_name (≤59) + u8 qty + u8 flag    (FUN_08926690 #1)
+        cstring secondary_def_name + u8 qty + u8 flag      (FUN_08926690 #2)
+        u1   has_inventory_update
+        if has_inventory_update:
+            u4 num_items
+            num_items × inventory_item                     (same shape as
+                                                            ac_player_inventory)
 
-Trailing region observed in 64967-byte capture:
-    Byte 289 onwards: pairs of `cstring item_name + u1 + u1`, e.g.
-        "WeaponMod_RailPerfect_Mk1\0\x01\x01"
-        "SpaceMissile_AAMSlow_T5_Mk3\0\x01\x01"
-    Then a binary trailer with cs0-encoded module ids and a long
-    inventory delta.
-
-Without a count field for the cstring list, we just scan forward
-extracting any clean cstring at the byte cursor while we can; once we
-hit non-printable bytes we stop and report the rest as opaque.
+Across the four captures we have, the multi response is always
+~64 KB — that's the inventory delta carrying the player's full
+post-action inventory. Decoding the inventory delta works the same
+way as in `ac_player_inventory_body`.
 """
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from notification import BitReader
 
-
-@dataclass
-class _ChangeRecord:
-    item_name: str
-    flag_a: int
-    flag_b: int
+from ac_vessel_change_equip_body import (
+    _read_change_record, _read_inventory_item, _InventoryDelta,
+)
 
 
 class AcVesselChangeEquipMultiResponseBody:
@@ -41,8 +37,10 @@ class AcVesselChangeEquipMultiResponseBody:
         self.status: int = 0
         self.vessel_id: int = 0
         self.slots: List[int] = []
-        self.changes: List[_ChangeRecord] = []
-        self.tail_bytes: bytes = b""
+        self.main_change: Optional[Tuple[str, int, int]] = None
+        self.secondary_change: Optional[Tuple[str, int, int]] = None
+        self.has_inventory_update: bool = False
+        self.inventory: Optional[_InventoryDelta] = None
         self.bits_consumed: int = 0
         try:
             br = BitReader(self._raw)
@@ -50,25 +48,16 @@ class AcVesselChangeEquipMultiResponseBody:
             self.vessel_id = br.read_u64()
             if self.status == 0:
                 self.slots = [br.read_u64() for _ in range(35)]
-                # the rest is byte-aligned; switch to byte indexing
-                byte_off = br.pos // 8
-                # scan for cstring entries while bytes look like printable ASCII
-                while byte_off < len(self._raw):
-                    end = self._raw.find(b"\x00", byte_off)
-                    if end < 0 or end == byte_off:
-                        break
-                    name = self._raw[byte_off:end]
-                    if not all(0x20 <= b < 0x7F for b in name):
-                        break
-                    if end + 2 >= len(self._raw):
-                        break
-                    flag_a = self._raw[end + 1]
-                    flag_b = self._raw[end + 2]
-                    self.changes.append(
-                        _ChangeRecord(name.decode("ascii"), flag_a, flag_b))
-                    byte_off = end + 3
-                self.tail_bytes = self._raw[byte_off:]
-            self.bits_consumed = br.pos + (len(self._raw) - br.pos // 8) * 8 - len(self.tail_bytes) * 8
+                self.main_change = _read_change_record(br)
+                self.secondary_change = _read_change_record(br)
+                self.has_inventory_update = br.read_bool()
+                if self.has_inventory_update:
+                    n = br.read_u32()
+                    inv = _InventoryDelta()
+                    for _ in range(n):
+                        inv.items.append(_read_inventory_item(br))
+                    self.inventory = inv
+            self.bits_consumed = br.pos
         except Exception as e:
             self.error = f"{type(e).__name__}: {e}"
 
@@ -78,9 +67,16 @@ class AcVesselChangeEquipMultiResponseBody:
     def __repr__(self) -> str:
         if self.error:
             return f"AcVesselChangeEquipMultiResponseBody(<error: {self.error}>)"
-        nonzero = sum(1 for s in self.slots if s)
-        names = [c.item_name for c in self.changes]
+        slack = len(self._raw) * 8 - self.bits_consumed
+        nonzero = sum(1 for s in self.slots if s != 0)
+        inv_n = len(self.inventory.items) if self.inventory else 0
+        chg = []
+        if self.main_change and self.main_change[0]:
+            chg.append(f"main={self.main_change[0]!r}")
+        if self.secondary_change and self.secondary_change[0]:
+            chg.append(f"secondary={self.secondary_change[0]!r}")
+        chg_str = ", ".join(chg) if chg else "(no changes)"
         return (f"AcVesselChangeEquipMultiResponseBody({len(self._raw)}B, "
                 f"status={self.status}, vessel=0x{self.vessel_id:x}, "
                 f"slots={nonzero}/{len(self.slots)} fitted, "
-                f"changes={names}, tail={len(self.tail_bytes)}B)")
+                f"{chg_str}, inv_delta={inv_n}, slack={slack}b)")
