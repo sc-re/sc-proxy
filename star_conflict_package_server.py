@@ -1622,6 +1622,9 @@ class StarConflictPackageServer(KaitaiStruct):
             self.body._fetch_instances()
 
     class AcAccountAuras(KaitaiStruct):
+        """Field sequence from handler at 0x0822f87d in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcAccountAuras, self).__init__(_io)
             self._parent = _parent
@@ -1629,7 +1632,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -1637,6 +1640,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcAchievements(KaitaiStruct):
+        """Field sequence from handler at 0x0822dd00 in OnRecieve dispatch.
+        Reads: u64 u16 u16
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcAchievements, self).__init__(_io)
             self._parent = _parent
@@ -1644,7 +1650,9 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.u64_0 = self._io.read_u8be()
+            self.u16_1 = self._io.read_u2be()
+            self.u16_2 = self._io.read_u2be()
 
 
         def _fetch_instances(self):
@@ -1652,6 +1660,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcActivateResourceVessel(KaitaiStruct):
+        """Field sequence from handler at 0x08233fbd in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcActivateResourceVessel, self).__init__(_io)
             self._parent = _parent
@@ -1659,7 +1670,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -1703,6 +1714,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcAdminCmd(KaitaiStruct):
+        """Field sequence from handler at 0x0822c2d4 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcAdminCmd, self).__init__(_io)
             self._parent = _parent
@@ -1710,7 +1724,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -1771,6 +1785,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcAdvertDelete(KaitaiStruct):
+        """Field sequence from handler at 0x08233a99 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcAdvertDelete, self).__init__(_io)
             self._parent = _parent
@@ -1778,7 +1795,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -1816,6 +1833,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcAttachEmail(KaitaiStruct):
+        """Field sequence from handler at 0x0822b0fe in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcAttachEmail, self).__init__(_io)
             self._parent = _parent
@@ -1823,7 +1843,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -1831,6 +1851,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcAttachSteamAccount(KaitaiStruct):
+        """Field sequence from handler at 0x0822b8fc in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcAttachSteamAccount, self).__init__(_io)
             self._parent = _parent
@@ -1838,7 +1861,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -1846,6 +1869,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcAttachYupAccount(KaitaiStruct):
+        """Field sequence from handler at 0x0822b8b8 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcAttachYupAccount, self).__init__(_io)
             self._parent = _parent
@@ -1853,7 +1879,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -1861,6 +1887,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcAutoPilotSpaceStation(KaitaiStruct):
+        """Field sequence from handler at 0x0822cfb0 in OnRecieve dispatch.
+        Reads: u8 u32
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcAutoPilotSpaceStation, self).__init__(_io)
             self._parent = _parent
@@ -1868,7 +1897,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.value = self._io.read_u4be()
 
 
         def _fetch_instances(self):
@@ -1897,6 +1927,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcAvatarsSetActive(KaitaiStruct):
+        """Field sequence from handler at 0x0822c752 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcAvatarsSetActive, self).__init__(_io)
             self._parent = _parent
@@ -1904,7 +1937,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -1912,6 +1945,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcBattlePassUnlockLevel(KaitaiStruct):
+        """Field sequence from handler at 0x0822c900 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcBattlePassUnlockLevel, self).__init__(_io)
             self._parent = _parent
@@ -1919,7 +1955,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -1947,6 +1983,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcBattleSlotCheatChangeVessel(KaitaiStruct):
+        """Field sequence from handler at 0x08232f6d in OnRecieve dispatch.
+        Reads: u8 u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcBattleSlotCheatChangeVessel, self).__init__(_io)
             self._parent = _parent
@@ -1954,7 +1993,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.field_1 = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -1962,6 +2002,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcBattleSlotSwapVessels(KaitaiStruct):
+        """Field sequence from handler at 0x08233002 in OnRecieve dispatch.
+        Reads: u8 u8 u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcBattleSlotSwapVessels, self).__init__(_io)
             self._parent = _parent
@@ -1969,7 +2012,9 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.field_1 = self._io.read_u1()
+            self.field_2 = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -2017,6 +2062,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcBuyArcDlc(KaitaiStruct):
+        """Field sequence from handler at 0x082336d4 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcBuyArcDlc, self).__init__(_io)
             self._parent = _parent
@@ -2024,7 +2072,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -2032,6 +2080,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcBuyGold(KaitaiStruct):
+        """Field sequence from handler at 0x0823364b in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcBuyGold, self).__init__(_io)
             self._parent = _parent
@@ -2039,7 +2090,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -2084,6 +2135,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcBuyTalentSet(KaitaiStruct):
+        """Field sequence from handler at 0x0822dcb4 in OnRecieve dispatch.
+        Reads: u8 u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcBuyTalentSet, self).__init__(_io)
             self._parent = _parent
@@ -2091,7 +2145,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.field_1 = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -2114,6 +2169,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcChangePlayerNickname(KaitaiStruct):
+        """Field sequence from handler at 0x0822ebd8 in OnRecieve dispatch.
+        Reads: u8 cstrN
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcChangePlayerNickname, self).__init__(_io)
             self._parent = _parent
@@ -2121,7 +2179,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.nickname = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
 
 
         def _fetch_instances(self):
@@ -2129,6 +2188,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcCheckYupPurchases(KaitaiStruct):
+        """Field sequence from handler at 0x0822c796 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcCheckYupPurchases, self).__init__(_io)
             self._parent = _parent
@@ -2136,7 +2198,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -2144,6 +2206,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcChooseStartingStation(KaitaiStruct):
+        """Field sequence from handler at 0x0822ecbb in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcChooseStartingStation, self).__init__(_io)
             self._parent = _parent
@@ -2151,7 +2216,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -2159,6 +2224,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcClanAssignEmblem(KaitaiStruct):
+        """Field sequence from handler at 0x0822d050 in OnRecieve dispatch.
+        Reads: u8 cstrN
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcClanAssignEmblem, self).__init__(_io)
             self._parent = _parent
@@ -2166,7 +2234,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.emblem = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
 
 
         def _fetch_instances(self):
@@ -2174,6 +2243,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcClanBankTransfer(KaitaiStruct):
+        """Field sequence from handler at 0x0822f4c6 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcClanBankTransfer, self).__init__(_io)
             self._parent = _parent
@@ -2181,7 +2253,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -2189,6 +2261,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcClanChangeDesc(KaitaiStruct):
+        """Field sequence from handler at 0x0822a941 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcClanChangeDesc, self).__init__(_io)
             self._parent = _parent
@@ -2196,7 +2271,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -2204,6 +2279,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcClanChangeMotd(KaitaiStruct):
+        """Field sequence from handler at 0x0822a645 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcClanChangeMotd, self).__init__(_io)
             self._parent = _parent
@@ -2211,7 +2289,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -2219,6 +2297,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcClanChangeName(KaitaiStruct):
+        """Field sequence from handler at 0x0822d72b in OnRecieve dispatch.
+        Reads: u8 cstrN
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcClanChangeName, self).__init__(_io)
             self._parent = _parent
@@ -2226,7 +2307,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.name = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
 
 
         def _fetch_instances(self):
@@ -2234,6 +2316,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcClanChangeRecruiting(KaitaiStruct):
+        """Field sequence from handler at 0x0822a48c in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcClanChangeRecruiting, self).__init__(_io)
             self._parent = _parent
@@ -2241,7 +2326,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -2249,6 +2334,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcClanChangeTag(KaitaiStruct):
+        """Field sequence from handler at 0x0822d136 in OnRecieve dispatch.
+        Reads: u8 cstrN
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcClanChangeTag, self).__init__(_io)
             self._parent = _parent
@@ -2256,7 +2344,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.tag = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
 
 
         def _fetch_instances(self):
@@ -2264,6 +2353,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcClanCreate(KaitaiStruct):
+        """Field sequence from handler at 0x0822d21a in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcClanCreate, self).__init__(_io)
             self._parent = _parent
@@ -2271,7 +2363,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -2294,6 +2386,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcClanInviteAccept(KaitaiStruct):
+        """Field sequence from handler at 0x0822aa53 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcClanInviteAccept, self).__init__(_io)
             self._parent = _parent
@@ -2301,7 +2396,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -2309,6 +2404,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcClanInviteCancel(KaitaiStruct):
+        """Field sequence from handler at 0x0822a812 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcClanInviteCancel, self).__init__(_io)
             self._parent = _parent
@@ -2316,7 +2414,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -2324,6 +2422,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcClanInviteSend(KaitaiStruct):
+        """Field sequence from handler at 0x0822aa97 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcClanInviteSend, self).__init__(_io)
             self._parent = _parent
@@ -2331,7 +2432,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -2339,6 +2440,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcClanJoinreqAccept(KaitaiStruct):
+        """Field sequence from handler at 0x0822c665 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcClanJoinreqAccept, self).__init__(_io)
             self._parent = _parent
@@ -2346,7 +2450,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -2354,6 +2458,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcClanJoinreqCancel(KaitaiStruct):
+        """Field sequence from handler at 0x0822bfea in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcClanJoinreqCancel, self).__init__(_io)
             self._parent = _parent
@@ -2361,7 +2468,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -2369,6 +2476,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcClanJoinreqCreate(KaitaiStruct):
+        """Field sequence from handler at 0x0822c6a9 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcClanJoinreqCreate, self).__init__(_io)
             self._parent = _parent
@@ -2376,7 +2486,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -2384,6 +2494,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcClanKick(KaitaiStruct):
+        """Field sequence from handler at 0x0822a9cb in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcClanKick, self).__init__(_io)
             self._parent = _parent
@@ -2391,7 +2504,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -2399,6 +2512,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcClanLeave(KaitaiStruct):
+        """Field sequence from handler at 0x0822a514 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcClanLeave, self).__init__(_io)
             self._parent = _parent
@@ -2406,7 +2522,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -2429,6 +2545,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcClanQuestAccept(KaitaiStruct):
+        """Field sequence from handler at 0x0822d2ab in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcClanQuestAccept, self).__init__(_io)
             self._parent = _parent
@@ -2436,7 +2555,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -2631,6 +2750,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcClanResourceConvert(KaitaiStruct):
+        """Field sequence from handler at 0x0822a987 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcClanResourceConvert, self).__init__(_io)
             self._parent = _parent
@@ -2638,7 +2760,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -2646,6 +2768,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcClanReviveInWar(KaitaiStruct):
+        """Field sequence from handler at 0x0822d2e7 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcClanReviveInWar, self).__init__(_io)
             self._parent = _parent
@@ -2653,7 +2778,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -2661,6 +2786,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcClanSetCivilianZone(KaitaiStruct):
+        """Field sequence from handler at 0x0822c7d2 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcClanSetCivilianZone, self).__init__(_io)
             self._parent = _parent
@@ -2668,7 +2796,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -2676,6 +2804,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcClanSetRole(KaitaiStruct):
+        """Field sequence from handler at 0x0822aa0f in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcClanSetRole, self).__init__(_io)
             self._parent = _parent
@@ -2683,7 +2814,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -2706,6 +2837,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcClanShipBoostRepairing(KaitaiStruct):
+        """Field sequence from handler at 0x0822a856 in OnRecieve dispatch.
+        Reads: u8 cstrN
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcClanShipBoostRepairing, self).__init__(_io)
             self._parent = _parent
@@ -2713,7 +2847,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.text = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
 
 
         def _fetch_instances(self):
@@ -2721,6 +2856,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcClanShipBuild(KaitaiStruct):
+        """Field sequence from handler at 0x0822a68b in OnRecieve dispatch.
+        Reads: u8 cstrN cstrN cstrN
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcClanShipBuild, self).__init__(_io)
             self._parent = _parent
@@ -2728,7 +2866,10 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.text = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
+            self.text1 = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
+            self.text2 = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
 
 
         def _fetch_instances(self):
@@ -2736,6 +2877,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcClanShipFit(KaitaiStruct):
+        """Field sequence from handler at 0x0822a558 in OnRecieve dispatch.
+        Reads: u8 cstrN
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcClanShipFit, self).__init__(_io)
             self._parent = _parent
@@ -2743,7 +2887,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.text = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
 
 
         def _fetch_instances(self):
@@ -2751,6 +2896,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcClanShipRepair(KaitaiStruct):
+        """Field sequence from handler at 0x0822a4d0 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcClanShipRepair, self).__init__(_io)
             self._parent = _parent
@@ -2758,7 +2906,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -2766,6 +2914,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcClanShipSetCurrent(KaitaiStruct):
+        """Field sequence from handler at 0x0822a448 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcClanShipSetCurrent, self).__init__(_io)
             self._parent = _parent
@@ -2773,7 +2924,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -2800,6 +2951,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcClanUpgrade(KaitaiStruct):
+        """Field sequence from handler at 0x0822e328 in OnRecieve dispatch.
+        Reads: u8 u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcClanUpgrade, self).__init__(_io)
             self._parent = _parent
@@ -2807,7 +2961,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.field_1 = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -2815,6 +2970,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcClanWarStart(KaitaiStruct):
+        """Field sequence from handler at 0x0822d25e in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcClanWarStart, self).__init__(_io)
             self._parent = _parent
@@ -2822,7 +2980,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -2830,6 +2988,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcCraftUpgradeItem(KaitaiStruct):
+        """Field sequence from handler at 0x0822d32b in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcCraftUpgradeItem, self).__init__(_io)
             self._parent = _parent
@@ -2837,7 +2998,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -2845,6 +3006,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcDisassembleItem(KaitaiStruct):
+        """Field sequence from handler at 0x0822ee0b in OnRecieve dispatch.
+        Reads: u8 u64
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcDisassembleItem, self).__init__(_io)
             self._parent = _parent
@@ -2852,7 +3016,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.uid = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -2875,6 +3040,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcEnchantItem(KaitaiStruct):
+        """Field sequence from handler at 0x08234d86 in OnRecieve dispatch.
+        Reads: u8 u64
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcEnchantItem, self).__init__(_io)
             self._parent = _parent
@@ -2882,7 +3050,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.uid = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -2941,6 +3110,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcFactionRepReset(KaitaiStruct):
+        """Field sequence from handler at 0x0822cd72 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcFactionRepReset, self).__init__(_io)
             self._parent = _parent
@@ -2948,7 +3120,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -2956,6 +3128,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcFinalizeSteamMtxn(KaitaiStruct):
+        """Field sequence from handler at 0x0822b52b in OnRecieve dispatch.
+        Reads: u8 cstrN
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcFinalizeSteamMtxn, self).__init__(_io)
             self._parent = _parent
@@ -2963,7 +3138,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.text = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
 
 
         def _fetch_instances(self):
@@ -2971,6 +3147,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcFindAutogenItem(KaitaiStruct):
+        """Field sequence from handler at 0x08234001 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcFindAutogenItem, self).__init__(_io)
             self._parent = _parent
@@ -2978,7 +3157,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -3003,6 +3182,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcFriendsList(KaitaiStruct):
+        """Field sequence from handler at 0x08232d20 in OnRecieve dispatch.
+        Reads: u8 u64
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcFriendsList, self).__init__(_io)
             self._parent = _parent
@@ -3010,7 +3192,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.uid = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -3018,6 +3201,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcFriendsRejectRequest(KaitaiStruct):
+        """Field sequence from handler at 0x0822ff6c in OnRecieve dispatch.
+        Reads: u8 u64
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcFriendsRejectRequest, self).__init__(_io)
             self._parent = _parent
@@ -3025,7 +3211,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.uid = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -3033,6 +3220,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcFriendsRemove(KaitaiStruct):
+        """Field sequence from handler at 0x08232dfc in OnRecieve dispatch.
+        Reads: u8 u64
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcFriendsRemove, self).__init__(_io)
             self._parent = _parent
@@ -3040,7 +3230,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.uid = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -3064,6 +3255,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcGamesInfo(KaitaiStruct):
+        """Field sequence from handler at 0x0822c20a in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcGamesInfo, self).__init__(_io)
             self._parent = _parent
@@ -3071,7 +3265,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -3181,6 +3375,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcGetPunishments(KaitaiStruct):
+        """Field sequence from handler at 0x0822eed9 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcGetPunishments, self).__init__(_io)
             self._parent = _parent
@@ -3188,7 +3385,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -3196,6 +3393,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcGetUids(KaitaiStruct):
+        """Field sequence from handler at 0x08232521 in OnRecieve dispatch.
+        Reads: u16
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcGetUids, self).__init__(_io)
             self._parent = _parent
@@ -3203,7 +3403,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.value = self._io.read_u2be()
 
 
         def _fetch_instances(self):
@@ -3263,6 +3463,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcKarmaReset(KaitaiStruct):
+        """Field sequence from handler at 0x0822cdb6 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcKarmaReset, self).__init__(_io)
             self._parent = _parent
@@ -3270,7 +3473,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -3308,6 +3511,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcLeagueTeamCreate(KaitaiStruct):
+        """Field sequence from handler at 0x082306bf in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcLeagueTeamCreate, self).__init__(_io)
             self._parent = _parent
@@ -3315,7 +3521,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -3323,6 +3529,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcLeagueTeamInfo(KaitaiStruct):
+        """Field sequence from handler at 0x08232b6c in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcLeagueTeamInfo, self).__init__(_io)
             self._parent = _parent
@@ -3330,7 +3539,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -3338,6 +3547,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcLeagueTeamInviteAccept(KaitaiStruct):
+        """Field sequence from handler at 0x08232aa0 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcLeagueTeamInviteAccept, self).__init__(_io)
             self._parent = _parent
@@ -3345,7 +3557,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -3353,6 +3565,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcLeagueTeamInviteCancel(KaitaiStruct):
+        """Field sequence from handler at 0x082329b1 in OnRecieve dispatch.
+        Reads: u8 u64
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcLeagueTeamInviteCancel, self).__init__(_io)
             self._parent = _parent
@@ -3360,7 +3575,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.uid = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -3368,6 +3584,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcLeagueTeamInviteDecline(KaitaiStruct):
+        """Field sequence from handler at 0x08232b28 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcLeagueTeamInviteDecline, self).__init__(_io)
             self._parent = _parent
@@ -3375,7 +3594,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -3383,6 +3602,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcLeagueTeamInviteSend(KaitaiStruct):
+        """Field sequence from handler at 0x08232a28 in OnRecieve dispatch.
+        Reads: u8 u64
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcLeagueTeamInviteSend, self).__init__(_io)
             self._parent = _parent
@@ -3390,7 +3612,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.uid = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -3398,6 +3621,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcLeagueTeamKick(KaitaiStruct):
+        """Field sequence from handler at 0x0822e295 in OnRecieve dispatch.
+        Reads: u8 u64 u64
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcLeagueTeamKick, self).__init__(_io)
             self._parent = _parent
@@ -3405,7 +3631,9 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.u64_1 = self._io.read_u8be()
+            self.u64_2 = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -3413,6 +3641,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcLeagueTeamLeave(KaitaiStruct):
+        """Field sequence from handler at 0x08232c98 in OnRecieve dispatch.
+        Reads: u8 u64 u64
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcLeagueTeamLeave, self).__init__(_io)
             self._parent = _parent
@@ -3420,7 +3651,9 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.u64_1 = self._io.read_u8be()
+            self.u64_2 = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -3428,6 +3661,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcLeagueTeamRequestNames(KaitaiStruct):
+        """Field sequence from handler at 0x08232bb0 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcLeagueTeamRequestNames, self).__init__(_io)
             self._parent = _parent
@@ -3435,7 +3671,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -3545,6 +3781,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcLobbyGroupCreate(KaitaiStruct):
+        """Field sequence from handler at 0x0822ac9c in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcLobbyGroupCreate, self).__init__(_io)
             self._parent = _parent
@@ -3552,7 +3791,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -3560,6 +3799,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcLobbyGroupDelete(KaitaiStruct):
+        """Field sequence from handler at 0x0822ac58 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcLobbyGroupDelete, self).__init__(_io)
             self._parent = _parent
@@ -3567,7 +3809,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -3590,6 +3832,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcLobbyGroupJoinreqCancel(KaitaiStruct):
+        """Field sequence from handler at 0x0822ab17 in OnRecieve dispatch.
+        Reads: u8 u32
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcLobbyGroupJoinreqCancel, self).__init__(_io)
             self._parent = _parent
@@ -3597,7 +3842,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.value = self._io.read_u4be()
 
 
         def _fetch_instances(self):
@@ -3605,6 +3851,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcLobbyGroupJoinreqCreate(KaitaiStruct):
+        """Field sequence from handler at 0x0822abb8 in OnRecieve dispatch.
+        Reads: u8 u32
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcLobbyGroupJoinreqCreate, self).__init__(_io)
             self._parent = _parent
@@ -3612,7 +3861,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.value = self._io.read_u4be()
 
 
         def _fetch_instances(self):
@@ -3620,6 +3870,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcLobbyGroupJoinreqReject(KaitaiStruct):
+        """Field sequence from handler at 0x0822c55e in OnRecieve dispatch.
+        Reads: u8 u64
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcLobbyGroupJoinreqReject, self).__init__(_io)
             self._parent = _parent
@@ -3627,7 +3880,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.uid = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -3654,6 +3908,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcLobbyGroupModify(KaitaiStruct):
+        """Field sequence from handler at 0x0822bfa4 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcLobbyGroupModify, self).__init__(_io)
             self._parent = _parent
@@ -3661,7 +3918,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -3684,6 +3941,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcLobbyInvite(KaitaiStruct):
+        """Field sequence from handler at 0x0822b466 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcLobbyInvite, self).__init__(_io)
             self._parent = _parent
@@ -3691,7 +3951,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -3699,6 +3959,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcLobbyJoin(KaitaiStruct):
+        """Field sequence from handler at 0x0822b264 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcLobbyJoin, self).__init__(_io)
             self._parent = _parent
@@ -3706,7 +3969,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -3714,6 +3977,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcLobbyKick(KaitaiStruct):
+        """Field sequence from handler at 0x0822b42a in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcLobbyKick, self).__init__(_io)
             self._parent = _parent
@@ -3721,7 +3987,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -3780,6 +4046,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcLobbyStartGame(KaitaiStruct):
+        """Field sequence from handler at 0x0822b069 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcLobbyStartGame, self).__init__(_io)
             self._parent = _parent
@@ -3787,7 +4056,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -3889,6 +4158,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcMailRemove(KaitaiStruct):
+        """Field sequence from handler at 0x0822e184 in OnRecieve dispatch.
+        Reads: u8 u64
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcMailRemove, self).__init__(_io)
             self._parent = _parent
@@ -3896,7 +4168,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.uid = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -4006,6 +4279,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcPlayerArcBalance(KaitaiStruct):
+        """Field sequence from handler at 0x08232318 in OnRecieve dispatch.
+        Reads: i32
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcPlayerArcBalance, self).__init__(_io)
             self._parent = _parent
@@ -4013,7 +4289,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.value = self._io.read_s4be()
 
 
         def _fetch_instances(self):
@@ -4021,6 +4297,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcPlayerAutogenInventory(KaitaiStruct):
+        """Field sequence from handler at 0x082342e0 in OnRecieve dispatch.
+        Reads: u32
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcPlayerAutogenInventory, self).__init__(_io)
             self._parent = _parent
@@ -4028,7 +4307,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.value = self._io.read_u4be()
 
 
         def _fetch_instances(self):
@@ -4069,6 +4348,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcPlayerInventory(KaitaiStruct):
+        """Field sequence from handler at 0x08233968 in OnRecieve dispatch.
+        Reads: u32 u8 u32
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcPlayerInventory, self).__init__(_io)
             self._parent = _parent
@@ -4076,7 +4358,9 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.u32_0 = self._io.read_u4be()
+            self.field_1 = self._io.read_u1()
+            self.u32_2 = self._io.read_u4be()
 
 
         def _fetch_instances(self):
@@ -4099,6 +4383,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcPlayerVessels(KaitaiStruct):
+        """Field sequence from handler at 0x0822e436 in OnRecieve dispatch.
+        Reads: u16 f32 f32
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcPlayerVessels, self).__init__(_io)
             self._parent = _parent
@@ -4106,7 +4393,9 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.u16_0 = self._io.read_u2be()
+            self.value = self._io.read_f4be()
+            self.value1 = self._io.read_f4be()
 
 
         def _fetch_instances(self):
@@ -4114,6 +4403,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcPremiumBuy(KaitaiStruct):
+        """Field sequence from handler at 0x0822f442 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcPremiumBuy, self).__init__(_io)
             self._parent = _parent
@@ -4121,7 +4413,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -4238,6 +4530,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcReactOnAbandonedGame(KaitaiStruct):
+        """Field sequence from handler at 0x08233b19 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcReactOnAbandonedGame, self).__init__(_io)
             self._parent = _parent
@@ -4245,7 +4540,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -4271,6 +4566,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcRelatedQuestEnable(KaitaiStruct):
+        """Field sequence from handler at 0x0822d3f8 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcRelatedQuestEnable, self).__init__(_io)
             self._parent = _parent
@@ -4278,7 +4576,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -4286,6 +4584,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcReportPlayer(KaitaiStruct):
+        """Field sequence from handler at 0x082324e5 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcReportPlayer, self).__init__(_io)
             self._parent = _parent
@@ -4293,7 +4594,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -4301,6 +4602,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcRewardTutorial(KaitaiStruct):
+        """Field sequence from handler at 0x0823444a in OnRecieve dispatch.
+        Reads: u8 u8 u64
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcRewardTutorial, self).__init__(_io)
             self._parent = _parent
@@ -4308,7 +4612,9 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.field_1 = self._io.read_u1()
+            self.u64_2 = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -4339,6 +4645,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcSalvageItem(KaitaiStruct):
+        """Field sequence from handler at 0x08234a1b in OnRecieve dispatch.
+        Reads: u64 u8 u32
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcSalvageItem, self).__init__(_io)
             self._parent = _parent
@@ -4346,7 +4655,9 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.u64_0 = self._io.read_u8be()
+            self.field_1 = self._io.read_u1()
+            self.u32_2 = self._io.read_u4be()
 
 
         def _fetch_instances(self):
@@ -4354,6 +4665,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcSalvageItems(KaitaiStruct):
+        """Field sequence from handler at 0x0822fa48 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcSalvageItems, self).__init__(_io)
             self._parent = _parent
@@ -4361,7 +4675,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -4384,6 +4698,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcSellCraftResources(KaitaiStruct):
+        """Field sequence from handler at 0x0822c816 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcSellCraftResources, self).__init__(_io)
             self._parent = _parent
@@ -4391,7 +4708,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -4429,6 +4746,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcSellVessel(KaitaiStruct):
+        """Field sequence from handler at 0x08234b30 in OnRecieve dispatch.
+        Reads: u64 u8 u32 f32
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcSellVessel, self).__init__(_io)
             self._parent = _parent
@@ -4436,7 +4756,10 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.u64_0 = self._io.read_u8be()
+            self.field_1 = self._io.read_u1()
+            self.u32_2 = self._io.read_u4be()
+            self.value = self._io.read_f4be()
 
 
         def _fetch_instances(self):
@@ -4550,6 +4873,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcSetReferrer(KaitaiStruct):
+        """Field sequence from handler at 0x0822b4e7 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcSetReferrer, self).__init__(_io)
             self._parent = _parent
@@ -4557,7 +4883,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -4581,6 +4907,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcSetVisitedZone(KaitaiStruct):
+        """Field sequence from handler at 0x0822cec6 in OnRecieve dispatch.
+        Reads: u16
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcSetVisitedZone, self).__init__(_io)
             self._parent = _parent
@@ -4588,7 +4917,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.value = self._io.read_u2be()
 
 
         def _fetch_instances(self):
@@ -4596,6 +4925,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcShipQuestChange(KaitaiStruct):
+        """Field sequence from handler at 0x082340b4 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcShipQuestChange, self).__init__(_io)
             self._parent = _parent
@@ -4603,7 +4935,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -4626,6 +4958,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcShipQuestStart(KaitaiStruct):
+        """Field sequence from handler at 0x082340f8 in OnRecieve dispatch.
+        Reads: u8 u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcShipQuestStart, self).__init__(_io)
             self._parent = _parent
@@ -4633,7 +4968,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.field_1 = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -4780,6 +5116,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcSquadConvertToWing(KaitaiStruct):
+        """Field sequence from handler at 0x08232ae4 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcSquadConvertToWing, self).__init__(_io)
             self._parent = _parent
@@ -4787,7 +5126,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -4812,6 +5151,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcSquadInviteAccept(KaitaiStruct):
+        """Field sequence from handler at 0x08233ad5 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcSquadInviteAccept, self).__init__(_io)
             self._parent = _parent
@@ -4819,7 +5161,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -4846,6 +5188,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcSquadInviteDecline(KaitaiStruct):
+        """Field sequence from handler at 0x0822f486 in OnRecieve dispatch.
+        Reads: u8 u64
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcSquadInviteDecline, self).__init__(_io)
             self._parent = _parent
@@ -4853,7 +5198,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.uid = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -4880,6 +5226,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcSquadKick(KaitaiStruct):
+        """Field sequence from handler at 0x0822c328 in OnRecieve dispatch.
+        Reads: u8 u64
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcSquadKick, self).__init__(_io)
             self._parent = _parent
@@ -4887,7 +5236,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.uid = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -4895,6 +5245,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcSquadLeave(KaitaiStruct):
+        """Field sequence from handler at 0x08230f38 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcSquadLeave, self).__init__(_io)
             self._parent = _parent
@@ -4902,7 +5255,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -4910,6 +5263,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcSquadReady(KaitaiStruct):
+        """Field sequence from handler at 0x08232bf4 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcSquadReady, self).__init__(_io)
             self._parent = _parent
@@ -4917,7 +5273,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -4925,6 +5281,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcSteamUserInfo(KaitaiStruct):
+        """Field sequence from handler at 0x0822eb94 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcSteamUserInfo, self).__init__(_io)
             self._parent = _parent
@@ -4932,7 +5291,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -4974,6 +5333,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcSurveyVote(KaitaiStruct):
+        """Field sequence from handler at 0x0822efcd in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcSurveyVote, self).__init__(_io)
             self._parent = _parent
@@ -4981,7 +5343,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -5019,6 +5381,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcTalentsAcquire(KaitaiStruct):
+        """Field sequence from handler at 0x082302a0 in OnRecieve dispatch.
+        Reads: u8 u8 u64
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcTalentsAcquire, self).__init__(_io)
             self._parent = _parent
@@ -5026,7 +5391,9 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.field_1 = self._io.read_u1()
+            self.u64_2 = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -5057,6 +5424,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcTalentsReset(KaitaiStruct):
+        """Field sequence from handler at 0x082303a7 in OnRecieve dispatch.
+        Reads: u8 u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcTalentsReset, self).__init__(_io)
             self._parent = _parent
@@ -5064,7 +5434,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.field_1 = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -5072,6 +5443,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcTalentsUpdate(KaitaiStruct):
+        """Field sequence from handler at 0x082304ad in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcTalentsUpdate, self).__init__(_io)
             self._parent = _parent
@@ -5079,7 +5453,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -5087,6 +5461,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcTeachingAccept(KaitaiStruct):
+        """Field sequence from handler at 0x0822bb58 in OnRecieve dispatch.
+        Reads: u8 u64 u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcTeachingAccept, self).__init__(_io)
             self._parent = _parent
@@ -5094,7 +5471,9 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.u64_1 = self._io.read_u8be()
+            self.field_2 = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -5102,6 +5481,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcTeachingAllow(KaitaiStruct):
+        """Field sequence from handler at 0x0822b852 in OnRecieve dispatch.
+        Reads: u8 u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcTeachingAllow, self).__init__(_io)
             self._parent = _parent
@@ -5109,7 +5491,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.field_1 = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -5117,6 +5500,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcTeachingCheck(KaitaiStruct):
+        """Field sequence from handler at 0x0822b97f in OnRecieve dispatch.
+        Reads: u8 u64 u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcTeachingCheck, self).__init__(_io)
             self._parent = _parent
@@ -5124,7 +5510,9 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.u64_1 = self._io.read_u8be()
+            self.field_2 = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -5147,6 +5535,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcTeachingReject(KaitaiStruct):
+        """Field sequence from handler at 0x0822b9c6 in OnRecieve dispatch.
+        Reads: u8 u8 u64
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcTeachingReject, self).__init__(_io)
             self._parent = _parent
@@ -5154,7 +5545,9 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.field_1 = self._io.read_u1()
+            self.u64_2 = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -5162,6 +5555,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcTeachingRequestToStudent(KaitaiStruct):
+        """Field sequence from handler at 0x082309f6 in OnRecieve dispatch.
+        Reads: u8 u64
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcTeachingRequestToStudent, self).__init__(_io)
             self._parent = _parent
@@ -5169,7 +5565,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.uid = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -5177,6 +5574,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcTeachingRequestToTeacher(KaitaiStruct):
+        """Field sequence from handler at 0x0822be79 in OnRecieve dispatch.
+        Reads: u8 u64
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcTeachingRequestToTeacher, self).__init__(_io)
             self._parent = _parent
@@ -5184,7 +5584,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.uid = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -5192,6 +5593,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcTitlesSetActive(KaitaiStruct):
+        """Field sequence from handler at 0x0822c6ed in OnRecieve dispatch.
+        Reads: u8 u16
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcTitlesSetActive, self).__init__(_io)
             self._parent = _parent
@@ -5199,7 +5603,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.value = self._io.read_u2be()
 
 
         def _fetch_instances(self):
@@ -5223,6 +5628,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcUniverseCounters(KaitaiStruct):
+        """Field sequence from handler at 0x0822e0f3 in OnRecieve dispatch.
+        Reads: u8 u64 f32
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcUniverseCounters, self).__init__(_io)
             self._parent = _parent
@@ -5230,7 +5638,9 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.u64_1 = self._io.read_u8be()
+            self.value = self._io.read_f4be()
 
 
         def _fetch_instances(self):
@@ -5253,6 +5663,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcUnlimPveDisablePlayerBuffs(KaitaiStruct):
+        """Field sequence from handler at 0x08233d48 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcUnlimPveDisablePlayerBuffs, self).__init__(_io)
             self._parent = _parent
@@ -5260,7 +5673,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -5268,6 +5681,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcUnlimPveUpgradePlayerLevel(KaitaiStruct):
+        """Field sequence from handler at 0x08233710 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcUnlimPveUpgradePlayerLevel, self).__init__(_io)
             self._parent = _parent
@@ -5275,7 +5691,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -5283,6 +5699,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcUpdateDlcOwnership(KaitaiStruct):
+        """Field sequence from handler at 0x08233924 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcUpdateDlcOwnership, self).__init__(_io)
             self._parent = _parent
@@ -5290,7 +5709,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -5313,6 +5732,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcUpgradeAutogenItem(KaitaiStruct):
+        """Field sequence from handler at 0x082348e0 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcUpgradeAutogenItem, self).__init__(_io)
             self._parent = _parent
@@ -5320,7 +5742,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -5328,6 +5750,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcUpgradeItems(KaitaiStruct):
+        """Field sequence from handler at 0x08232ed8 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcUpgradeItems, self).__init__(_io)
             self._parent = _parent
@@ -5335,7 +5760,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -5366,6 +5791,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcUserNotes(KaitaiStruct):
+        """Field sequence from handler at 0x0822f662 in OnRecieve dispatch.
+        Reads: u32
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcUserNotes, self).__init__(_io)
             self._parent = _parent
@@ -5373,7 +5801,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.value = self._io.read_u4be()
 
 
         def _fetch_instances(self):
@@ -5417,6 +5845,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcUserProfileGet(KaitaiStruct):
+        """Field sequence from handler at 0x0822ed43 in OnRecieve dispatch.
+        Reads: u16
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcUserProfileGet, self).__init__(_io)
             self._parent = _parent
@@ -5424,7 +5855,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.value = self._io.read_u2be()
 
 
         def _fetch_instances(self):
@@ -5509,6 +5940,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcVesselBudgetLevelup(KaitaiStruct):
+        """Field sequence from handler at 0x08233ea8 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcVesselBudgetLevelup, self).__init__(_io)
             self._parent = _parent
@@ -5516,7 +5950,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -5554,6 +5988,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcVesselChangeMunition(KaitaiStruct):
+        """Field sequence from handler at 0x08234924 in OnRecieve dispatch.
+        Reads: u8 u64
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcVesselChangeMunition, self).__init__(_io)
             self._parent = _parent
@@ -5561,7 +5998,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.uid = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -5569,6 +6007,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcVesselCheatChangeEquip(KaitaiStruct):
+        """Field sequence from handler at 0x0823010c in OnRecieve dispatch.
+        Reads: u8 u64 u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcVesselCheatChangeEquip, self).__init__(_io)
             self._parent = _parent
@@ -5576,7 +6017,9 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.u64_1 = self._io.read_u8be()
+            self.field_2 = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -5584,6 +6027,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcVesselCraft(KaitaiStruct):
+        """Field sequence from handler at 0x08233f81 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcVesselCraft, self).__init__(_io)
             self._parent = _parent
@@ -5591,7 +6037,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -5599,6 +6045,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcVesselCustomElementsAcknowledgeExpiration(KaitaiStruct):
+        """Field sequence from handler at 0x08230779 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcVesselCustomElementsAcknowledgeExpiration, self).__init__(_io)
             self._parent = _parent
@@ -5606,7 +6055,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -5614,6 +6063,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcVesselCustomElementsBuy(KaitaiStruct):
+        """Field sequence from handler at 0x0823080e in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcVesselCustomElementsBuy, self).__init__(_io)
             self._parent = _parent
@@ -5621,7 +6073,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -5644,6 +6096,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcVesselExtractExp(KaitaiStruct):
+        """Field sequence from handler at 0x0822f3ad in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcVesselExtractExp, self).__init__(_io)
             self._parent = _parent
@@ -5651,7 +6106,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -5659,6 +6114,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcVesselFreeCustomElements(KaitaiStruct):
+        """Field sequence from handler at 0x082308a3 in OnRecieve dispatch.
+        Reads: u32 cstrN
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcVesselFreeCustomElements, self).__init__(_io)
             self._parent = _parent
@@ -5666,7 +6124,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.value = self._io.read_u4be()
+            self.text = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
 
 
         def _fetch_instances(self):
@@ -5694,6 +6153,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcVesselRecraft(KaitaiStruct):
+        """Field sequence from handler at 0x08233a55 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcVesselRecraft, self).__init__(_io)
             self._parent = _parent
@@ -5701,7 +6163,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -5709,6 +6171,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcVesselRefillBattle(KaitaiStruct):
+        """Field sequence from handler at 0x08233754 in OnRecieve dispatch.
+        Reads: u8 u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcVesselRefillBattle, self).__init__(_io)
             self._parent = _parent
@@ -5716,7 +6181,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.field_1 = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -5762,6 +6228,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcVesselRepairBattle(KaitaiStruct):
+        """Field sequence from handler at 0x08230d28 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcVesselRepairBattle, self).__init__(_io)
             self._parent = _parent
@@ -5769,7 +6238,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):
@@ -5777,6 +6246,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcVesselStripEquip(KaitaiStruct):
+        """Field sequence from handler at 0x0823353e in OnRecieve dispatch.
+        Reads: u8 u64
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcVesselStripEquip, self).__init__(_io)
             self._parent = _parent
@@ -5784,7 +6256,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
+            self.uid = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -5792,7 +6265,10 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcVesselStripImproperBattle(KaitaiStruct):
-        """Vessels removed from battle slots due to invalid configuration."""
+        """8B FIXED. Handler at 0x08233d8c reads only u8 status. Remaining
+        5B varies between captures (count-style values that don't fit a
+        simple count + u1 array layout) — kept opaque pending RE.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcVesselStripImproperBattle, self).__init__(_io)
             self._parent = _parent
@@ -5800,18 +6276,12 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.count = self._io.read_u4be()
-            self.entry_ids = []
-            for i in range(self.count):
-                self.entry_ids.append(self._io.read_u1())
-
+            self.status = self._io.read_u1()
+            self.payload = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
             pass
-            for i in range(len(self.entry_ids)):
-                pass
-
 
 
     class AcVesselTransferEquip(KaitaiStruct):
@@ -5918,6 +6388,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcZoneInstancesInfo(KaitaiStruct):
+        """Field sequence from handler at 0x0822ef89 in OnRecieve dispatch.
+        Reads: u8
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcZoneInstancesInfo, self).__init__(_io)
             self._parent = _parent
@@ -5925,7 +6398,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u1()
 
 
         def _fetch_instances(self):

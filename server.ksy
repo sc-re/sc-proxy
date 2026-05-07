@@ -401,16 +401,27 @@ types:
     - id: dummy
       type: u1
   ac_player_arc_balance:
+    doc: |
+      Field sequence from handler at 0x08232318 in OnRecieve dispatch.
+      Reads: i32
     seq:
-    - id: dummy
-      type: u1
+    - id: value
+      type: s4be
   ac_titles_set_active:
+    doc: |
+      Field sequence from handler at 0x0822c6ed in OnRecieve dispatch.
+      Reads: u8 u16
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: value
+      type: u2be
   ac_avatars_set_active:
+    doc: |
+      Field sequence from handler at 0x0822c752 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_mottos_set_active:
     doc: |
@@ -432,16 +443,28 @@ types:
       repeat: expr
       repeat-expr: count
   ac_choose_starting_station:
+    doc: |
+      Field sequence from handler at 0x0822ecbb in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_change_player_nickname:
+    doc: |
+      Field sequence from handler at 0x0822ebd8 in OnRecieve dispatch.
+      Reads: u8 cstrN
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: nickname
+      type: strz
+      encoding: ASCII
   ac_steam_user_info:
+    doc: |
+      Field sequence from handler at 0x0822eb94 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_premium_info:
     doc: Premium account expiry timestamp in milliseconds
@@ -449,12 +472,18 @@ types:
     - id: expiry_ms
       type: u8be
   ac_premium_buy:
+    doc: |
+      Field sequence from handler at 0x0822f442 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_account_auras:
+    doc: |
+      Field sequence from handler at 0x0822f87d in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_add_account_aura:
     seq:
@@ -514,12 +543,20 @@ types:
     - id: dummy
       type: u1
   ac_ship_quest_start:
+    doc: |
+      Field sequence from handler at 0x082340f8 in OnRecieve dispatch.
+      Reads: u8 u8
     seq:
-    - id: dummy
+    - id: status
+      type: u1
+    - id: field_1
       type: u1
   ac_ship_quest_change:
+    doc: |
+      Field sequence from handler at 0x082340b4 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_ship_quest_end:
     seq:
@@ -535,21 +572,45 @@ types:
       repeat: expr
       repeat-expr: count
   ac_reward_tutorial:
+    doc: |
+      Field sequence from handler at 0x0823444a in OnRecieve dispatch.
+      Reads: u8 u8 u64
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: field_1
+      type: u1
+    - id: u64_2
+      type: u8be
   ac_player_inventory:
+    doc: |
+      Field sequence from handler at 0x08233968 in OnRecieve dispatch.
+      Reads: u32 u8 u32
     seq:
-    - id: dummy
+    - id: u32_0
+      type: u4be
+    - id: field_1
       type: u1
+    - id: u32_2
+      type: u4be
   ac_player_autogen_inventory:
+    doc: |
+      Field sequence from handler at 0x082342e0 in OnRecieve dispatch.
+      Reads: u32
     seq:
-    - id: dummy
-      type: u1
+    - id: value
+      type: u4be
   ac_player_vessels:
+    doc: |
+      Field sequence from handler at 0x0822e436 in OnRecieve dispatch.
+      Reads: u16 f32 f32
     seq:
-    - id: dummy
-      type: u1
+    - id: u16_0
+      type: u2be
+    - id: value
+      type: f4be
+    - id: value1
+      type: f4be
   ac_vessel_equipment:
     seq:
     - id: dummy
@@ -574,41 +635,80 @@ types:
     - id: dummy
       type: u1
   ac_enchant_item:
+    doc: |
+      Field sequence from handler at 0x08234d86 in OnRecieve dispatch.
+      Reads: u8 u64
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: uid
+      type: u8be
   ac_salvage_item:
+    doc: |
+      Field sequence from handler at 0x08234a1b in OnRecieve dispatch.
+      Reads: u64 u8 u32
     seq:
-    - id: dummy
+    - id: u64_0
+      type: u8be
+    - id: field_1
       type: u1
+    - id: u32_2
+      type: u4be
   ac_salvage_items:
+    doc: |
+      Field sequence from handler at 0x0822fa48 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_upgrade_items:
+    doc: |
+      Field sequence from handler at 0x08232ed8 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_upgrade_autogen_item:
+    doc: |
+      Field sequence from handler at 0x082348e0 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_craft_upgrade_item:
+    doc: |
+      Field sequence from handler at 0x0822d32b in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_find_autogen_item:
+    doc: |
+      Field sequence from handler at 0x08234001 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_activate_resource_vessel:
+    doc: |
+      Field sequence from handler at 0x08233fbd in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_sell_vessel:
+    doc: |
+      Field sequence from handler at 0x08234b30 in OnRecieve dispatch.
+      Reads: u64 u8 u32 f32
     seq:
-    - id: dummy
+    - id: u64_0
+      type: u8be
+    - id: field_1
       type: u1
+    - id: u32_2
+      type: u4be
+    - id: value
+      type: f4be
   ac_vessel_change_equip:
     seq:
     - id: dummy
@@ -618,8 +718,15 @@ types:
     - id: dummy
       type: u1
   ac_vessel_cheat_change_equip:
+    doc: |
+      Field sequence from handler at 0x0823010c in OnRecieve dispatch.
+      Reads: u8 u64 u8
     seq:
-    - id: dummy
+    - id: status
+      type: u1
+    - id: u64_1
+      type: u8be
+    - id: field_2
       type: u1
   ac_vessel_transfer_equip:
     doc: |
@@ -636,13 +743,23 @@ types:
     - id: payload
       size-eos: true
   ac_vessel_strip_equip:
+    doc: |
+      Field sequence from handler at 0x0823353e in OnRecieve dispatch.
+      Reads: u8 u64
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: uid
+      type: u8be
   ac_vessel_change_munition:
+    doc: |
+      Field sequence from handler at 0x08234924 in OnRecieve dispatch.
+      Reads: u8 u64
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: uid
+      type: u8be
   ac_vessel_refill_munition:
     doc: Munition refill confirmation; count = munitions restored
     seq:
@@ -687,8 +804,11 @@ types:
     - id: payload
       size-eos: true
   ac_vessel_extract_exp:
+    doc: |
+      Field sequence from handler at 0x0822f3ad in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_vessel_levelup:
     doc: |
@@ -711,45 +831,75 @@ types:
     - id: status
       type: u2be
   ac_vessel_repair_battle:
+    doc: |
+      Field sequence from handler at 0x08230d28 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_vessel_refill_battle:
+    doc: |
+      Field sequence from handler at 0x08233754 in OnRecieve dispatch.
+      Reads: u8 u8
     seq:
-    - id: dummy
+    - id: status
+      type: u1
+    - id: field_1
       type: u1
   ac_vessel_strip_improper_battle:
-    doc: Vessels removed from battle slots due to invalid configuration
+    doc: |
+      8B FIXED. Handler at 0x08233d8c reads only u8 status. Remaining
+      5B varies between captures (count-style values that don't fit a
+      simple count + u1 array layout) — kept opaque pending RE.
     seq:
-    - id: count
-      type: u4be
-    - id: entry_ids
+    - id: status
       type: u1
-      repeat: expr
-      repeat-expr: count
+    - id: payload
+      size-eos: true
   ac_vessel_free_custom_elements:
+    doc: |
+      Field sequence from handler at 0x082308a3 in OnRecieve dispatch.
+      Reads: u32 cstrN
     seq:
-    - id: dummy
-      type: u1
+    - id: value
+      type: u4be
+    - id: text
+      type: strz
+      encoding: ASCII
   ac_vessel_custom_elements_buy:
+    doc: |
+      Field sequence from handler at 0x0823080e in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_vessel_custom_elements_acknowledge_expiration:
+    doc: |
+      Field sequence from handler at 0x08230779 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_vessel_craft:
+    doc: |
+      Field sequence from handler at 0x08233f81 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_vessel_recraft:
+    doc: |
+      Field sequence from handler at 0x08233a55 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_vessel_budget_levelup:
+    doc: |
+      Field sequence from handler at 0x08233ea8 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_vessel_budget_activate:
     doc: Budget vessel activation confirmation
@@ -803,12 +953,24 @@ types:
     - id: result
       type: u2be
   ac_battle_slot_swap_vessels:
+    doc: |
+      Field sequence from handler at 0x08233002 in OnRecieve dispatch.
+      Reads: u8 u8 u8
     seq:
-    - id: dummy
+    - id: status
+      type: u1
+    - id: field_1
+      type: u1
+    - id: field_2
       type: u1
   ac_battle_slot_cheat_change_vessel:
+    doc: |
+      Field sequence from handler at 0x08232f6d in OnRecieve dispatch.
+      Reads: u8 u8
     seq:
-    - id: dummy
+    - id: status
+      type: u1
+    - id: field_1
       type: u1
   ac_inv_ext_buy:
     doc: |
@@ -847,24 +1009,45 @@ types:
     - id: gold
       type: u4be
   ac_buy_gold:
+    doc: |
+      Field sequence from handler at 0x0823364b in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_buy_arc_dlc:
+    doc: |
+      Field sequence from handler at 0x082336d4 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_talents_acquire:
+    doc: |
+      Field sequence from handler at 0x082302a0 in OnRecieve dispatch.
+      Reads: u8 u8 u64
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: field_1
+      type: u1
+    - id: u64_2
+      type: u8be
   ac_talents_update:
+    doc: |
+      Field sequence from handler at 0x082304ad in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_talents_reset:
+    doc: |
+      Field sequence from handler at 0x082303a7 in OnRecieve dispatch.
+      Reads: u8 u8
     seq:
-    - id: dummy
+    - id: status
+      type: u1
+    - id: field_1
       type: u1
   ac_talents_assign_sets:
     doc: Confirmed talent set assignments for 4 role slots
@@ -876,12 +1059,20 @@ types:
       repeat: expr
       repeat-expr: 4
   ac_buy_talent_set:
+    doc: |
+      Field sequence from handler at 0x0822dcb4 in OnRecieve dispatch.
+      Reads: u8 u8
     seq:
-    - id: dummy
+    - id: status
+      type: u1
+    - id: field_1
       type: u1
   ac_react_on_abandoned_game:
+    doc: |
+      Field sequence from handler at 0x08233b19 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_squad_info:
     doc: Current squad state; zero fields when not in a squad
@@ -891,16 +1082,27 @@ types:
     - id: leader_uid
       type: u8be
   ac_squad_invite_accept:
+    doc: |
+      Field sequence from handler at 0x08233ad5 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_squad_invite_decline:
+    doc: |
+      Field sequence from handler at 0x0822f486 in OnRecieve dispatch.
+      Reads: u8 u64
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: uid
+      type: u8be
   ac_squad_leave:
+    doc: |
+      Field sequence from handler at 0x08230f38 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_squad_invite_send:
     doc: |
@@ -921,52 +1123,102 @@ types:
     - id: uid
       type: u8be
   ac_squad_kick:
+    doc: |
+      Field sequence from handler at 0x0822c328 in OnRecieve dispatch.
+      Reads: u8 u64
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: uid
+      type: u8be
   ac_squad_ready:
+    doc: |
+      Field sequence from handler at 0x08232bf4 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_squad_convert_to_wing:
+    doc: |
+      Field sequence from handler at 0x08232ae4 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_league_team_info:
+    doc: |
+      Field sequence from handler at 0x08232b6c in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_league_team_create:
+    doc: |
+      Field sequence from handler at 0x082306bf in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_league_team_invite_send:
+    doc: |
+      Field sequence from handler at 0x08232a28 in OnRecieve dispatch.
+      Reads: u8 u64
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: uid
+      type: u8be
   ac_league_team_invite_cancel:
+    doc: |
+      Field sequence from handler at 0x082329b1 in OnRecieve dispatch.
+      Reads: u8 u64
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: uid
+      type: u8be
   ac_league_team_invite_accept:
+    doc: |
+      Field sequence from handler at 0x08232aa0 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_league_team_kick:
+    doc: |
+      Field sequence from handler at 0x0822e295 in OnRecieve dispatch.
+      Reads: u8 u64 u64
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: u64_1
+      type: u8be
+    - id: u64_2
+      type: u8be
   ac_league_team_leave:
+    doc: |
+      Field sequence from handler at 0x08232c98 in OnRecieve dispatch.
+      Reads: u8 u64 u64
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: u64_1
+      type: u8be
+    - id: u64_2
+      type: u8be
   ac_league_team_invite_decline:
+    doc: |
+      Field sequence from handler at 0x08232b28 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_league_team_request_names:
+    doc: |
+      Field sequence from handler at 0x08232bb0 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_get_nicknames:
     doc: Return list of nicknames
@@ -988,24 +1240,36 @@ types:
             type: strz
             encoding: UTF-8
   ac_get_uids:
+    doc: |
+      Field sequence from handler at 0x08232521 in OnRecieve dispatch.
+      Reads: u16
     seq:
-    - id: dummy
-      type: u1
+    - id: value
+      type: u2be
   ac_report_player:
+    doc: |
+      Field sequence from handler at 0x082324e5 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_update_yup_purchases:
     seq:
     - id: dummy
       type: u1
   ac_check_yup_purchases:
+    doc: |
+      Field sequence from handler at 0x0822c796 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_update_dlc_ownership:
+    doc: |
+      Field sequence from handler at 0x08233924 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_friends_send_request:
     doc: Friends list with UIDs and per-friend data
@@ -1020,17 +1284,32 @@ types:
     - id: uid
       type: u8be
   ac_friends_reject_request:
+    doc: |
+      Field sequence from handler at 0x0822ff6c in OnRecieve dispatch.
+      Reads: u8 u64
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: uid
+      type: u8be
   ac_friends_remove:
+    doc: |
+      Field sequence from handler at 0x08232dfc in OnRecieve dispatch.
+      Reads: u8 u64
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: uid
+      type: u8be
   ac_friends_list:
+    doc: |
+      Field sequence from handler at 0x08232d20 in OnRecieve dispatch.
+      Reads: u8 u64
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: uid
+      type: u8be
   ac_social_ignore_add:
     seq:
     - id: status
@@ -1072,28 +1351,64 @@ types:
     - id: dummy
       type: u1
   ac_teaching_request_to_teacher:
+    doc: |
+      Field sequence from handler at 0x0822be79 in OnRecieve dispatch.
+      Reads: u8 u64
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: uid
+      type: u8be
   ac_teaching_request_to_student:
+    doc: |
+      Field sequence from handler at 0x082309f6 in OnRecieve dispatch.
+      Reads: u8 u64
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: uid
+      type: u8be
   ac_teaching_accept:
+    doc: |
+      Field sequence from handler at 0x0822bb58 in OnRecieve dispatch.
+      Reads: u8 u64 u8
     seq:
-    - id: dummy
+    - id: status
+      type: u1
+    - id: u64_1
+      type: u8be
+    - id: field_2
       type: u1
   ac_teaching_reject:
+    doc: |
+      Field sequence from handler at 0x0822b9c6 in OnRecieve dispatch.
+      Reads: u8 u8 u64
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: field_1
+      type: u1
+    - id: u64_2
+      type: u8be
   ac_teaching_check:
+    doc: |
+      Field sequence from handler at 0x0822b97f in OnRecieve dispatch.
+      Reads: u8 u64 u8
     seq:
-    - id: dummy
+    - id: status
+      type: u1
+    - id: u64_1
+      type: u8be
+    - id: field_2
       type: u1
   ac_teaching_allow:
+    doc: |
+      Field sequence from handler at 0x0822b852 in OnRecieve dispatch.
+      Reads: u8 u8
     seq:
-    - id: dummy
+    - id: status
+      type: u1
+    - id: field_1
       type: u1
   ac_referrals:
     doc: Referral program info; flags=0x80 when no active referrer
@@ -1105,8 +1420,11 @@ types:
     - id: reserved
       type: u1
   ac_set_referrer:
+    doc: |
+      Field sequence from handler at 0x0822b4e7 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_obtain_referral_key:
     doc: |
@@ -1117,28 +1435,46 @@ types:
     - id: cs0_key
       size: 34
   ac_attach_steam_account:
+    doc: |
+      Field sequence from handler at 0x0822b8fc in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_finalize_steam_mtxn:
+    doc: |
+      Field sequence from handler at 0x0822b52b in OnRecieve dispatch.
+      Reads: u8 cstrN
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: text
+      type: strz
+      encoding: ASCII
   ac_attach_yup_account:
+    doc: |
+      Field sequence from handler at 0x0822b8b8 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_attach_email:
+    doc: |
+      Field sequence from handler at 0x0822b0fe in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_lobby_list:
     seq:
     - id: dummy
       type: u1
   ac_lobby_join:
+    doc: |
+      Field sequence from handler at 0x0822b264 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_lobby_create:
     doc: |
@@ -1164,8 +1500,11 @@ types:
     - id: dummy
       type: u1
   ac_lobby_kick:
+    doc: |
+      Field sequence from handler at 0x0822b42a in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_lobby_leave:
     doc: |
@@ -1174,8 +1513,11 @@ types:
     - id: status
       type: u1
   ac_lobby_invite:
+    doc: |
+      Field sequence from handler at 0x0822b466 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_lobby_modify:
     doc: |
@@ -1186,8 +1528,11 @@ types:
     - id: opaque_status
       size: 3
   ac_lobby_start_game:
+    doc: |
+      Field sequence from handler at 0x0822b069 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_lobby_group_list:
     doc: |
@@ -1203,29 +1548,53 @@ types:
     - id: dummy
       type: u1
   ac_lobby_group_create:
+    doc: |
+      Field sequence from handler at 0x0822ac9c in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_lobby_group_modify:
+    doc: |
+      Field sequence from handler at 0x0822bfa4 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_lobby_group_delete:
+    doc: |
+      Field sequence from handler at 0x0822ac58 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_lobby_group_joinreq_create:
+    doc: |
+      Field sequence from handler at 0x0822abb8 in OnRecieve dispatch.
+      Reads: u8 u32
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: value
+      type: u4be
   ac_lobby_group_joinreq_cancel:
+    doc: |
+      Field sequence from handler at 0x0822ab17 in OnRecieve dispatch.
+      Reads: u8 u32
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: value
+      type: u4be
   ac_lobby_group_joinreq_reject:
+    doc: |
+      Field sequence from handler at 0x0822c55e in OnRecieve dispatch.
+      Reads: u8 u64
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: uid
+      type: u8be
   ac_clan_request_credentials:
     doc: |
       Tabular response: list of (cid, name, tag, emblem) for the
@@ -1471,80 +1840,149 @@ types:
     - id: unknown
       type: u8be
   ac_clan_joinreq_create:
+    doc: |
+      Field sequence from handler at 0x0822c6a9 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_clan_joinreq_cancel:
+    doc: |
+      Field sequence from handler at 0x0822bfea in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_clan_joinreq_accept:
+    doc: |
+      Field sequence from handler at 0x0822c665 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_clan_invite_send:
+    doc: |
+      Field sequence from handler at 0x0822aa97 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_clan_invite_accept:
+    doc: |
+      Field sequence from handler at 0x0822aa53 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_clan_invite_cancel:
+    doc: |
+      Field sequence from handler at 0x0822a812 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_clan_kick:
+    doc: |
+      Field sequence from handler at 0x0822a9cb in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_clan_leave:
+    doc: |
+      Field sequence from handler at 0x0822a514 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_clan_set_role:
+    doc: |
+      Field sequence from handler at 0x0822aa0f in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_clan_change_motd:
+    doc: |
+      Field sequence from handler at 0x0822a645 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_clan_change_desc:
+    doc: |
+      Field sequence from handler at 0x0822a941 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_clan_change_recruiting:
+    doc: |
+      Field sequence from handler at 0x0822a48c in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_clan_resource_convert:
+    doc: |
+      Field sequence from handler at 0x0822a987 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_clan_ship_build:
+    doc: |
+      Field sequence from handler at 0x0822a68b in OnRecieve dispatch.
+      Reads: u8 cstrN cstrN cstrN
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: text
+      type: strz
+      encoding: ASCII
+    - id: text1
+      type: strz
+      encoding: ASCII
+    - id: text2
+      type: strz
+      encoding: ASCII
   ac_clan_ship_boost_building:
     seq:
     - id: dummy
       type: u1
   ac_clan_ship_repair:
+    doc: |
+      Field sequence from handler at 0x0822a4d0 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_clan_ship_boost_repairing:
+    doc: |
+      Field sequence from handler at 0x0822a856 in OnRecieve dispatch.
+      Reads: u8 cstrN
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: text
+      type: strz
+      encoding: ASCII
   ac_clan_ship_fit:
+    doc: |
+      Field sequence from handler at 0x0822a558 in OnRecieve dispatch.
+      Reads: u8 cstrN
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: text
+      type: strz
+      encoding: ASCII
   ac_clan_ship_set_current:
+    doc: |
+      Field sequence from handler at 0x0822a448 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_clan_universe_move:
     doc: |
@@ -1556,44 +1994,85 @@ types:
     - id: zone_id
       type: u2be
   ac_clan_set_civilian_zone:
+    doc: |
+      Field sequence from handler at 0x0822c7d2 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_clan_revive_in_war:
+    doc: |
+      Field sequence from handler at 0x0822d2e7 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_clan_war_start:
+    doc: |
+      Field sequence from handler at 0x0822d25e in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_clan_quest_accept:
+    doc: |
+      Field sequence from handler at 0x0822d2ab in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_clan_create:
+    doc: |
+      Field sequence from handler at 0x0822d21a in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_clan_upgrade:
+    doc: |
+      Field sequence from handler at 0x0822e328 in OnRecieve dispatch.
+      Reads: u8 u8
     seq:
-    - id: dummy
+    - id: status
+      type: u1
+    - id: field_1
       type: u1
   ac_clan_change_name:
+    doc: |
+      Field sequence from handler at 0x0822d72b in OnRecieve dispatch.
+      Reads: u8 cstrN
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: name
+      type: strz
+      encoding: ASCII
   ac_clan_change_tag:
+    doc: |
+      Field sequence from handler at 0x0822d136 in OnRecieve dispatch.
+      Reads: u8 cstrN
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: tag
+      type: strz
+      encoding: ASCII
   ac_clan_assign_emblem:
+    doc: |
+      Field sequence from handler at 0x0822d050 in OnRecieve dispatch.
+      Reads: u8 cstrN
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: emblem
+      type: strz
+      encoding: ASCII
   ac_clan_bank_transfer:
+    doc: |
+      Field sequence from handler at 0x0822f4c6 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_clan_list_recruiting:
     seq:
@@ -1604,32 +2083,57 @@ types:
     - id: dummy
       type: u1
   ac_related_quest_enable:
+    doc: |
+      Field sequence from handler at 0x0822d3f8 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_user_profile_get:
+    doc: |
+      Field sequence from handler at 0x0822ed43 in OnRecieve dispatch.
+      Reads: u16
     seq:
-    - id: dummy
-      type: u1
+    - id: value
+      type: u2be
   ac_achievements:
+    doc: |
+      Field sequence from handler at 0x0822dd00 in OnRecieve dispatch.
+      Reads: u64 u16 u16
     seq:
-    - id: dummy
-      type: u1
+    - id: u64_0
+      type: u8be
+    - id: u16_1
+      type: u2be
+    - id: u16_2
+      type: u2be
   ac_admin_cmd:
+    doc: |
+      Field sequence from handler at 0x0822c2d4 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_games_info:
+    doc: |
+      Field sequence from handler at 0x0822c20a in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_zone_instances_info:
+    doc: |
+      Field sequence from handler at 0x0822ef89 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_get_punishments:
+    doc: |
+      Field sequence from handler at 0x0822eed9 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_welcome_msg:
     seq:
@@ -1651,8 +2155,11 @@ types:
     - id: status
       type: u1
   ac_survey_vote:
+    doc: |
+      Field sequence from handler at 0x0822efcd in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_survey_results:
     doc: Survey result data; all-zero when no surveys active
@@ -1666,9 +2173,16 @@ types:
     - id: dummy
       type: u1
   ac_universe_counters:
+    doc: |
+      Field sequence from handler at 0x0822e0f3 in OnRecieve dispatch.
+      Reads: u8 u64 f32
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: u64_1
+      type: u8be
+    - id: value
+      type: f4be
   ac_warmap_get:
     seq:
     - id: dummy
@@ -1711,9 +2225,14 @@ types:
     - id: mail_id
       type: u4be
   ac_mail_remove:
+    doc: |
+      Field sequence from handler at 0x0822e184 in OnRecieve dispatch.
+      Reads: u8 u64
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: uid
+      type: u8be
   ac_mail_acknowledge_expiration:
     doc: Acknowledge expired mail; mail_id=0xffffffff means all
     seq:
@@ -1728,18 +2247,26 @@ types:
     - id: dummy
       type: u1
   ac_auto_pilot_space_station:
+    doc: |
+      Field sequence from handler at 0x0822cfb0 in OnRecieve dispatch.
+      Reads: u8 u32
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: value
+      type: u4be
   ac_undock_space_station:
     doc: Undock result; status 0 = success
     seq:
     - id: status
       type: u1
   ac_set_visited_zone:
+    doc: |
+      Field sequence from handler at 0x0822cec6 in OnRecieve dispatch.
+      Reads: u16
     seq:
-    - id: dummy
-      type: u1
+    - id: value
+      type: u2be
   ac_zone_coordinator_gm_command:
     seq:
     - id: dummy
@@ -1749,12 +2276,18 @@ types:
     - id: dummy
       type: u1
   ac_karma_reset:
+    doc: |
+      Field sequence from handler at 0x0822cdb6 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_faction_rep_reset:
+    doc: |
+      Field sequence from handler at 0x0822cd72 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_leaderboard_get:
     seq:
@@ -1801,8 +2334,11 @@ types:
     - id: dummy
       type: u1
   ac_sell_craft_resources:
+    doc: |
+      Field sequence from handler at 0x0822c816 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_get_blueprints:
     seq:
@@ -1824,9 +2360,14 @@ types:
     - id: dummy
       type: u1
   ac_disassemble_item:
+    doc: |
+      Field sequence from handler at 0x0822ee0b in OnRecieve dispatch.
+      Reads: u8 u64
     seq:
-    - id: dummy
+    - id: status
       type: u1
+    - id: uid
+      type: u8be
   ac_add_thumb_up:
     doc: |
       13 bytes. Request: echo + u16be(type) + u32be(0) + u32be(instance_id).
@@ -1855,8 +2396,11 @@ types:
     - id: payload
       size-eos: true
   ac_advert_delete:
+    doc: |
+      Field sequence from handler at 0x08233a99 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_advert_header_get:
     seq:
@@ -1876,12 +2420,18 @@ types:
     - id: dummy
       type: u1
   ac_unlim_pve_upgrade_player_level:
+    doc: |
+      Field sequence from handler at 0x08233710 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_unlim_pve_disable_player_buffs:
+    doc: |
+      Field sequence from handler at 0x08233d48 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_ta_stats_send_tutorial_entter:
     seq:
@@ -1892,9 +2442,12 @@ types:
     - id: dummy
       type: u1
   ac_user_notes:
+    doc: |
+      Field sequence from handler at 0x0822f662 in OnRecieve dispatch.
+      Reads: u32
     seq:
-    - id: dummy
-      type: u1
+    - id: value
+      type: u4be
   ac_user_notes_add:
     doc: Confirmation of user note added; echoes uid and note text
     seq:
@@ -1915,8 +2468,11 @@ types:
     - id: uid
       type: u8be
   ac_battle_pass_unlock_level:
+    doc: |
+      Field sequence from handler at 0x0822c900 in OnRecieve dispatch.
+      Reads: u8
     seq:
-    - id: dummy
+    - id: status
       type: u1
   ac_zones_lua_active_events_update:
     doc: Active Lua event status for zones

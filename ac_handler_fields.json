@@ -1,0 +1,2952 @@
+{
+  "180": {
+    "name": "AC_CLAN_UNIVERSE_MOVE",
+    "addr": "0x0822a404",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "179": {
+    "name": "AC_CLAN_SHIP_SET_CURRENT",
+    "addr": "0x0822a448",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "172": {
+    "name": "AC_CLAN_CHANGE_RECRUITING",
+    "addr": "0x0822a48c",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "176": {
+    "name": "AC_CLAN_SHIP_REPAIR",
+    "addr": "0x0822a4d0",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "168": {
+    "name": "AC_CLAN_LEAVE",
+    "addr": "0x0822a514",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "178": {
+    "name": "AC_CLAN_SHIP_FIT",
+    "addr": "0x0822a558",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadCStringLen"
+    ],
+    "field_tags": [
+      "u8",
+      "cstrN"
+    ]
+  },
+  "170": {
+    "name": "AC_CLAN_CHANGE_MOTD",
+    "addr": "0x0822a645",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "174": {
+    "name": "AC_CLAN_SHIP_BUILD",
+    "addr": "0x0822a68b",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadCStringLen",
+      "BitStream_ReadCStringLen",
+      "BitStream_ReadCStringLen"
+    ],
+    "field_tags": [
+      "u8",
+      "cstrN",
+      "cstrN",
+      "cstrN"
+    ]
+  },
+  "166": {
+    "name": "AC_CLAN_INVITE_CANCEL",
+    "addr": "0x0822a812",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "175": {
+    "name": "AC_CLAN_SHIP_BOOST_BUILDING",
+    "addr": "0x0822a856",
+    "reader_calls": [],
+    "field_tags": []
+  },
+  "177": {
+    "name": "AC_CLAN_SHIP_BOOST_REPAIRING",
+    "addr": "0x0822a856",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadCStringLen"
+    ],
+    "field_tags": [
+      "u8",
+      "cstrN"
+    ]
+  },
+  "171": {
+    "name": "AC_CLAN_CHANGE_DESC",
+    "addr": "0x0822a941",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "173": {
+    "name": "AC_CLAN_RESOURCE_CONVERT",
+    "addr": "0x0822a987",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "167": {
+    "name": "AC_CLAN_KICK",
+    "addr": "0x0822a9cb",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "169": {
+    "name": "AC_CLAN_SET_ROLE",
+    "addr": "0x0822aa0f",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "165": {
+    "name": "AC_CLAN_INVITE_ACCEPT",
+    "addr": "0x0822aa53",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "164": {
+    "name": "AC_CLAN_INVITE_SEND",
+    "addr": "0x0822aa97",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "148": {
+    "name": "AC_LOBBY_MODIFY",
+    "addr": "0x0822aadb",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "156": {
+    "name": "AC_LOBBY_GROUP_JOINREQ_CANCEL",
+    "addr": "0x0822ab17",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU32"
+    ],
+    "field_tags": [
+      "u8",
+      "u32"
+    ]
+  },
+  "155": {
+    "name": "AC_LOBBY_GROUP_JOINREQ_CREATE",
+    "addr": "0x0822abb8",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU32"
+    ],
+    "field_tags": [
+      "u8",
+      "u32"
+    ]
+  },
+  "154": {
+    "name": "AC_LOBBY_GROUP_DELETE",
+    "addr": "0x0822ac58",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "152": {
+    "name": "AC_LOBBY_GROUP_CREATE",
+    "addr": "0x0822ac9c",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "150": {
+    "name": "AC_LOBBY_GROUP_LIST",
+    "addr": "0x0822ace0",
+    "reader_calls": [
+      "BitStream_ReadU16"
+    ],
+    "field_tags": [
+      "u16"
+    ]
+  },
+  "151": {
+    "name": "AC_LOBBY_GROUP_INFO",
+    "addr": "0x0822b01d",
+    "reader_calls": [],
+    "field_tags": []
+  },
+  "149": {
+    "name": "AC_LOBBY_START_GAME",
+    "addr": "0x0822b069",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "140": {
+    "name": "AC_ATTACH_EMAIL",
+    "addr": "0x0822b0fe",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "160": {
+    "name": "AC_CLAN_REQUEST_PROFILE",
+    "addr": "0x0822b142",
+    "reader_calls": [
+      "BitStream_ReadU64v2",
+      "BitStream_ReadU64v2"
+    ],
+    "field_tags": [
+      "u64",
+      "u64"
+    ]
+  },
+  "144": {
+    "name": "AC_LOBBY_INFO",
+    "addr": "0x0822b1c7",
+    "reader_calls": [],
+    "field_tags": []
+  },
+  "143": {
+    "name": "AC_LOBBY_CREATE",
+    "addr": "0x0822b213",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "142": {
+    "name": "AC_LOBBY_JOIN",
+    "addr": "0x0822b264",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "141": {
+    "name": "AC_LOBBY_LIST",
+    "addr": "0x0822b2eb",
+    "reader_calls": [],
+    "field_tags": []
+  },
+  "146": {
+    "name": "AC_LOBBY_LEAVE",
+    "addr": "0x0822b3db",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "145": {
+    "name": "AC_LOBBY_KICK",
+    "addr": "0x0822b42a",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "147": {
+    "name": "AC_LOBBY_INVITE",
+    "addr": "0x0822b466",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "136": {
+    "name": "AC_OBTAIN_REFERRAL_KEY",
+    "addr": "0x0822b4a2",
+    "reader_calls": [],
+    "field_tags": []
+  },
+  "135": {
+    "name": "AC_SET_REFERRER",
+    "addr": "0x0822b4e7",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "138": {
+    "name": "AC_FINALIZE_STEAM_MTXN",
+    "addr": "0x0822b52b",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadCStringLen"
+    ],
+    "field_tags": [
+      "u8",
+      "cstrN"
+    ]
+  },
+  "134": {
+    "name": "AC_REFERRALS",
+    "addr": "0x0822b751",
+    "reader_calls": [
+      "BitStream_ReadU64v2",
+      "BitStream_ReadU8",
+      "BitStream_ReadU64v2",
+      "BitStream_ReadU32"
+    ],
+    "field_tags": [
+      "u64",
+      "u8",
+      "u64",
+      "u32"
+    ]
+  },
+  "133": {
+    "name": "AC_TEACHING_ALLOW",
+    "addr": "0x0822b852",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8",
+      "u8"
+    ]
+  },
+  "139": {
+    "name": "AC_ATTACH_YUP_ACCOUNT",
+    "addr": "0x0822b8b8",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "137": {
+    "name": "AC_ATTACH_STEAM_ACCOUNT",
+    "addr": "0x0822b8fc",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "252": {
+    "name": "AC_ADVENTURE_CANCEL",
+    "addr": "0x0822b940",
+    "reader_calls": [],
+    "field_tags": []
+  },
+  "132": {
+    "name": "AC_TEACHING_CHECK",
+    "addr": "0x0822b97f",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU64v2",
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8",
+      "u64",
+      "u8"
+    ]
+  },
+  "131": {
+    "name": "AC_TEACHING_REJECT",
+    "addr": "0x0822b9c6",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU8",
+      "BitStream_ReadU64v2"
+    ],
+    "field_tags": [
+      "u8",
+      "u8",
+      "u64"
+    ]
+  },
+  "130": {
+    "name": "AC_TEACHING_ACCEPT",
+    "addr": "0x0822bb58",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU64v2",
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8",
+      "u64",
+      "u8"
+    ]
+  },
+  "27": {
+    "name": "AC_QUEST_COMPLETE",
+    "addr": "0x0822bc58",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU16v2",
+      "BitStream_ReadU16v2",
+      "BitStream_ReadU64"
+    ],
+    "field_tags": [
+      "u8",
+      "u16",
+      "u16",
+      "u64"
+    ]
+  },
+  "26": {
+    "name": "AC_QUEST_CHANGE",
+    "addr": "0x0822bce1",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU16v2",
+      "BitStream_ReadU16v2",
+      "BitStream_ReadU64"
+    ],
+    "field_tags": [
+      "u8",
+      "u16",
+      "u16",
+      "u64"
+    ]
+  },
+  "29": {
+    "name": "AC_SHIP_QUESTS",
+    "addr": "0x0822bdf8",
+    "reader_calls": [],
+    "field_tags": []
+  },
+  "128": {
+    "name": "AC_TEACHING_REQUEST_TO_TEACHER",
+    "addr": "0x0822be79",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU64v2"
+    ],
+    "field_tags": [
+      "u8",
+      "u64"
+    ]
+  },
+  "127": {
+    "name": "AC_TEACHING_LIST",
+    "addr": "0x0822bf58",
+    "reader_calls": [],
+    "field_tags": []
+  },
+  "153": {
+    "name": "AC_LOBBY_GROUP_MODIFY",
+    "addr": "0x0822bfa4",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "162": {
+    "name": "AC_CLAN_JOINREQ_CANCEL",
+    "addr": "0x0822bfea",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "5": {
+    "name": "AC_ENTER_TOURNAMENT",
+    "addr": "0x0822c02e",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "Bag_Deserialize"
+    ],
+    "field_tags": [
+      "u8",
+      "BAG"
+    ]
+  },
+  "197": {
+    "name": "AC_GAMES_INFO",
+    "addr": "0x0822c20a",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "196": {
+    "name": "AC_ADMIN_CMD",
+    "addr": "0x0822c2d4",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "97": {
+    "name": "AC_SQUAD_KICK",
+    "addr": "0x0822c328",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU64v2"
+    ],
+    "field_tags": [
+      "u8",
+      "u64"
+    ]
+  },
+  "96": {
+    "name": "AC_SQUAD_INVITE_CANCEL",
+    "addr": "0x0822c3a8",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU64v2"
+    ],
+    "field_tags": [
+      "u8",
+      "u64"
+    ]
+  },
+  "158": {
+    "name": "AC_CLAN_REQUEST_CREDENTIALS",
+    "addr": "0x0822c3e8",
+    "reader_calls": [
+      "BitStream_ReadU32",
+      "BitStream_ReadU64v2",
+      "BitStream_ReadCStringLen",
+      "BitStream_ReadCStringLen",
+      "BitStream_ReadCStringLen"
+    ],
+    "field_tags": [
+      "u32",
+      "u64",
+      "cstrN",
+      "cstrN",
+      "cstrN"
+    ]
+  },
+  "157": {
+    "name": "AC_LOBBY_GROUP_JOINREQ_REJECT",
+    "addr": "0x0822c55e",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU64v2"
+    ],
+    "field_tags": [
+      "u8",
+      "u64"
+    ]
+  },
+  "159": {
+    "name": "AC_CLAN_REQUEST_DESC",
+    "addr": "0x0822c608",
+    "reader_calls": [],
+    "field_tags": []
+  },
+  "163": {
+    "name": "AC_CLAN_JOINREQ_ACCEPT",
+    "addr": "0x0822c665",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "161": {
+    "name": "AC_CLAN_JOINREQ_CREATE",
+    "addr": "0x0822c6a9",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "13": {
+    "name": "AC_TITLES_SET_ACTIVE",
+    "addr": "0x0822c6ed",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU16"
+    ],
+    "field_tags": [
+      "u8",
+      "u16"
+    ]
+  },
+  "14": {
+    "name": "AC_AVATARS_SET_ACTIVE",
+    "addr": "0x0822c752",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "113": {
+    "name": "AC_CHECK_YUP_PURCHASES",
+    "addr": "0x0822c796",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "181": {
+    "name": "AC_CLAN_SET_CIVILIAN_ZONE",
+    "addr": "0x0822c7d2",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "228": {
+    "name": "AC_SELL_CRAFT_RESOURCE",
+    "addr": "0x0822c816",
+    "reader_calls": [],
+    "field_tags": []
+  },
+  "229": {
+    "name": "AC_SELL_CRAFT_RESOURCES",
+    "addr": "0x0822c816",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "227": {
+    "name": "AC_USE_BLUEPRINT",
+    "addr": "0x0822c85a",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "226": {
+    "name": "AC_GET_CRAFT_RESOURCES",
+    "addr": "0x0822c89e",
+    "reader_calls": [
+      "Bag_Deserialize"
+    ],
+    "field_tags": [
+      "BAG"
+    ]
+  },
+  "249": {
+    "name": "AC_BATTLE_PASS_UNLOCK_LEVEL",
+    "addr": "0x0822c900",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "224": {
+    "name": "AC_GET_FB_TOKEN",
+    "addr": "0x0822c944",
+    "reader_calls": [
+      "BitStream_ReadCStringLen",
+      "BitStream_ReadU64",
+      "BitStream_ReadCStringLen",
+      "BitStream_ReadU64"
+    ],
+    "field_tags": [
+      "cstrN",
+      "u64",
+      "cstrN",
+      "u64"
+    ]
+  },
+  "250": {
+    "name": "AC_ZONES_LUA_ACTIVE_EVENTS_UPDATE",
+    "addr": "0x0822ca25",
+    "reader_calls": [],
+    "field_tags": []
+  },
+  "222": {
+    "name": "AC_LEADERBOARD_GET_DESCS",
+    "addr": "0x0822ca6a",
+    "reader_calls": [
+      "BitStream_ReadU32",
+      "Bag_Deserialize"
+    ],
+    "field_tags": [
+      "u32",
+      "BAG"
+    ]
+  },
+  "221": {
+    "name": "AC_LEADERBOARD_GET",
+    "addr": "0x0822cca1",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "Bag_Deserialize"
+    ],
+    "field_tags": [
+      "u8",
+      "BAG"
+    ]
+  },
+  "220": {
+    "name": "AC_FACTION_REP_RESET",
+    "addr": "0x0822cd72",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "219": {
+    "name": "AC_KARMA_RESET",
+    "addr": "0x0822cdb6",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "218": {
+    "name": "AC_SPACE_STATIONS_POPULATION",
+    "addr": "0x0822cdfa",
+    "reader_calls": [
+      "Bag_Deserialize"
+    ],
+    "field_tags": [
+      "BAG"
+    ]
+  },
+  "251": {
+    "name": "AC_ADVENTURES",
+    "addr": "0x0822ce46",
+    "reader_calls": [],
+    "field_tags": []
+  },
+  "216": {
+    "name": "AC_SET_VISITED_ZONE",
+    "addr": "0x0822cec6",
+    "reader_calls": [
+      "BitStream_ReadU16"
+    ],
+    "field_tags": [
+      "u16"
+    ]
+  },
+  "215": {
+    "name": "AC_UNDOCK_SPACE_STATION",
+    "addr": "0x0822cf28",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "214": {
+    "name": "AC_AUTO_PILOT_SPACE_STATION",
+    "addr": "0x0822cfb0",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU32"
+    ],
+    "field_tags": [
+      "u8",
+      "u32"
+    ]
+  },
+  "189": {
+    "name": "AC_CLAN_ASSIGN_EMBLEM",
+    "addr": "0x0822d050",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadCStringLen"
+    ],
+    "field_tags": [
+      "u8",
+      "cstrN"
+    ]
+  },
+  "188": {
+    "name": "AC_CLAN_CHANGE_TAG",
+    "addr": "0x0822d136",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadCStringLen"
+    ],
+    "field_tags": [
+      "u8",
+      "cstrN"
+    ]
+  },
+  "185": {
+    "name": "AC_CLAN_CREATE",
+    "addr": "0x0822d21a",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "183": {
+    "name": "AC_CLAN_WAR_START",
+    "addr": "0x0822d25e",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "184": {
+    "name": "AC_CLAN_QUEST_ACCEPT",
+    "addr": "0x0822d2ab",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "182": {
+    "name": "AC_CLAN_REVIVE_IN_WAR",
+    "addr": "0x0822d2e7",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "47": {
+    "name": "AC_CRAFT_UPGRADE_ITEM",
+    "addr": "0x0822d32b",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "22": {
+    "name": "AC_ADD_ACCOUNT_AURA",
+    "addr": "0x0822d36f",
+    "reader_calls": [],
+    "field_tags": []
+  },
+  "81": {
+    "name": "AC_AUTOGEN_INV_EXT_BUY",
+    "addr": "0x0822d3b4",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "193": {
+    "name": "AC_RELATED_QUEST_ENABLE",
+    "addr": "0x0822d3f8",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "230": {
+    "name": "AC_GET_BLUEPRINTS",
+    "addr": "0x0822d434",
+    "reader_calls": [
+      "Bag_Deserialize"
+    ],
+    "field_tags": [
+      "BAG"
+    ]
+  },
+  "241": {
+    "name": "AC_EMM_CHANGE_READY",
+    "addr": "0x0822d4a0",
+    "reader_calls": [],
+    "field_tags": []
+  },
+  "240": {
+    "name": "AC_BUY_PRODUCT_FROM_ADVERT",
+    "addr": "0x0822d4ee",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "205": {
+    "name": "AC_UNIVERSE_GET",
+    "addr": "0x0822d533",
+    "reader_calls": [],
+    "field_tags": []
+  },
+  "121": {
+    "name": "AC_SOCIAL_IGNORE_REMOVE",
+    "addr": "0x0822d57f",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU64v2"
+    ],
+    "field_tags": [
+      "u8",
+      "u64"
+    ]
+  },
+  "120": {
+    "name": "AC_SOCIAL_IGNORE_ADD",
+    "addr": "0x0822d65b",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU64v2"
+    ],
+    "field_tags": [
+      "u8",
+      "u64"
+    ]
+  },
+  "187": {
+    "name": "AC_CLAN_CHANGE_NAME",
+    "addr": "0x0822d72b",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadCStringLen"
+    ],
+    "field_tags": [
+      "u8",
+      "cstrN"
+    ]
+  },
+  "57": {
+    "name": "AC_VESSEL_REFILL_MUNITION",
+    "addr": "0x0822d887",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU64v2"
+    ],
+    "field_tags": [
+      "u8",
+      "u64"
+    ]
+  },
+  "24": {
+    "name": "AC_QUESTS",
+    "addr": "0x0822d960",
+    "reader_calls": [
+      "BitStream_ReadU32",
+      "BitStream_ReadU32",
+      "BitStream_ReadU32",
+      "BitStream_ReadU8",
+      "BitStream_ReadU32",
+      "BitStream_ReadU8",
+      "BitStream_ReadU16v2",
+      "BitStream_ReadU8",
+      "BitStream_ReadU32",
+      "BitStream_ReadU64v2"
+    ],
+    "field_tags": [
+      "u32",
+      "u32",
+      "u32",
+      "u8",
+      "u32",
+      "u8",
+      "u16",
+      "u8",
+      "u32",
+      "u64"
+    ]
+  },
+  "23": {
+    "name": "AC_CANCEL_ACCOUNT_AURA",
+    "addr": "0x0822dc26",
+    "reader_calls": [],
+    "field_tags": []
+  },
+  "25": {
+    "name": "AC_QUEST_ACCEPT",
+    "addr": "0x0822dc6b",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU16v2"
+    ],
+    "field_tags": [
+      "u8",
+      "u16"
+    ]
+  },
+  "89": {
+    "name": "AC_BUY_TALENT_SET",
+    "addr": "0x0822dcb4",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8",
+      "u8"
+    ]
+  },
+  "195": {
+    "name": "AC_ACHIEVEMENTS",
+    "addr": "0x0822dd00",
+    "reader_calls": [
+      "BitStream_ReadU64v2",
+      "BitStream_ReadU16",
+      "BitStream_ReadU16"
+    ],
+    "field_tags": [
+      "u64",
+      "u16",
+      "u16"
+    ]
+  },
+  "1": {
+    "name": "AC_SERVER_INFO",
+    "addr": "0x0822ddea",
+    "reader_calls": [],
+    "field_tags": []
+  },
+  "209": {
+    "name": "AC_MAIL_DELIVER",
+    "addr": "0x0822de4f",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU64v2",
+      "BitStream_ReadU32"
+    ],
+    "field_tags": [
+      "u8",
+      "u64",
+      "u32"
+    ]
+  },
+  "208": {
+    "name": "AC_MAIL_GET",
+    "addr": "0x0822e030",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "207": {
+    "name": "AC_WARMAP_GET",
+    "addr": "0x0822e0a7",
+    "reader_calls": [],
+    "field_tags": []
+  },
+  "206": {
+    "name": "AC_UNIVERSE_COUNTERS",
+    "addr": "0x0822e0f3",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU64",
+      "BitStream_ReadF32"
+    ],
+    "field_tags": [
+      "u8",
+      "u64",
+      "f32"
+    ]
+  },
+  "211": {
+    "name": "AC_MAIL_REMOVE",
+    "addr": "0x0822e184",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU64v2"
+    ],
+    "field_tags": [
+      "u8",
+      "u64"
+    ]
+  },
+  "210": {
+    "name": "AC_MAIL_SEND",
+    "addr": "0x0822e200",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "212": {
+    "name": "AC_MAIL_ACKNOWLEDGE_EXPIRATION",
+    "addr": "0x0822e251",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "105": {
+    "name": "AC_LEAGUE_TEAM_KICK",
+    "addr": "0x0822e295",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU64v2",
+      "BitStream_ReadU64"
+    ],
+    "field_tags": [
+      "u8",
+      "u64",
+      "u64"
+    ]
+  },
+  "186": {
+    "name": "AC_CLAN_UPGRADE",
+    "addr": "0x0822e328",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8",
+      "u8"
+    ]
+  },
+  "191": {
+    "name": "AC_CLAN_LIST_RECRUITING",
+    "addr": "0x0822e373",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "Bag_Deserialize"
+    ],
+    "field_tags": [
+      "u8",
+      "BAG"
+    ]
+  },
+  "37": {
+    "name": "AC_PLAYER_VESSELS",
+    "addr": "0x0822e436",
+    "reader_calls": [
+      "BitStream_ReadU16",
+      "BitStream_ReadF32",
+      "BitStream_ReadF32"
+    ],
+    "field_tags": [
+      "u16",
+      "f32",
+      "f32"
+    ]
+  },
+  "18": {
+    "name": "AC_STEAM_USER_INFO",
+    "addr": "0x0822eb94",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "17": {
+    "name": "AC_CHANGE_PLAYER_NICKNAME",
+    "addr": "0x0822ebd8",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadCStringLen"
+    ],
+    "field_tags": [
+      "u8",
+      "cstrN"
+    ]
+  },
+  "16": {
+    "name": "AC_CHOOSE_STARTING_STATION",
+    "addr": "0x0822ecbb",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "73": {
+    "name": "AC_VESSEL_BUDGET_ACTIVATE",
+    "addr": "0x0822ecff",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "194": {
+    "name": "AC_USER_PROFILE_GET",
+    "addr": "0x0822ed43",
+    "reader_calls": [
+      "BitStream_ReadU16"
+    ],
+    "field_tags": [
+      "u16"
+    ]
+  },
+  "234": {
+    "name": "AC_ADD_THUMB_UP",
+    "addr": "0x0822edb0",
+    "reader_calls": [
+      "BitStream_ReadU64v2"
+    ],
+    "field_tags": [
+      "u64"
+    ]
+  },
+  "233": {
+    "name": "AC_DISASSEMBLE_ITEM",
+    "addr": "0x0822ee0b",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU64v2"
+    ],
+    "field_tags": [
+      "u8",
+      "u64"
+    ]
+  },
+  "201": {
+    "name": "AC_MOTD",
+    "addr": "0x0822ee4f",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "200": {
+    "name": "AC_WELCOME_MSG",
+    "addr": "0x0822ee95",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "199": {
+    "name": "AC_GET_PUNISHMENTS",
+    "addr": "0x0822eed9",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "198": {
+    "name": "AC_ZONE_INSTANCES_INFO",
+    "addr": "0x0822ef89",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "203": {
+    "name": "AC_SURVEY_VOTE",
+    "addr": "0x0822efcd",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "125": {
+    "name": "AC_SOCIAL_SUGGEST_FB",
+    "addr": "0x0822f02b",
+    "reader_calls": [],
+    "field_tags": []
+  },
+  "126": {
+    "name": "AC_SOCIAL_SUGGEST_VK",
+    "addr": "0x0822f02b",
+    "reader_calls": [],
+    "field_tags": []
+  },
+  "124": {
+    "name": "AC_SOCIAL_SUGGEST_STEAM",
+    "addr": "0x0822f25b",
+    "reader_calls": [],
+    "field_tags": []
+  },
+  "192": {
+    "name": "AC_CLAN_HISTORY_GET",
+    "addr": "0x0822f2da",
+    "reader_calls": [
+      "Bag_Deserialize"
+    ],
+    "field_tags": [
+      "BAG"
+    ]
+  },
+  "61": {
+    "name": "AC_VESSEL_EXTRACT_EXP",
+    "addr": "0x0822f3ad",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "20": {
+    "name": "AC_PREMIUM_BUY",
+    "addr": "0x0822f442",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "93": {
+    "name": "AC_SQUAD_INVITE_DECLINE",
+    "addr": "0x0822f486",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU64v2"
+    ],
+    "field_tags": [
+      "u8",
+      "u64"
+    ]
+  },
+  "190": {
+    "name": "AC_CLAN_BANK_TRANSFER",
+    "addr": "0x0822f4c6",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "204": {
+    "name": "AC_SURVEY_RESULTS",
+    "addr": "0x0822f502",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "202": {
+    "name": "AC_SURVEY_GET_NEW",
+    "addr": "0x0822f5b2",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "246": {
+    "name": "AC_USER_NOTES",
+    "addr": "0x0822f662",
+    "reader_calls": [
+      "BitStream_ReadU32"
+    ],
+    "field_tags": [
+      "u32"
+    ]
+  },
+  "15": {
+    "name": "AC_MOTTOS_SET_ACTIVE",
+    "addr": "0x0822f77d",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "109": {
+    "name": "AC_GET_NICKNAMES",
+    "addr": "0x0822f7c1",
+    "reader_calls": [
+      "BitStream_ReadU32",
+      "BitStream_ReadU64v2",
+      "BitStream_ReadCStringLen"
+    ],
+    "field_tags": [
+      "u32",
+      "u64",
+      "cstrN"
+    ]
+  },
+  "21": {
+    "name": "AC_ACCOUNT_AURAS",
+    "addr": "0x0822f87d",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "41": {
+    "name": "AC_SELL_ITEMS",
+    "addr": "0x0822fa48",
+    "reader_calls": [],
+    "field_tags": []
+  },
+  "44": {
+    "name": "AC_SALVAGE_ITEMS",
+    "addr": "0x0822fa48",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "19": {
+    "name": "AC_PREMIUM_INFO",
+    "addr": "0x0822fa96",
+    "reader_calls": [
+      "BitStream_ReadU64"
+    ],
+    "field_tags": [
+      "u64"
+    ]
+  },
+  "77": {
+    "name": "AC_BATTLE_SLOT_CHANGE_VESSEL",
+    "addr": "0x0822fae5",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU8",
+      "BitStream_ReadU64v2",
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8",
+      "u8",
+      "u64",
+      "u8"
+    ]
+  },
+  "76": {
+    "name": "AC_BATTLE_SLOTS",
+    "addr": "0x0822fe20",
+    "reader_calls": [
+      "BitStream_ReadU32",
+      "BitStream_ReadU64v2",
+      "BitStream_ReadU32"
+    ],
+    "field_tags": [
+      "u32",
+      "u64",
+      "u32"
+    ]
+  },
+  "238": {
+    "name": "AC_ADVERT_HEADER_GET",
+    "addr": "0x0822fede",
+    "reader_calls": [
+      "Bag_Deserialize"
+    ],
+    "field_tags": [
+      "BAG"
+    ]
+  },
+  "117": {
+    "name": "AC_FRIENDS_REJECT_REQUEST",
+    "addr": "0x0822ff6c",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU64v2"
+    ],
+    "field_tags": [
+      "u8",
+      "u64"
+    ]
+  },
+  "116": {
+    "name": "AC_FRIENDS_ACCEPT_REQUEST",
+    "addr": "0x0823003c",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU64v2"
+    ],
+    "field_tags": [
+      "u8",
+      "u64"
+    ]
+  },
+  "53": {
+    "name": "AC_VESSEL_CHEAT_CHANGE_EQUIP",
+    "addr": "0x0823010c",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU64v2",
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8",
+      "u64",
+      "u8"
+    ]
+  },
+  "85": {
+    "name": "AC_TALENTS_ACQUIRE",
+    "addr": "0x082302a0",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU8",
+      "BitStream_ReadU64v2"
+    ],
+    "field_tags": [
+      "u8",
+      "u8",
+      "u64"
+    ]
+  },
+  "87": {
+    "name": "AC_TALENTS_RESET",
+    "addr": "0x082303a7",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8",
+      "u8"
+    ]
+  },
+  "88": {
+    "name": "AC_TALENTS_ASSIGN_SETS",
+    "addr": "0x08230469",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "86": {
+    "name": "AC_TALENTS_UPDATE",
+    "addr": "0x082304ad",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "9": {
+    "name": "AC_PLAYER_CREDENTIALS",
+    "addr": "0x082305c7",
+    "reader_calls": [
+      "BitStream_ReadCStringLen",
+      "BitStream_ReadU8",
+      "BitStream_ReadU64v2",
+      "BitStream_ReadU64v2",
+      "BitStream_ReadI32",
+      "Bag_Deserialize"
+    ],
+    "field_tags": [
+      "cstrN",
+      "u8",
+      "u64",
+      "u64",
+      "i32",
+      "BAG"
+    ]
+  },
+  "101": {
+    "name": "AC_LEAGUE_TEAM_CREATE",
+    "addr": "0x082306bf",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "33": {
+    "name": "AC_REWARDED_TUTORIALS",
+    "addr": "0x08230703",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8",
+      "u8"
+    ]
+  },
+  "69": {
+    "name": "AC_VESSEL_CUSTOM_ELEMENTS_ACKNOWLEDGE_EXPIRATION",
+    "addr": "0x08230779",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "68": {
+    "name": "AC_VESSEL_CUSTOM_ELEMENTS_BUY",
+    "addr": "0x0823080e",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "67": {
+    "name": "AC_VESSEL_FREE_CUSTOM_ELEMENTS",
+    "addr": "0x082308a3",
+    "reader_calls": [
+      "BitStream_ReadU32",
+      "BitStream_ReadCStringLen"
+    ],
+    "field_tags": [
+      "u32",
+      "cstrN"
+    ]
+  },
+  "236": {
+    "name": "AC_ADVERT_CREATE",
+    "addr": "0x082309a5",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "129": {
+    "name": "AC_TEACHING_REQUEST_TO_STUDENT",
+    "addr": "0x082309f6",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU64v2"
+    ],
+    "field_tags": [
+      "u8",
+      "u64"
+    ]
+  },
+  "63": {
+    "name": "AC_VESSEL_REPAIR",
+    "addr": "0x08230ad8",
+    "reader_calls": [
+      "BitStream_ReadU64v2",
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u64",
+      "u8"
+    ]
+  },
+  "62": {
+    "name": "AC_VESSEL_LEVELUP",
+    "addr": "0x08230bf0",
+    "reader_calls": [
+      "BitStream_ReadU64v2",
+      "BitStream_ReadU8",
+      "BitStream_ReadU32",
+      "BitStream_ReadU32",
+      "BitStream_ReadU8",
+      "BitStream_ReadI32"
+    ],
+    "field_tags": [
+      "u64",
+      "u8",
+      "u32",
+      "u32",
+      "u8",
+      "i32"
+    ]
+  },
+  "64": {
+    "name": "AC_VESSEL_REPAIR_BATTLE",
+    "addr": "0x08230d28",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "95": {
+    "name": "AC_SQUAD_INVITE_SEND",
+    "addr": "0x08230eb0",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU64v2"
+    ],
+    "field_tags": [
+      "u8",
+      "u64"
+    ]
+  },
+  "94": {
+    "name": "AC_SQUAD_LEAVE",
+    "addr": "0x08230f38",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "91": {
+    "name": "AC_SQUAD_INFO",
+    "addr": "0x08230f7c",
+    "reader_calls": [],
+    "field_tags": []
+  },
+  "248": {
+    "name": "AC_USER_NOTES_DELETE",
+    "addr": "0x08230ff7",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "0": {
+    "name": "AC_LOAD_INITIAL_PLAYER_DATA",
+    "addr": "0x0823103b",
+    "reader_calls": [
+      "BitStream_ReadU64",
+      "BitStream_ReadU32",
+      "BitStream_ReadU32",
+      "BitStream_ReadU64",
+      "BitStream_ReadCStringLen",
+      "BitStream_ReadU32",
+      "BitStream_ReadU32",
+      "BitStream_ReadU32",
+      "Bag_Deserialize",
+      "Bag_Deserialize",
+      "BitStream_ReadU32",
+      "BitStream_ReadU8",
+      "BitStream_ReadU8",
+      "BitStream_ReadI32",
+      "Bag_Deserialize",
+      "Bag_Deserialize",
+      "BitStream_ReadI32",
+      "BitStream_ReadI32",
+      "BitStream_ReadI32",
+      "BitStream_ReadU64v2",
+      "BitStream_ReadI32",
+      "Bag_Deserialize"
+    ],
+    "field_tags": [
+      "u64",
+      "u32",
+      "u32",
+      "u64",
+      "cstrN",
+      "u32",
+      "u32",
+      "u32",
+      "BAG",
+      "BAG",
+      "u32",
+      "u8",
+      "u8",
+      "i32",
+      "BAG",
+      "BAG",
+      "i32",
+      "i32",
+      "i32",
+      "u64",
+      "i32",
+      "BAG"
+    ]
+  },
+  "247": {
+    "name": "AC_USER_NOTES_ADD",
+    "addr": "0x08231a88",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "3": {
+    "name": "AC_LEAVE_MM_QUEUE",
+    "addr": "0x08231acc",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "11": {
+    "name": "AC_PLAYER_STATS",
+    "addr": "0x08231bf4",
+    "reader_calls": [
+      "Bag_Deserialize"
+    ],
+    "field_tags": [
+      "BAG"
+    ]
+  },
+  "10": {
+    "name": "AC_PLAYER_CREDITS",
+    "addr": "0x08231c56",
+    "reader_calls": [],
+    "field_tags": []
+  },
+  "4": {
+    "name": "AC_MM_INFO",
+    "addr": "0x08231dbc",
+    "reader_calls": [
+      "Bag_Deserialize"
+    ],
+    "field_tags": [
+      "BAG"
+    ]
+  },
+  "2": {
+    "name": "AC_ENTER_MM_QUEUE",
+    "addr": "0x08231e51",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU8",
+      "BitStream_ReadU8",
+      "BitStream_ReadU32",
+      "BitStream_ReadU8",
+      "BitStream_ReadU8",
+      "BitStream_ReadU32",
+      "Bag_Deserialize",
+      "Bag_Deserialize"
+    ],
+    "field_tags": [
+      "u8",
+      "u8",
+      "u8",
+      "u32",
+      "u8",
+      "u8",
+      "u32",
+      "BAG",
+      "BAG"
+    ]
+  },
+  "7": {
+    "name": "AC_GET_USERDATA",
+    "addr": "0x08232189",
+    "reader_calls": [
+      "Bag_Deserialize"
+    ],
+    "field_tags": [
+      "BAG"
+    ]
+  },
+  "8": {
+    "name": "AC_SET_USERDATA",
+    "addr": "0x082322ab",
+    "reader_calls": [
+      "BitStream_ReadU32"
+    ],
+    "field_tags": [
+      "u32"
+    ]
+  },
+  "12": {
+    "name": "AC_PLAYER_ARC_BALANCE",
+    "addr": "0x08232318",
+    "reader_calls": [
+      "BitStream_ReadI32"
+    ],
+    "field_tags": [
+      "i32"
+    ]
+  },
+  "6": {
+    "name": "AC_LEAVE_TOURNAMENT",
+    "addr": "0x08232361",
+    "reader_calls": [],
+    "field_tags": []
+  },
+  "239": {
+    "name": "AC_ADVERT_GET",
+    "addr": "0x08232457",
+    "reader_calls": [
+      "Bag_Deserialize"
+    ],
+    "field_tags": [
+      "BAG"
+    ]
+  },
+  "111": {
+    "name": "AC_REPORT_PLAYER",
+    "addr": "0x082324e5",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "110": {
+    "name": "AC_GET_UIDS",
+    "addr": "0x08232521",
+    "reader_calls": [
+      "BitStream_ReadU16"
+    ],
+    "field_tags": [
+      "u16"
+    ]
+  },
+  "112": {
+    "name": "AC_UPDATE_YUP_PURCHASES",
+    "addr": "0x082327ae",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "Bag_Deserialize",
+      "BitStream_ReadU8",
+      "BitStream_ReadCStringLen"
+    ],
+    "field_tags": [
+      "u8",
+      "BAG",
+      "u8",
+      "cstrN"
+    ]
+  },
+  "103": {
+    "name": "AC_LEAGUE_TEAM_INVITE_CANCEL",
+    "addr": "0x082329b1",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU64v2"
+    ],
+    "field_tags": [
+      "u8",
+      "u64"
+    ]
+  },
+  "102": {
+    "name": "AC_LEAGUE_TEAM_INVITE_SEND",
+    "addr": "0x08232a28",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU64v2"
+    ],
+    "field_tags": [
+      "u8",
+      "u64"
+    ]
+  },
+  "104": {
+    "name": "AC_LEAGUE_TEAM_INVITE_ACCEPT",
+    "addr": "0x08232aa0",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "99": {
+    "name": "AC_SQUAD_CONVERT_TO_WING",
+    "addr": "0x08232ae4",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "107": {
+    "name": "AC_LEAGUE_TEAM_INVITE_DECLINE",
+    "addr": "0x08232b28",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "100": {
+    "name": "AC_LEAGUE_TEAM_INFO",
+    "addr": "0x08232b6c",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "108": {
+    "name": "AC_LEAGUE_TEAM_REQUEST_NAMES",
+    "addr": "0x08232bb0",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "98": {
+    "name": "AC_SQUAD_READY",
+    "addr": "0x08232bf4",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "106": {
+    "name": "AC_LEAGUE_TEAM_LEAVE",
+    "addr": "0x08232c98",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU64v2",
+      "BitStream_ReadU64"
+    ],
+    "field_tags": [
+      "u8",
+      "u64",
+      "u64"
+    ]
+  },
+  "119": {
+    "name": "AC_FRIENDS_LIST",
+    "addr": "0x08232d20",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU64v2"
+    ],
+    "field_tags": [
+      "u8",
+      "u64"
+    ]
+  },
+  "118": {
+    "name": "AC_FRIENDS_REMOVE",
+    "addr": "0x08232dfc",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU64v2"
+    ],
+    "field_tags": [
+      "u8",
+      "u64"
+    ]
+  },
+  "45": {
+    "name": "AC_UPGRADE_ITEMS",
+    "addr": "0x08232ed8",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "79": {
+    "name": "AC_BATTLE_SLOT_CHEAT_CHANGE_VESSEL",
+    "addr": "0x08232f6d",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8",
+      "u8"
+    ]
+  },
+  "80": {
+    "name": "AC_INV_EXT_BUY",
+    "addr": "0x08232fbe",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "78": {
+    "name": "AC_BATTLE_SLOT_SWAP_VESSELS",
+    "addr": "0x08233002",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU8",
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8",
+      "u8",
+      "u8"
+    ]
+  },
+  "75": {
+    "name": "AC_VESSEL_ACTIVATE_NODE",
+    "addr": "0x08233190",
+    "reader_calls": [
+      "BitStream_ReadU64v2",
+      "BitStream_ReadU64v2",
+      "BitStream_ReadU8",
+      "BitStream_ReadU64v2",
+      "BitStream_ReadU8",
+      "BitStream_ReadU8",
+      "BitStream_ReadU32"
+    ],
+    "field_tags": [
+      "u64",
+      "u64",
+      "u8",
+      "u64",
+      "u8",
+      "u8",
+      "u32"
+    ]
+  },
+  "232": {
+    "name": "AC_GET_FREE_SPACE_SAVE_DATA",
+    "addr": "0x08233330",
+    "reader_calls": [
+      "Bag_Deserialize"
+    ],
+    "field_tags": [
+      "BAG"
+    ]
+  },
+  "123": {
+    "name": "AC_SOCIAL_WATCH_REMOVE",
+    "addr": "0x08233392",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU64v2"
+    ],
+    "field_tags": [
+      "u8",
+      "u64"
+    ]
+  },
+  "122": {
+    "name": "AC_SOCIAL_WATCH_ADD",
+    "addr": "0x0823346e",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU64v2"
+    ],
+    "field_tags": [
+      "u8",
+      "u64"
+    ]
+  },
+  "55": {
+    "name": "AC_VESSEL_STRIP_EQUIP",
+    "addr": "0x0823353e",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU64v2"
+    ],
+    "field_tags": [
+      "u8",
+      "u64"
+    ]
+  },
+  "83": {
+    "name": "AC_BUY_GOLD",
+    "addr": "0x0823364b",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "82": {
+    "name": "AC_EXCHANGE_GOLD",
+    "addr": "0x08233690",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "84": {
+    "name": "AC_BUY_ARC_DLC",
+    "addr": "0x082336d4",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "242": {
+    "name": "AC_UNLIM_PVE_UPGRADE_PLAYER_LEVEL",
+    "addr": "0x08233710",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "65": {
+    "name": "AC_VESSEL_REFILL_BATTLE",
+    "addr": "0x08233754",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8",
+      "u8"
+    ]
+  },
+  "115": {
+    "name": "AC_FRIENDS_SEND_REQUEST",
+    "addr": "0x082338d8",
+    "reader_calls": [],
+    "field_tags": []
+  },
+  "114": {
+    "name": "AC_UPDATE_DLC_OWNERSHIP",
+    "addr": "0x08233924",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "35": {
+    "name": "AC_PLAYER_INVENTORY",
+    "addr": "0x08233968",
+    "reader_calls": [
+      "BitStream_ReadU32",
+      "BitStream_ReadU8",
+      "BitStream_ReadU32"
+    ],
+    "field_tags": [
+      "u32",
+      "u8",
+      "u32"
+    ]
+  },
+  "71": {
+    "name": "AC_VESSEL_RECRAFT",
+    "addr": "0x08233a55",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "237": {
+    "name": "AC_ADVERT_DELETE",
+    "addr": "0x08233a99",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "92": {
+    "name": "AC_SQUAD_INVITE_ACCEPT",
+    "addr": "0x08233ad5",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "90": {
+    "name": "AC_REACT_ON_ABANDONED_GAME",
+    "addr": "0x08233b19",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "59": {
+    "name": "AC_VESSEL_AUTOGEN_DESTROY",
+    "addr": "0x08233b7c",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "60": {
+    "name": "AC_VESSEL_AUTOGEN_DISMANTLE",
+    "addr": "0x08233bc0",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "74": {
+    "name": "AC_VESSEL_UNLOCK_NODE",
+    "addr": "0x08233c04",
+    "reader_calls": [
+      "BitStream_ReadU64v2",
+      "BitStream_ReadU8",
+      "BitStream_ReadU64v2",
+      "BitStream_ReadU32",
+      "Bag_Deserialize",
+      "BitStream_ReadI32"
+    ],
+    "field_tags": [
+      "u64",
+      "u8",
+      "u64",
+      "u32",
+      "BAG",
+      "i32"
+    ]
+  },
+  "243": {
+    "name": "AC_UNLIM_PVE_DISABLE_PLAYER_BUFFS",
+    "addr": "0x08233d48",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "66": {
+    "name": "AC_VESSEL_STRIP_IMPROPER_BATTLE",
+    "addr": "0x08233d8c",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "39": {
+    "name": "AC_BUY_ITEM",
+    "addr": "0x08233dd0",
+    "reader_calls": [
+      "BitStream_ReadU32",
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u32",
+      "u8"
+    ]
+  },
+  "72": {
+    "name": "AC_VESSEL_BUDGET_LEVELUP",
+    "addr": "0x08233ea8",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "231": {
+    "name": "AC_LEARN_BLUEPRINT",
+    "addr": "0x08233eec",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "70": {
+    "name": "AC_VESSEL_CRAFT",
+    "addr": "0x08233f81",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "49": {
+    "name": "AC_ACTIVATE_RESOURCE_VESSEL",
+    "addr": "0x08233fbd",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "48": {
+    "name": "AC_FIND_AUTOGEN_ITEM",
+    "addr": "0x08234001",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "235": {
+    "name": "AC_GET_VISITED_FREE_SPACE_ZONES",
+    "addr": "0x08234052",
+    "reader_calls": [
+      "Bag_Deserialize"
+    ],
+    "field_tags": [
+      "BAG"
+    ]
+  },
+  "31": {
+    "name": "AC_SHIP_QUEST_CHANGE",
+    "addr": "0x082340b4",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "30": {
+    "name": "AC_SHIP_QUEST_START",
+    "addr": "0x082340f8",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8",
+      "u8"
+    ]
+  },
+  "32": {
+    "name": "AC_SHIP_QUEST_END",
+    "addr": "0x082341a8",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU8",
+      "BitStream_ReadU8v2",
+      "BitStream_ReadU8",
+      "BitStream_ReadU32"
+    ],
+    "field_tags": [
+      "u8",
+      "u8",
+      "u8",
+      "u8",
+      "u32"
+    ]
+  },
+  "36": {
+    "name": "AC_PLAYER_AUTOGEN_INVENTORY",
+    "addr": "0x082342e0",
+    "reader_calls": [
+      "BitStream_ReadU32"
+    ],
+    "field_tags": [
+      "u32"
+    ]
+  },
+  "34": {
+    "name": "AC_REWARD_TUTORIAL",
+    "addr": "0x0823444a",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU8",
+      "BitStream_ReadU64v2"
+    ],
+    "field_tags": [
+      "u8",
+      "u8",
+      "u64"
+    ]
+  },
+  "58": {
+    "name": "AC_VESSEL_TRANSFER_MUNITION",
+    "addr": "0x0823453a",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU64v2",
+      "BitStream_ReadU64v2",
+      "BitStream_ReadU8",
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8",
+      "u64",
+      "u64",
+      "u8",
+      "u8"
+    ]
+  },
+  "46": {
+    "name": "AC_UPGRADE_AUTOGEN_ITEM",
+    "addr": "0x082348e0",
+    "reader_calls": [
+      "BitStream_ReadU8"
+    ],
+    "field_tags": [
+      "u8"
+    ]
+  },
+  "56": {
+    "name": "AC_VESSEL_CHANGE_MUNITION",
+    "addr": "0x08234924",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU64v2"
+    ],
+    "field_tags": [
+      "u8",
+      "u64"
+    ]
+  },
+  "40": {
+    "name": "AC_SELL_ITEM",
+    "addr": "0x08234a1b",
+    "reader_calls": [],
+    "field_tags": []
+  },
+  "43": {
+    "name": "AC_SALVAGE_ITEM",
+    "addr": "0x08234a1b",
+    "reader_calls": [
+      "BitStream_ReadU64v2",
+      "BitStream_ReadU8",
+      "BitStream_ReadU32"
+    ],
+    "field_tags": [
+      "u64",
+      "u8",
+      "u32"
+    ]
+  },
+  "50": {
+    "name": "AC_SELL_VESSEL",
+    "addr": "0x08234b30",
+    "reader_calls": [
+      "BitStream_ReadU64v2",
+      "BitStream_ReadU8",
+      "BitStream_ReadU32",
+      "BitStream_ReadF32"
+    ],
+    "field_tags": [
+      "u64",
+      "u8",
+      "u32",
+      "f32"
+    ]
+  },
+  "42": {
+    "name": "AC_ENCHANT_ITEM",
+    "addr": "0x08234d86",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU64v2"
+    ],
+    "field_tags": [
+      "u8",
+      "u64"
+    ]
+  },
+  "54": {
+    "name": "AC_VESSEL_TRANSFER_EQUIP",
+    "addr": "0x08234e48",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU64v2",
+      "BitStream_ReadU64v2",
+      "BitStream_ReadU8",
+      "BitStream_ReadU8",
+      "BitStream_ReadU64v2",
+      "BitStream_ReadU64v2"
+    ],
+    "field_tags": [
+      "u8",
+      "u64",
+      "u64",
+      "u8",
+      "u8",
+      "u64",
+      "u64"
+    ]
+  },
+  "38": {
+    "name": "AC_VESSEL_EQUIPMENT",
+    "addr": "0x082352c8",
+    "reader_calls": [],
+    "field_tags": []
+  },
+  "51": {
+    "name": "AC_VESSEL_CHANGE_EQUIP",
+    "addr": "0x082352c8",
+    "reader_calls": [],
+    "field_tags": []
+  },
+  "52": {
+    "name": "AC_VESSEL_CHANGE_EQUIP_MULTI",
+    "addr": "0x082352c8",
+    "reader_calls": [
+      "BitStream_ReadU8",
+      "BitStream_ReadU64v2",
+      "BitStream_ReadU8",
+      "BitStream_ReadU32",
+      "BitStream_ReadU64",
+      "BitStream_ReadCStringLen",
+      "BitStream_ReadU8",
+      "BitStream_ReadU16v2",
+      "BitStream_ReadU8",
+      "BitStream_ReadU16",
+      "BitStream_ReadU16v2",
+      "BitStream_ReadU32",
+      "BitStream_ReadU16",
+      "BitStream_ReadU16v2",
+      "BitStream_ReadU8",
+      "BitStream_ReadI32",
+      "BitStream_ReadU8",
+      "BitStream_ReadU8",
+      "BitStream_ReadU8",
+      "BitStream_ReadCStringLen",
+      "Bag_Deserialize",
+      "BitStream_ReadU64v2",
+      "BitStream_ReadU8",
+      "BitStream_ReadU8",
+      "BitStream_ReadU8",
+      "BitStream_ReadU32",
+      "BitStream_ReadU64",
+      "BitStream_ReadU64v2",
+      "BitStream_ReadU8",
+      "BitStream_ReadU8",
+      "BitStream_ReadU8",
+      "BitStream_ReadU32",
+      "BitStream_ReadU8",
+      "BitStream_ReadU8",
+      "BitStream_ReadU8",
+      "Bag_Deserialize",
+      "Bag_Deserialize",
+      "BitStream_ReadU8",
+      "BitStream_ReadU64v2",
+      "BitStream_ReadU8",
+      "BitStream_ReadU32",
+      "BitStream_ReadU64",
+      "BitStream_ReadU8",
+      "BitStream_ReadU16",
+      "BitStream_ReadU8",
+      "BitStream_ReadU8",
+      "BitStream_ReadU32",
+      "Bag_Deserialize",
+      "BitStream_ReadCStringLen",
+      "Bag_Deserialize",
+      "BitStream_ReadU64v2",
+      "BitStream_ReadCStringLen",
+      "BitStream_ReadU32",
+      "BitStream_ReadU32",
+      "BitStream_ReadU64v2",
+      "BitStream_ReadU32",
+      "BitStream_ReadU8",
+      "BitStream_ReadU64v2",
+      "BitStream_ReadU64v2",
+      "BitStream_ReadU8",
+      "BitStream_ReadU32",
+      "BitStream_ReadU32",
+      "BitStream_ReadU32",
+      "BitStream_ReadU64v2",
+      "BitStream_ReadU64",
+      "BitStream_ReadU32",
+      "BitStream_ReadCStringLen",
+      "BitStream_ReadU64",
+      "BitStream_ReadU64v2",
+      "BitStream_ReadU64v2",
+      "BitStream_ReadU64v2",
+      "BitStream_ReadF32",
+      "BitStream_ReadU32",
+      "BitStream_ReadU32",
+      "BitStream_ReadU32",
+      "BitStream_ReadU32",
+      "BitStream_ReadU64v2",
+      "BitStream_ReadU64v2",
+      "Bag_Deserialize",
+      "BitStream_ReadU8",
+      "BitStream_ReadU8",
+      "Bag_Deserialize",
+      "Bag_Deserialize",
+      "BitStream_ReadCStringLen",
+      "BitStream_ReadU32",
+      "BitStream_ReadU64v2",
+      "Bag_Deserialize",
+      "Bag_Deserialize",
+      "BitStream_ReadU32",
+      "Bag_Deserialize",
+      "BitStream_ReadU64v2",
+      "BitStream_ReadCStringLen",
+      "BitStream_ReadU64v2",
+      "BitStream_ReadU8",
+      "BitStream_ReadCStringLen",
+      "Bag_Deserialize",
+      "Bag_Deserialize",
+      "BitStream_ReadU64v2",
+      "BitStream_ReadCStringLen",
+      "Bag_Deserialize",
+      "BitStream_ReadU8",
+      "BitStream_ReadU8",
+      "BitStream_ReadU32",
+      "Bag_Deserialize",
+      "BitStream_ReadU64v2",
+      "BitStream_ReadU8",
+      "BitStream_ReadU64v2",
+      "BitStream_ReadCStringLen",
+      "BitStream_ReadCStringLen"
+    ],
+    "field_tags": [
+      "u8",
+      "u64",
+      "u8",
+      "u32",
+      "u64",
+      "cstrN",
+      "u8",
+      "u16",
+      "u8",
+      "u16",
+      "u16",
+      "u32",
+      "u16",
+      "u16",
+      "u8",
+      "i32",
+      "u8",
+      "u8",
+      "u8",
+      "cstrN",
+      "BAG",
+      "u64",
+      "u8",
+      "u8",
+      "u8",
+      "u32",
+      "u64",
+      "u64",
+      "u8",
+      "u8",
+      "u8",
+      "u32",
+      "u8",
+      "u8",
+      "u8",
+      "BAG",
+      "BAG",
+      "u8",
+      "u64",
+      "u8",
+      "u32",
+      "u64",
+      "u8",
+      "u16",
+      "u8",
+      "u8",
+      "u32",
+      "BAG",
+      "cstrN",
+      "BAG",
+      "u64",
+      "cstrN",
+      "u32",
+      "u32",
+      "u64",
+      "u32",
+      "u8",
+      "u64",
+      "u64",
+      "u8",
+      "u32",
+      "u32",
+      "u32",
+      "u64",
+      "u64",
+      "u32",
+      "cstrN",
+      "u64",
+      "u64",
+      "u64",
+      "u64",
+      "f32",
+      "u32",
+      "u32",
+      "u32",
+      "u32",
+      "u64",
+      "u64",
+      "BAG",
+      "u8",
+      "u8",
+      "BAG",
+      "BAG",
+      "cstrN",
+      "u32",
+      "u64",
+      "BAG",
+      "BAG",
+      "u32",
+      "BAG",
+      "u64",
+      "cstrN",
+      "u64",
+      "u8",
+      "cstrN",
+      "BAG",
+      "BAG",
+      "u64",
+      "cstrN",
+      "BAG",
+      "u8",
+      "u8",
+      "u32",
+      "BAG",
+      "u64",
+      "u8",
+      "u64",
+      "cstrN",
+      "cstrN"
+    ]
+  },
+  "254": {
+    "name": "AC_254",
+    "addr": "0x08242b9b",
+    "reader_calls": [],
+    "field_tags": []
+  },
+  "253": {
+    "name": "AC_253",
+    "addr": "0x08242c42",
+    "reader_calls": [],
+    "field_tags": []
+  },
+  "255": {
+    "name": "AC_255",
+    "addr": "0x08242faa",
+    "reader_calls": [],
+    "field_tags": []
+  }
+}
