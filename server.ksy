@@ -784,11 +784,14 @@ types:
       size-eos: true
   ac_vessel_change_equip_multi:
     doc: |
-      Same server handler as ac_vessel_change_equip (0x082352c8) — body
-      shape identical.
+      Multi-equip response. Shares handler 0x082352c8 with the single
+      variant for the prefix (status + vessel_id + 35 slot_module_ids)
+      but the multi case has a much longer tail with per-change cleartext
+      records (item_name + 2 flag bytes) and an inventory delta.
+      Surfaced through ac_vessel_change_equip_multi_response_body.
     seq:
     - id: data
-      type: ac_vessel_change_equip_response_body
+      type: ac_vessel_change_equip_multi_response_body
       size-eos: true
   ac_vessel_cheat_change_equip:
     doc: |

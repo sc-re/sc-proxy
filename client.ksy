@@ -545,16 +545,17 @@ types:
       type: u8be
   ac_vessel_change_equip_multi:
     doc: |
-      Multi-slot equip. Same server handler as ac_vessel_change_equip
-      (0x082352c8); modelled identically here until we capture a multi
-      request to verify against.
+      Equip several modules into a vessel in one packet. Bit-packed
+      (cs0/cleartext strings interleaved with binary fields), unlike the
+      byte-aligned single-equip variant. Surfaced via
+      ac_vessel_change_equip_multi_request_body, which decodes the
+      vessel_id + num_changes header and reports any cs0/cleartext
+      strings (slot categories like "ammo" and module def-names like
+      "WeaponMod_RailPerfect_Mk1") it finds in the body.
     seq:
-    - id: vessel_id
-      type: u8be
-    - id: slot_idx
-      type: u1
-    - id: module_id
-      type: u8be
+    - id: data
+      type: ac_vessel_change_equip_multi_request_body
+      size-eos: true
   ac_vessel_cheat_change_equip:
     seq:
     - id: unknown

@@ -17,6 +17,7 @@ import ac_universe_get_body
 import ac_use_blueprint_response_body
 import ac_user_profile_get_response_body
 import ac_vessel_change_equip_response_body
+import ac_vessel_change_equip_multi_response_body
 from enum import IntEnum
 
 
@@ -6237,8 +6238,11 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcVesselChangeEquipMulti(KaitaiStruct):
-        """Same server handler as ac_vessel_change_equip (0x082352c8) — body
-        shape identical.
+        """Multi-equip response. Shares handler 0x082352c8 with the single
+        variant for the prefix (status + vessel_id + 35 slot_module_ids)
+        but the multi case has a much longer tail with per-change cleartext
+        records (item_name + 2 flag bytes) and an inventory delta.
+        Surfaced through ac_vessel_change_equip_multi_response_body.
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcVesselChangeEquipMulti, self).__init__(_io)
@@ -6249,7 +6253,7 @@ class StarConflictPackageServer(KaitaiStruct):
         def _read(self):
             self._raw_data = self._io.read_bytes_full()
             _io__raw_data = KaitaiStream(BytesIO(self._raw_data))
-            self.data = ac_vessel_change_equip_response_body.AcVesselChangeEquipResponseBody(_io__raw_data)
+            self.data = ac_vessel_change_equip_multi_response_body.AcVesselChangeEquipMultiResponseBody(_io__raw_data)
 
 
         def _fetch_instances(self):

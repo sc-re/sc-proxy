@@ -4,6 +4,7 @@
 import kaitaistruct
 from kaitaistruct import KaitaiStruct, KaitaiStream, BytesIO
 import bag_payload
+import ac_vessel_change_equip_multi_request_body
 from enum import IntEnum
 
 
@@ -5116,9 +5117,13 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcVesselChangeEquipMulti(KaitaiStruct):
-        """Multi-slot equip. Same server handler as ac_vessel_change_equip
-        (0x082352c8); modelled identically here until we capture a multi
-        request to verify against.
+        """Equip several modules into a vessel in one packet. Bit-packed
+        (cs0/cleartext strings interleaved with binary fields), unlike the
+        byte-aligned single-equip variant. Surfaced via
+        ac_vessel_change_equip_multi_request_body, which decodes the
+        vessel_id + num_changes header and reports any cs0/cleartext
+        strings (slot categories like "ammo" and module def-names like
+        "WeaponMod_RailPerfect_Mk1") it finds in the body.
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcVesselChangeEquipMulti, self).__init__(_io)
@@ -5127,13 +5132,14 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.vessel_id = self._io.read_u8be()
-            self.slot_idx = self._io.read_u1()
-            self.module_id = self._io.read_u8be()
+            self._raw_data = self._io.read_bytes_full()
+            _io__raw_data = KaitaiStream(BytesIO(self._raw_data))
+            self.data = ac_vessel_change_equip_multi_request_body.AcVesselChangeEquipMultiRequestBody(_io__raw_data)
 
 
         def _fetch_instances(self):
             pass
+            self.data._fetch_instances()
 
 
     class AcVesselChangeMunition(KaitaiStruct):
