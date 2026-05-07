@@ -279,18 +279,17 @@ seq:
 types:
   ac_load_initial_player_data:
     doc: |
-      Server response to initial load. ENORMOUS body — captured at
-      236850 bytes (ac_0000_load_initial_player_data.bin). Carries the
-      full player snapshot: vessel inventory, modules, equipment loadouts,
-      quest progress, factions, account info, etc. Format is a deeply
-      nested bit-packed/cs0-encoded stream produced by the same
-      Bag/BitStream library as SCMD_NOTIFICATION but with per-field
-      structures rather than uniform property bags. Beyond a single-byte
-      probe at the start the layout cannot be modelled in static kaitai
-      without per-section custom processors — left opaque.
+      Initial player snapshot on login. Body is a single bit-stream the
+      handler at 0x0823103b walks as 22 fields (16 byte-aligned scalars
+      + 6 nested property bags interleaved). Sizes range from 2B
+      (echo-only) and 8B (truncated short form — handler tolerates
+      short reads via its lastReadOK flag) up to ~240 kB full state.
+      Decoded by the ac_load_initial_player_data_body opaque type
+      which mirrors the binary's read sequence and stops cleanly on
+      EOFError when bodies are truncated.
     seq:
-    - id: payload
-      size-eos: true
+    - id: data
+      type: ac_load_initial_player_data_body
   ac_server_info:
     doc: |
       Server metadata. The 20-byte canonical form is memcpy'd verbatim
