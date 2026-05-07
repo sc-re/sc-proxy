@@ -3,6 +3,7 @@
 
 import kaitaistruct
 from kaitaistruct import KaitaiStruct, KaitaiStream, BytesIO
+import bag_payload
 from enum import IntEnum
 
 
@@ -1559,7 +1560,8 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcAchievements(KaitaiStruct):
-        """Request achievements for player UID."""
+        """Single u8be player UID — encoding #3.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcAchievements, self).__init__(_io)
             self._parent = _parent
@@ -2322,6 +2324,9 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcClanRequestCredentials(KaitaiStruct):
+        """Bulk-fetch clan credentials for a list of UIDs — encoding #4
+        (u4be count + count × u8be UID).
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcClanRequestCredentials, self).__init__(_io)
             self._parent = _parent
@@ -2329,15 +2334,24 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.num_uids = self._io.read_u4be()
+            self.uids = []
+            for i in range(self.num_uids):
+                self.uids.append(self._io.read_u8be())
+
 
 
         def _fetch_instances(self):
             pass
+            for i in range(len(self.uids)):
+                pass
+
 
 
     class AcClanRequestDesc(KaitaiStruct):
-        """Empty request, server responds with clan description."""
+        """Empty body — encoding #1. Server responds with the clan's full
+        description (including the FedDesign TGP stream, see server.ksy).
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcClanRequestDesc, self).__init__(_io)
             self._parent = _parent
@@ -2353,7 +2367,8 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcClanRequestProfile(KaitaiStruct):
-        """Request clan profile for player UID."""
+        """Single u8be player UID — encoding #3.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcClanRequestProfile, self).__init__(_io)
             self._parent = _parent
@@ -2881,7 +2896,10 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcGetNicknames(KaitaiStruct):
-        """Return list of nicknames."""
+        """Bulk nickname lookup — encoding #4 (u4be count + count×u8be UID).
+        Observed counts up to 256 across captures (likely the server-side
+        page size).
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcGetNicknames, self).__init__(_io)
             self._parent = _parent
@@ -2889,33 +2907,16 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.unknown = self._io.read_u2be()
-            self.num_uids = self._io.read_u2be()
+            self.num_uids = self._io.read_u4be()
             self.uids = []
             for i in range(self.num_uids):
-                self.uids.append(StarConflictPackageClient.AcGetNicknames.Uid(self._io, self, self._root))
+                self.uids.append(self._io.read_u8be())
 
 
 
         def _fetch_instances(self):
             pass
             for i in range(len(self.uids)):
-                pass
-                self.uids[i]._fetch_instances()
-
-
-        class Uid(KaitaiStruct):
-            def __init__(self, _io, _parent=None, _root=None):
-                super(StarConflictPackageClient.AcGetNicknames.Uid, self).__init__(_io)
-                self._parent = _parent
-                self._root = _root
-                self._read()
-
-            def _read(self):
-                self.uid = self._io.read_u8be()
-
-
-            def _fetch_instances(self):
                 pass
 
 
@@ -3011,6 +3012,11 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcLeaderboardGet(KaitaiStruct):
+        """Bit-packed property bag — encoding #5. Observed 2-4 entries
+        including a "lb" key with the leaderboard name (e.g.
+        "player_eff_rating_weekly", "player_eff_rating_player_total")
+        and pagination/filter scalars.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcLeaderboardGet, self).__init__(_io)
             self._parent = _parent
@@ -3018,11 +3024,12 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.bag = bag_payload.BagPayload(self._io)
 
 
         def _fetch_instances(self):
             pass
+            self.bag._fetch_instances()
 
 
     class AcLeaderboardGetDescs(KaitaiStruct):
@@ -3223,7 +3230,10 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcLoadInitialPlayerData(KaitaiStruct):
-        """Initial player data request; 6 bytes when sent with session credentials, empty for keepalive."""
+        """Empty body in keepalive captures (just the 2-byte u2be packet_type).
+        Some game versions have observed it carrying a 4-byte session token,
+        but our captures all show body=0.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcLoadInitialPlayerData, self).__init__(_io)
             self._parent = _parent
@@ -3231,7 +3241,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.maybe_session = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -4129,6 +4139,11 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcSetUserdata(KaitaiStruct):
+        """Bit-packed property bag (encoding #5 — see overview above). Observed
+        18 or 24 entries depending on which user-data slots changed; each
+        entry has a cstring key (cs0 keys when read at bit-offset 1) and a
+        variant value. Sample keys: helpShown, magenta, etc.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcSetUserdata, self).__init__(_io)
             self._parent = _parent
@@ -4136,11 +4151,12 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.bag = bag_payload.BagPayload(self._io)
 
 
         def _fetch_instances(self):
             pass
+            self.bag._fetch_instances()
 
 
     class AcSetVisitedZone(KaitaiStruct):
@@ -4979,6 +4995,14 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcUserProfileGet(KaitaiStruct):
+        """Bulk-fetch user profiles (encoding #6 — partial decode).
+        u4be count + count × {u8be uid + u8 flag} + variable trailer.
+        Trailer is 2 B for tiny requests (count=1), grows to ~14 B for
+        count=96 — semantics not yet identified. The flag byte after each
+        UID has only one bit set (0x80, 0x40, … cycling) which suggests
+        the records are written from a per-uid bitmask, but we haven't
+        confirmed the field's role yet.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcUserProfileGet, self).__init__(_io)
             self._parent = _parent
@@ -5403,7 +5427,10 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcWarmapGet(KaitaiStruct):
-        """Client requests war map data for a specific zone."""
+        """Single u8be — encoding #3. Treated as a zone-or-clan id (we've
+        observed the clan id 1534 for GD3F here). Server answers with the
+        sector ownership map.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcWarmapGet, self).__init__(_io)
             self._parent = _parent

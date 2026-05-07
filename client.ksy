@@ -262,12 +262,70 @@ seq:
         250: ac_zones_lua_active_events_update
         251: ac_adventures
         252: ac_adventure_cancel
+## Client request encodings overview
+##
+## After the 2-byte u2be packet_type that opens every CSCMD_ASYNC_REQ, the
+## body uses one of the following encodings. Most ACs (~80% of the table)
+## have *no* body — they're pure RPC verbs whose meaning is the AC ID
+## itself. Across the 27 ACs we have C-to-S captures for, the observed
+## encodings are:
+##
+## 1. **empty** (body length 0)
+##    Most polling/list-fetch verbs: ac_server_info, ac_quests,
+##    ac_squad_info, ac_clan_request_desc, ac_universe_get, …
+##
+## 2. **cleartext NUL-terminated locale** ("en\0", 3 bytes)
+##    ac_welcome_msg, ac_motd, ac_survey_get_new, ac_survey_results,
+##    ac_mail_get. Written byte-aligned.
+##
+## 3. **single u8be value** (8 bytes) — a player UID or clan ID
+##    ac_clan_request_profile / ac_achievements (player UID),
+##    ac_warmap_get (clan ID), ac_zones_lua_active_events_update
+##
+## 4. **u4be count + count × u8be UID** (4 + N×8 bytes)
+##    ac_get_nicknames, ac_clan_request_credentials. Bulk fetch keyed by
+##    a list of UIDs.
+##
+## 5. **bit-packed property bag** (notification.py format, 0x08b1ed60)
+##    ac_set_userdata, ac_leaderboard_get. Wire format identical to
+##    SCMD_NOTIFICATION:
+##      u32be num_entries
+##      if num_entries > 0:
+##        u1 use_indexed_keys
+##        repeat num_entries:
+##          if !use_indexed_keys: cstring key (8-bit chars in bit-stream)
+##          variant value: u8 tag + per-tag payload
+##    Variant tags: 0x00 nil, 0x01 i32, 0x02 u64a, 0x03 u64b, 0x04 f32,
+##    0x05 str, 0x06 nested-bag, 0x07 blob12, 0x08 bool. Because the bag
+##    is bit-aligned, cstring reads at bit-offset 1 produce what we call
+##    "cs0" strings in the server's FedDesign TGP format — i.e., cs0 is
+##    a *consequence* of bit-packing, not a separate encoding the client
+##    is using.
+##
+## 6. **u4be count + N × {u8be uid + u8 flag} + variable trailer**
+##    ac_user_profile_get larger forms (≥98 B). count=N, then 9-byte
+##    records, then a 2/14/etc-byte trailer whose semantics we have not
+##    yet identified. Small forms (16/17 B) use one record + 2/3-byte
+##    trailer.
+##
+## What's *not* used in client requests:
+##   * x2 strings (char<<1) — only seen in server FedDesign TGP streams
+##   * 0x0c-tagged structs / 0x06-tagged arrays / 0x18-tagged u32be —
+##     part of the FedDesign TGP type system, not the client's.
+##
+## The actual byte-level writing primitives all live in the BitStream
+## helpers: FUN_08b21130 (write_bits), called by FUN_08b19fc0 (write_u16
+## for the AC ID) and through the per-AC handlers that build the body.
+
 types:
   ac_load_initial_player_data:
-    doc: Initial player data request; 6 bytes when sent with session credentials, empty for keepalive
+    doc: |
+      Empty body in keepalive captures (just the 2-byte u2be packet_type).
+      Some game versions have observed it carrying a 4-byte session token,
+      but our captures all show body=0.
     seq:
-    - id: dummy
-      type: u1
+    - id: maybe_session
+      size-eos: true
   ac_server_info:
     doc: Empty request, server responds with server info
   ac_enter_mm_queue:
@@ -295,9 +353,14 @@ types:
     - id: dummy
       type: u1
   ac_set_userdata:
+    doc: |
+      Bit-packed property bag (encoding #5 — see overview above). Observed
+      18 or 24 entries depending on which user-data slots changed; each
+      entry has a cstring key (cs0 keys when read at bit-offset 1) and a
+      variant value. Sample keys: helpShown, magenta, etc.
     seq:
-    - id: dummy
-      type: u1
+    - id: bag
+      type: bag_payload
   ac_player_credentials:
     seq:
     - id: dummy
@@ -768,21 +831,17 @@ types:
     - id: dummy
       type: u1
   ac_get_nicknames:
-    doc: Return list of nicknames
+    doc: |
+      Bulk nickname lookup — encoding #4 (u4be count + count×u8be UID).
+      Observed counts up to 256 across captures (likely the server-side
+      page size).
     seq:
-    - id: unknown
-      type: u2be
     - id: num_uids
-      type: u2be
+      type: u4be
     - id: uids
-      type: uid
+      type: u8be
       repeat: expr
       repeat-expr: num_uids
-    types:
-      uid:
-        seq:
-          - id: uid
-            type: u8be
   ac_get_uids:
     seq:
     - id: dummy
@@ -995,13 +1054,23 @@ types:
     - id: dummy
       type: u1
   ac_clan_request_credentials:
+    doc: |
+      Bulk-fetch clan credentials for a list of UIDs — encoding #4
+      (u4be count + count × u8be UID).
     seq:
-    - id: dummy
-      type: u1
+    - id: num_uids
+      type: u4be
+    - id: uids
+      type: u8be
+      repeat: expr
+      repeat-expr: num_uids
   ac_clan_request_desc:
-    doc: Empty request, server responds with clan description
+    doc: |
+      Empty body — encoding #1. Server responds with the clan's full
+      description (including the FedDesign TGP stream, see server.ksy).
   ac_clan_request_profile:
-    doc: Request clan profile for player UID
+    doc: |
+      Single u8be player UID — encoding #3.
     seq:
     - id: uid
       type: u8be
@@ -1138,11 +1207,20 @@ types:
     - id: dummy
       type: u1
   ac_user_profile_get:
+    doc: |
+      Bulk-fetch user profiles (encoding #6 — partial decode).
+      u4be count + count × {u8be uid + u8 flag} + variable trailer.
+      Trailer is 2 B for tiny requests (count=1), grows to ~14 B for
+      count=96 — semantics not yet identified. The flag byte after each
+      UID has only one bit set (0x80, 0x40, … cycling) which suggests
+      the records are written from a per-uid bitmask, but we haven't
+      confirmed the field's role yet.
     seq:
     - id: dummy
       type: u1
   ac_achievements:
-    doc: Request achievements for player UID
+    doc: |
+      Single u8be player UID — encoding #3.
     seq:
     - id: uid
       type: u8be
@@ -1197,7 +1275,10 @@ types:
     - id: dummy
       type: u1
   ac_warmap_get:
-    doc: Client requests war map data for a specific zone
+    doc: |
+      Single u8be — encoding #3. Treated as a zone-or-clan id (we've
+      observed the clan id 1534 for GD3F here). Server answers with the
+      sector ownership map.
     seq:
     - id: zone_id
       type: u8be
@@ -1269,9 +1350,14 @@ types:
     - id: dummy
       type: u1
   ac_leaderboard_get:
+    doc: |
+      Bit-packed property bag — encoding #5. Observed 2-4 entries
+      including a "lb" key with the leaderboard name (e.g.
+      "player_eff_rating_weekly", "player_eff_rating_player_total")
+      and pagination/filter scalars.
     seq:
-    - id: dummy
-      type: u1
+    - id: bag
+      type: bag_payload
   ac_leaderboard_get_descs:
     doc: Empty request, server responds with leaderboard descriptors
   ac_set_fb_token:
@@ -1398,11 +1484,10 @@ types:
       type: u1
   ac_zones_lua_active_events_update:
     doc: |
-      Zone events poll. u64be request_id (monotonic counter at
-      MasterServerEndpoint+0x2bb214). Confirmed via FUN_0820c100
+      Zone events poll. u64be timestamp (milliseconds). Confirmed via FUN_0820c100
       (single WriteU64 of the counter, then increments it).
     seq:
-    - id: request_id
+    - id: timestamp
       type: u8be
   ac_adventures:
     doc: Empty request, server responds with adventures list
