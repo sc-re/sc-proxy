@@ -3987,6 +3987,10 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcObtainReferralKey(KaitaiStruct):
+        """Referral / promotion key. 36B FIXED. Body is a cs0-shifted
+        string (each byte = (char>>1) | (carry<<7)) encoding the
+        promo code; layout opaque.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcObtainReferralKey, self).__init__(_io)
             self._parent = _parent
@@ -3994,7 +3998,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.cs0_key = self._io.read_bytes(34)
 
 
         def _fetch_instances(self):
@@ -5448,6 +5452,10 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcVesselAutogenDestroy(KaitaiStruct):
+        """Autogen module destroy ACK. Variable size (10B / 274B observed).
+        Header u4be status + bit-packed per-item payload listing
+        destroyed items + refunds. Layout not fully reversed.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcVesselAutogenDestroy, self).__init__(_io)
             self._parent = _parent
@@ -5455,7 +5463,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u4be()
+            self.payload = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):
@@ -5463,6 +5472,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcVesselAutogenDismantle(KaitaiStruct):
+        """Autogen module dismantle ACK. 64B captures.
+        Header u4be status + bit-packed payload. Layout not fully reversed.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcVesselAutogenDismantle, self).__init__(_io)
             self._parent = _parent
@@ -5470,7 +5482,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.dummy = self._io.read_u1()
+            self.status = self._io.read_u4be()
+            self.payload = self._io.read_bytes_full()
 
 
         def _fetch_instances(self):

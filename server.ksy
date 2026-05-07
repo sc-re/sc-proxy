@@ -668,13 +668,24 @@ types:
     - id: vessel_id_to
       type: u8be
   ac_vessel_autogen_destroy:
+    doc: |
+      Autogen module destroy ACK. Variable size (10B / 274B observed).
+      Header u4be status + bit-packed per-item payload listing
+      destroyed items + refunds. Layout not fully reversed.
     seq:
-    - id: dummy
-      type: u1
+    - id: status
+      type: u4be
+    - id: payload
+      size-eos: true
   ac_vessel_autogen_dismantle:
+    doc: |
+      Autogen module dismantle ACK. 64B captures.
+      Header u4be status + bit-packed payload. Layout not fully reversed.
     seq:
-    - id: dummy
-      type: u1
+    - id: status
+      type: u4be
+    - id: payload
+      size-eos: true
   ac_vessel_extract_exp:
     seq:
     - id: dummy
@@ -1098,9 +1109,13 @@ types:
     - id: dummy
       type: u1
   ac_obtain_referral_key:
+    doc: |
+      Referral / promotion key. 36B FIXED. Body is a cs0-shifted
+      string (each byte = (char>>1) | (carry<<7)) encoding the
+      promo code; layout opaque.
     seq:
-    - id: dummy
-      type: u1
+    - id: cs0_key
+      size: 34
   ac_attach_steam_account:
     seq:
     - id: dummy
