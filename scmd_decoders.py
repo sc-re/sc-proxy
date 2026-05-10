@@ -360,17 +360,17 @@ def _scmd_user_profile_notification(body: bytes) -> ScmdPayload:
                                      across captures, identical to its
                                      sub=6 clearance_score)
               u1  bag1_present (b1==0)
-              if bag1_present: bag — keyed by achievement_id, e.g.
-                {16: SC_VETERAN, 30: ALIENDEBRIS13, 31: BARRIERDEBRIS,
-                 32: GASGIANT, 48: LOYALTY_RAI}; all 5 are hidden
-                achievements (invisible_by_default or disabled in
-                gamedata/shared/sc_achievements.lua). Values are u64
-                progress bitmaps — bit-population scales with player
-                clearance (uid 1438647: 68 bits set, prefix=1480; uid
-                2440894: 22 bits set, prefix=750/760). Exact bit
-                meaning per achievement is not yet pinned down; one
-                bit per visited POI (alien-debris node, gas-giant) is
-                consistent with the str_eq_condition in the lua defs.
+              if bag1_present: bag — fixed sparse keys (always 16,
+                30, 31, 32, 48) with u64 values. The keys coincide
+                numerically with both ai.AchievementId and ai.MedalType
+                entries, but neither interpretation fits the data:
+                • Key "16" is non-zero for accounts that didn't alpha-
+                  test, so it's not SC_VETERAN.
+                • Values are 10^17-10^19, far too large to be medal
+                  counts (medals never exceed ~30k).
+                Bit-pop scales with player rank (uid 1438647: 68 bits
+                set, clearance=1480; uid 2440894: 22 bits set,
+                clearance 750/760). Real meaning still TBD.
               u1  bag2_present (b2==0); never observed in captures.
     """
     br = BitReader(body)
@@ -417,12 +417,12 @@ def _scmd_user_profile_notification(body: bytes) -> ScmdPayload:
             #         FUN_08b1ed60(buf, &struct[+0x4])      # → _read_bag
             #     if read_bool(buf) == 0:                   # b2
             #         FUN_08b1ed60(buf, &struct[+0x18])     # → _read_bag
-            # bag1 keys are achievement-IDs from
-            # scripts/ai/achievementconstants.lua (e.g. 16=SC_VETERAN,
-            # 30=ALIENDEBRIS13). Values are u64 progress bitmaps.
+            # bag1: fixed keys (16, 30, 31, 32, 48) with u64 values
+            # whose magnitudes (10^17-10^19) rule out simple counters.
+            # See docstring above for ruled-out hypotheses.
             out["clearance_score"] = _kv("u32", br.read_u32())
             if not br.read_bool():
-                out["achievements"] = _kv("bag", _read_bag(br))
+                out["bag1"] = _kv("bag", _read_bag(br))
             if br.remaining() >= 1 and not br.read_bool():
                 out["bag2"] = _kv("bag", _read_bag(br))
     except EOFError:
