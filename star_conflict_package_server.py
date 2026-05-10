@@ -6,6 +6,7 @@ from kaitaistruct import KaitaiStruct, KaitaiStream, BytesIO
 import bag_payload
 import prefixed_bag_payload
 import fed_design_tgp_stream
+import ac_update_yup_purchases_body
 import ac_friends_send_request_body
 import ac_load_initial_player_data_body
 import ac_lobby_info_body
@@ -5943,6 +5944,11 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcUpdateYupPurchases(KaitaiStruct):
+        """Server-pushed Yuplay (Gaijin storefront) purchase state. Sent
+        unsolicited shortly after connect to seed the cache.
+        Body format (handler 0x082327ae): u8 status + bag yupPurchases +
+        u8 N + N × cstring(<=60). Surfaced through
+        `ac_update_yup_purchases_body`."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcUpdateYupPurchases, self).__init__(_io)
             self._parent = _parent
@@ -5950,11 +5956,14 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.unknown = self._io.read_bytes_full()
+            self._raw_data = self._io.read_bytes_full()
+            _io__raw_data = KaitaiStream(BytesIO(self._raw_data))
+            self.data = ac_update_yup_purchases_body.AcUpdateYupPurchasesBody(_io__raw_data)
 
 
         def _fetch_instances(self):
             pass
+            self.data._fetch_instances()
 
 
     class AcUpgradeAutogenItem(KaitaiStruct):

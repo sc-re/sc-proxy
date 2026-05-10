@@ -1353,8 +1353,19 @@ types:
     - id: status
       type: u1
   ac_update_yup_purchases:
+    doc: |
+      Server-pushed Yuplay (Gaijin storefront) purchase state. Sent
+      unsolicited shortly after connect to seed the cache; can also be
+      refreshed by the client via MasterServer_UpdateYupPurchases().
+      Wire format (handler 0x082327ae inside OnRecieve):
+        u8  status
+        bag yupPurchases           (DLCs / premium / etc.)
+        u8  num_invalidate
+        N × cstring                (≤60 — purchase IDs to invalidate)
+      Bag cache is exposed to lua via MasterServer_GetCachedYupPurchases.
     seq:
-    - id: unknown
+    - id: data
+      type: ac_update_yup_purchases_body
       size-eos: true
   ac_check_yup_purchases:
     doc: |
