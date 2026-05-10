@@ -263,14 +263,11 @@ class AcUserProfileGetResponseBody:
         if not self.records:
             return (f"AcUserProfileGetResponseBody({len(self._raw)}B, "
                     f"records=0/{self.num_records}, slack={slack}b{suffix})")
-        # First record gets a detailed dump; remaining records get a
-        # one-line uid+flags summary so multi-profile responses (e.g.
-        # friends-list lookups) don't explode the log.
-        lines = [_format_record_long(self.records[0])]
-        for r in self.records[1:]:
-            lines.append(
-                f"uid=0x{r.uid:x} flags=0x{r.flags:x}"
-                f"{{{','.join(r.fields_present())}}}")
+        # Every record shows its decoded values (state, clan, atlas
+        # summary, etc.). Records are typically small (state-only) so
+        # one line per record stays readable even for 96-record
+        # friends-list lookups.
+        lines = [_format_record_long(r) for r in self.records]
         body = "\n  ".join(lines)
         return (f"AcUserProfileGetResponseBody({len(self._raw)}B, "
                 f"records={len(self.records)}/{self.num_records}, "
@@ -278,40 +275,37 @@ class AcUserProfileGetResponseBody:
 
 
 def _format_record_long(r: _ProfileRecord) -> str:
-    parts = [f"uid=0x{r.uid:x}", f"flags=0x{r.flags:x}"]
+    parts = [f"uid=0x{r.uid:x}"]
     if r.state is not None:
         parts.append(f"state={r.state}@{r.state_last_change}")
     if r.clan_id is not None:
         parts.append(f"clan=0x{r.clan_id:x}")
     if r.general_stats is not None:
         nz = sum(1 for v in r.general_stats if v != 0)
-        parts.append(f"gstats={nz}/{len(r.general_stats)} non-zero")
+        parts.append(f"gstats={nz}/33nz")
     if r.vessels_rank_stats is not None:
         nz = sum(1 for row in r.vessels_rank_stats for v in row if v != 0)
-        parts.append(f"vrank={nz} non-zero/{18*33}")
+        parts.append(f"vrank={nz}/594nz")
     if r.achievements is not None:
         nz = sum(1 for v, _ in r.achievements if v != 0)
-        parts.append(f"ach={nz}/{len(r.achievements)} touched")
+        parts.append(f"ach={nz}/261touched")
     if r.medals is not None:
         nz = sum(1 for entry in r.medals if any(entry))
-        parts.append(f"medals={nz}/{len(r.medals)} non-zero")
+        parts.append(f"medals={nz}/62nz")
     if r.titles is not None:
         active = r.titles["active_title_id"]
         unlocked = len(r.titles["titles"])
-        parts.append(f"titles=active={active},unlocked={unlocked}")
+        parts.append(f"titles(active={active},n={unlocked})")
     if r.avatars is not None:
         cur = r.avatars["current"]
-        n = r.avatars["count"]
-        parts.append(f"avatars=current={cur!r},n={n}")
+        parts.append(f"avatar={cur!r}(n={r.avatars['count']})")
     if r.mottos is not None:
         cur = r.mottos["current"]
-        n = r.mottos["count"]
-        parts.append(f"mottos=current={cur!r},n={n}")
+        parts.append(f"motto={cur!r}(n={r.mottos['count']})")
     if r.atlas is not None:
         ap = r.atlas["accountExpPool"]
         mods = r.atlas.get("modules", {})
         vp = r.atlas.get("vesselsProgress", {})
-        # Count non-zero 3-bit ranks across all module tier-keys.
         nz_modules = 0
         for v in mods.values():
             val = v.value if hasattr(v, "value") else v
@@ -319,7 +313,10 @@ def _format_record_long(r: _ProfileRecord) -> str:
                 if (val >> (61 - 3 * i)) & 7:
                     nz_modules += 1
         parts.append(
-            f"atlas=clearance={ap},"
-            f"modules={nz_modules}nz_in_{len(mods)}tiers,"
-            f"vesselsProgress={len(vp)}keys")
+            f"atlas(clearance={ap},"
+            f"modules={nz_modules}nz/{len(mods)}tiers,"
+            f"vp={len(vp)})")
+    # If only the leading uid is set (no UPF bits decoded), show flags.
+    if len(parts) == 1:
+        parts.append(f"flags=0x{r.flags:x}")
     return " ".join(parts)
