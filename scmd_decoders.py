@@ -320,9 +320,11 @@ def _scmd_user_profile_notification(body: bytes) -> ScmdPayload:
 
       0   u8  state                                     (online/offline byte;
                                                         matches UserState enum)
-      1   u16 + u32 + u32                                (triple — unknown
-                                                        meaning; observed
-                                                        values 0xa3 / 564 / 565)
+      1   u16 achievement_id + u32 old_value + u32 new_value
+                                                       (achievement progress
+                                                        delta — e.g. id=80
+                                                        (MILEAGE) bumps from
+                                                        1416 to 1438)
       2   u16 stat_id, u8 op, u64 val                    (looks like
                                                         UserProfileGeneralStat
                                                         update — stat_id
@@ -357,10 +359,10 @@ def _scmd_user_profile_notification(body: bytes) -> ScmdPayload:
     try:
         if sub == 0:        # state byte
             out["state"] = _kv("u8", br.read_u8())
-        elif sub == 1:      # u16 + u32 + u32 triple
-            out["v16"]  = _kv("u16", br.read_u16())
-            out["v32a"] = _kv("u32", br.read_u32())
-            out["v32b"] = _kv("u32", br.read_u32())
+        elif sub == 1:      # achievement progress delta
+            out["achievement_id"] = _kv("u16", br.read_u16())
+            out["old_value"]      = _kv("u32", br.read_u32())
+            out["new_value"]      = _kv("u32", br.read_u32())
         elif sub == 2:      # general-stats update
             out["stat_id"] = _kv("u16", br.read_u16())
             out["op"]      = _kv("u8",  br.read_u8())
