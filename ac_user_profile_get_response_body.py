@@ -301,7 +301,7 @@ class AcUserProfileGetResponseBody:
 
 
 def _format_record_long(r: _ProfileRecord) -> str:
-    parts = [f"uid=0x{r.uid:x}"]
+    parts = [f"uid={r.uid}"]
     if r.state is not None:
         sname = USER_STATE_NAMES.get(r.state, str(r.state))
         parts.append(f"state={sname}@{_fmt_timestamp_ms(r.state_last_change or 0)}")
