@@ -354,10 +354,24 @@ def _scmd_user_profile_notification(body: bytes) -> ScmdPayload:
                                                         750 → 760 right
                                                         after a batch of
                                                         sub=2 unlocks)
-      7   u32 prefix + u1 b1 + (b1==0 ? bag) +
-              u1 b2 + (b2==0 ? bag)                       (FUN_088c0ce0
-                                                        struct — see the
-                                                        sub=7 branch)
+      7   FUN_088c0ce0 struct — see sub=7 branch:
+              u32 clearance_score   (matches sub=6's value for the same uid;
+                                     observed: uid 2440894 prefix 750→760
+                                     across captures, identical to its
+                                     sub=6 clearance_score)
+              u1  bag1_present (b1==0)
+              if bag1_present: bag — keyed by achievement_id, e.g.
+                {16: SC_VETERAN, 30: ALIENDEBRIS13, 31: BARRIERDEBRIS,
+                 32: GASGIANT, 48: LOYALTY_RAI}; all 5 are hidden
+                achievements (invisible_by_default or disabled in
+                gamedata/shared/sc_achievements.lua). Values are u64
+                progress bitmaps — bit-population scales with player
+                clearance (uid 1438647: 68 bits set, prefix=1480; uid
+                2440894: 22 bits set, prefix=750/760). Exact bit
+                meaning per achievement is not yet pinned down; one
+                bit per visited POI (alien-debris node, gas-giant) is
+                consistent with the str_eq_condition in the lua defs.
+              u1  bag2_present (b2==0); never observed in captures.
     """
     br = BitReader(body)
     sub = br.read_u8()
@@ -398,16 +412,17 @@ def _scmd_user_profile_notification(body: bytes) -> ScmdPayload:
             out["clearance_score"] = _kv("i32", br.read_i32())
         elif sub == 7:      # FUN_088c0ce0 struct
             # FUN_088c0ce0(buf, struct):
-            #     struct[0]  = read_u32(buf)               # u32 prefix
+            #     struct[0] = read_u32(buf)                # clearance_score
             #     if read_bool(buf) == 0:                   # b1
-            #         FUN_08b1ed60(buf, &struct[+0x4])      # → read_bag (FUN_8b1ec70)
+            #         FUN_08b1ed60(buf, &struct[+0x4])      # → _read_bag
             #     if read_bool(buf) == 0:                   # b2
-            #         FUN_08b1ed60(buf, &struct[+0x18])     # → read_bag
-            # Both inner read_bag calls match our _read_bag once the
-            # wrapper bools are consumed first.
-            out["prefix"] = _kv("u32", br.read_u32())
+            #         FUN_08b1ed60(buf, &struct[+0x18])     # → _read_bag
+            # bag1 keys are achievement-IDs from
+            # scripts/ai/achievementconstants.lua (e.g. 16=SC_VETERAN,
+            # 30=ALIENDEBRIS13). Values are u64 progress bitmaps.
+            out["clearance_score"] = _kv("u32", br.read_u32())
             if not br.read_bool():
-                out["bag1"] = _kv("bag", _read_bag(br))
+                out["achievements"] = _kv("bag", _read_bag(br))
             if br.remaining() >= 1 and not br.read_bool():
                 out["bag2"] = _kv("bag", _read_bag(br))
     except EOFError:
