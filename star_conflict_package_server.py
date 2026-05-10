@@ -7,6 +7,7 @@ import bag_payload
 import prefixed_bag_payload
 import fed_design_tgp_stream
 import ac_update_yup_purchases_body
+import ac_vessel_strip_improper_battle_body
 import ac_friends_send_request_body
 import ac_load_initial_player_data_body
 import ac_lobby_info_body
@@ -6594,9 +6595,10 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcVesselStripImproperBattle(KaitaiStruct):
-        """8B FIXED. Handler at 0x08233d8c reads only u8 status. Remaining
-        5B varies between captures (count-style values that don't fit a
-        simple count + u1 array layout) — kept opaque pending RE.
+        """Server-pushed strip-modules notification for "improper" loadouts.
+        Wire format (handler 0x08233d8c):
+          u8 status + u1 has_vessel + (u32 vessel_id) + u32 value
+        Surfaced through `ac_vessel_strip_improper_battle_body`.
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcVesselStripImproperBattle, self).__init__(_io)
@@ -6605,12 +6607,14 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.status = self._io.read_u1()
-            self.payload = self._io.read_bytes_full()
+            self._raw_data = self._io.read_bytes_full()
+            _io__raw_data = KaitaiStream(BytesIO(self._raw_data))
+            self.data = ac_vessel_strip_improper_battle_body.AcVesselStripImproperBattleBody(_io__raw_data)
 
 
         def _fetch_instances(self):
             pass
+            self.data._fetch_instances()
 
 
     class AcVesselTransferEquip(KaitaiStruct):

@@ -944,13 +944,23 @@ types:
       type: u1
   ac_vessel_strip_improper_battle:
     doc: |
-      8B FIXED. Handler at 0x08233d8c reads only u8 status. Remaining
-      5B varies between captures (count-style values that don't fit a
-      simple count + u1 array layout) — kept opaque pending RE.
+      Server-pushed notification that one or more vessel modules were
+      stripped from a vessel because the player brought a loadout into
+      battle that the queue/league didn't allow. Handler at 0x08233d8c:
+        u8  status                   (0 = OK; non-zero takes an early-
+                                      exit branch into the event pump,
+                                      no extra wire data)
+        if status == 0:
+          u1  has_vessel
+          if has_vessel: u32 vessel_id   (invalidates the cached
+                                          vessel slot via FUN_0832ed00)
+          u32 account_exp_pool       (player's current Clearance Score —
+                                      matches the same uid's
+                                      Atlas.accountExpPool)
+      All 49 observed captures take the status=0, has_vessel=0 path.
     seq:
-    - id: status
-      type: u1
-    - id: payload
+    - id: data
+      type: ac_vessel_strip_improper_battle_body
       size-eos: true
   ac_vessel_free_custom_elements:
     doc: |
