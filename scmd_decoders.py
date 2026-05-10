@@ -347,8 +347,15 @@ def _scmd_user_profile_notification(body: bytes) -> ScmdPayload:
           remaining-bytes as the heuristic.
       5   cstring                                         (no captures yet —
                                                         plausibly motto text)
-      6   i32                                             (small signed int —
-                                                        plausibly title_id)
+      6   i32 score                                       (a running counter
+                                                        — observed values
+                                                        750 → 760 right
+                                                        after sub=2
+                                                        achievement-unlock
+                                                        events, so most
+                                                        likely an
+                                                        achievement-points
+                                                        / score total)
       7   u32 prefix + u1 b1 + (b1==0 ? bag) +
               u1 b2 + (b2==0 ? bag)                       (FUN_088c0ce0
                                                         struct — see the
@@ -389,8 +396,8 @@ def _scmd_user_profile_notification(body: bytes) -> ScmdPayload:
                         br.read_cstring(max_len=60))
         elif sub == 5:      # cstring (uncaptured — possibly motto)
             out["text"] = _kv("str", br.read_cstring(max_len=60))
-        elif sub == 6:      # i32 (possibly title_id)
-            out["i32"] = _kv("i32", br.read_i32())
+        elif sub == 6:      # running counter, likely achievement-points
+            out["score"] = _kv("i32", br.read_i32())
         elif sub == 7:      # FUN_088c0ce0 struct
             # FUN_088c0ce0(buf, struct):
             #     struct[0]  = read_u32(buf)               # u32 prefix
@@ -683,10 +690,10 @@ def _selftest() -> None:
     assert p.bag["field_4"].value == 0xff
     print(f"OK  {format_payload(p)}")
 
-    # SCMD_USER_PROFILE_NOTIFICATION sub_type=6 (i32 — likely title_id)
+    # SCMD_USER_PROFILE_NOTIFICATION sub_type=6 (i32 score / counter)
     body = make_bits((6, 8), (0x1234, 64), (42, 32))
     p = decode(0x13, body)
-    assert p.bag["i32"].value == 42
+    assert p.bag["score"].value == 42
     print(f"OK  {format_payload(p)}")
 
     # SCMD_LEAGUE_NOTIFICATION cmd=3 — ext + flag
