@@ -311,37 +311,41 @@ def _scmd_clan_notification(body: bytes) -> ScmdPayload:
 def _scmd_user_profile_notification(body: bytes) -> ScmdPayload:
     """0x13: u8 upn_type + u64 uid + per-sub-type struct.
 
-    Source: OnUserProfileNotification (0x0832ed90); the trailing payload
-    types correspond to MasterServer.UserProfileField (lua), which is the
-    set of fields the client tracks for each profile and is what the lua
-    callback `MasterServer_OnUserProfileUpdate(result, requestId, uid,
-    field)` is invoked with.
+    Source: OnUserProfileNotification (0x0832ed90). The on-wire sub-id is
+    NOT the lua-side MasterServer.UserProfileField (UPF_*) value — the
+    C++ side translates each sub-id through some mapping table before
+    invoking lua's MasterServer_OnUserProfileUpdate(result, requestId,
+    uid, UPF_*). The shapes below are inferred from captures + the
+    dispatch table at FUN_0832ed90's `jmp *0x8f6d040(,%ebp,4)`.
 
-      0  UPF_STATE              u8  state              (online/offline byte)
-      1  UPF_CLAN_ID            u16+u32+u32             (clan_id triple)
-      2  UPF_GENERAL_STATS      u16 stat_id, u8 op, u64 val
-                                                       (UserProfileGeneralStat
-                                                        key + new value)
-      3  UPF_VESSELS_RANK_STATS u16 ?
-      4  UPF_ACHIEVEMENTS       cstring (def-name, ≤60)
-      5  UPF_MEDALS             cstring (def-name, ≤60)
-      6  UPF_TITLES             i32 title_id           (signed for sentinel)
-      7  UPF_AVATARS            FUN_088c0ce0 struct:
-                                                         u32 prefix
-                                                         u1  bag1_present  (b1==0)
-                                                         if bag1_present: bag
-                                                         u1  bag2_present  (b2==0)
-                                                         if bag2_present: bag
-                                                       The two bags use the
-                                                       standard SCMD_NOTIFICATION
-                                                       bag wire format and decode
-                                                       fine with _read_bag once
-                                                       the wrapper bools are
-                                                       consumed first. Captures
-                                                       observed so far carry
-                                                       only bag1 (5 entries with
-                                                       sparse numeric-cstring
-                                                       keys + u64 values).
+      0   u8  state                                     (online/offline byte;
+                                                        matches UserState enum)
+      1   u16 + u32 + u32                                (triple — unknown
+                                                        meaning; observed
+                                                        values 0xa3 / 564 / 565)
+      2   u16 stat_id, u8 op, u64 val                    (looks like
+                                                        UserProfileGeneralStat
+                                                        update — stat_id
+                                                        ranges into UPGS_*)
+      3   u16                                             (no captures yet)
+      4   cstring newly_unlocked_def
+          (then, when the profile already had an avatars list — case-4
+           handler in OnUserProfileNotification calls FUN_08919100 to
+           read the rest, otherwise it uses the al=0 init path with no
+           tail):
+              cstring current_avatar_def     (often empty)
+              u16     count
+              count × cstring full_list      (every unlocked avatar)
+          Discrimination is server-side state, so the parser uses
+          remaining-bytes as the heuristic.
+      5   cstring                                         (no captures yet —
+                                                        plausibly motto text)
+      6   i32                                             (small signed int —
+                                                        plausibly title_id)
+      7   u32 prefix + u1 b1 + (b1==0 ? bag) +
+              u1 b2 + (b2==0 ? bag)                       (FUN_088c0ce0
+                                                        struct — see the
+                                                        sub=7 branch)
     """
     br = BitReader(body)
     sub = br.read_u8()
@@ -351,25 +355,36 @@ def _scmd_user_profile_notification(body: bytes) -> ScmdPayload:
         "uid":      _kv("u64", uid),
     }
     try:
-        if sub == 0:        # UPF_STATE
+        if sub == 0:        # state byte
             out["state"] = _kv("u8", br.read_u8())
-        elif sub == 1:      # UPF_CLAN_ID
+        elif sub == 1:      # u16 + u32 + u32 triple
             out["v16"]  = _kv("u16", br.read_u16())
             out["v32a"] = _kv("u32", br.read_u32())
             out["v32b"] = _kv("u32", br.read_u32())
-        elif sub == 2:      # UPF_GENERAL_STATS
+        elif sub == 2:      # general-stats update
             out["stat_id"] = _kv("u16", br.read_u16())
             out["op"]      = _kv("u8",  br.read_u8())
             out["value"]   = _kv("u64", br.read_u64())
-        elif sub == 3:      # UPF_VESSELS_RANK_STATS
+        elif sub == 3:      # u16 (uncaptured)
             out["v16"] = _kv("u16", br.read_u16())
-        elif sub == 4:      # UPF_ACHIEVEMENTS
-            out["achievement_def"] = _kv("str", br.read_cstring(max_len=60))
-        elif sub == 5:      # UPF_MEDALS
-            out["medal_def"] = _kv("str", br.read_cstring(max_len=60))
-        elif sub == 6:      # UPF_TITLES
-            out["title_id"] = _kv("i32", br.read_i32())
-        elif sub == 7:      # UPF_AVATARS — FUN_088c0ce0 struct
+        elif sub == 4:      # avatar unlock (+ optional current + full list)
+            out["unlocked_avatar"] = _kv("str", br.read_cstring(max_len=60))
+            # Tail (FUN_08919100) is only emitted when the profile already
+            # has an avatars list — server-side state we can't see. Detect
+            # by checking that there's room for at least cstring + u16.
+            if br.remaining() >= 8 + 16:
+                out["current_avatar"] = _kv("str",
+                    br.read_cstring(max_len=60))
+                n = br.read_u16()
+                out["unlocked_count"] = _kv("u16", n)
+                for i in range(n):
+                    out[f"unlocked[{i}]"] = _kv("str",
+                        br.read_cstring(max_len=60))
+        elif sub == 5:      # cstring (uncaptured — possibly motto)
+            out["text"] = _kv("str", br.read_cstring(max_len=60))
+        elif sub == 6:      # i32 (possibly title_id)
+            out["i32"] = _kv("i32", br.read_i32())
+        elif sub == 7:      # FUN_088c0ce0 struct
             # FUN_088c0ce0(buf, struct):
             #     struct[0]  = read_u32(buf)               # u32 prefix
             #     if read_bool(buf) == 0:                   # b1
@@ -661,10 +676,10 @@ def _selftest() -> None:
     assert p.bag["field_4"].value == 0xff
     print(f"OK  {format_payload(p)}")
 
-    # SCMD_USER_PROFILE_NOTIFICATION sub_type=6 (UPF_TITLES, i32 title_id)
+    # SCMD_USER_PROFILE_NOTIFICATION sub_type=6 (i32 — likely title_id)
     body = make_bits((6, 8), (0x1234, 64), (42, 32))
     p = decode(0x13, body)
-    assert p.bag["title_id"].value == 42
+    assert p.bag["i32"].value == 42
     print(f"OK  {format_payload(p)}")
 
     # SCMD_LEAGUE_NOTIFICATION cmd=3 — ext + flag
