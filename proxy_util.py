@@ -249,7 +249,7 @@ def log_packet(tag: str, pkt: dict, extra: str = "", state: dict | None = None):
                 sub_suffix = f"_ac{ac_idx:04x}_{pkt_type_name(ac_idx).lower()}"
             elif is_notification and len(body) >= 1:
                 sub_suffix = f"_sn{body[0]:02x}_{sn_name(body[0]).lower()}"
-            uid_suffix = (f"_uid{state['uid']:x}"
+            uid_suffix = (f"_uid{state['uid']}"
                           if state is not None and state.get("uid") is not None
                           else "")
             fname = (f"{idx:04d}_{direction}{uid_suffix}"
