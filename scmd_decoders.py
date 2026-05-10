@@ -311,67 +311,42 @@ def _scmd_clan_notification(body: bytes) -> ScmdPayload:
 def _scmd_user_profile_notification(body: bytes) -> ScmdPayload:
     """0x13: u8 upn_type + u64 uid + per-sub-type struct.
 
-    Source: OnUserProfileNotification (0x0832ed90). The on-wire sub-id is
-    NOT the lua-side MasterServer.UserProfileField (UPF_*) value — the
-    C++ side translates each sub-id through some mapping table before
-    invoking lua's MasterServer_OnUserProfileUpdate(result, requestId,
-    uid, UPF_*). The shapes below are inferred from captures + the
-    dispatch table at FUN_0832ed90's `jmp *0x8f6d040(,%ebp,4)`.
+    Source: OnUserProfileNotification (0x0832ed90). The on-wire sub-id
+    is NOT the lua-side UserProfileField (UPF_*) — the C++ side maps
+    each case to a UPF_* before invoking lua's
+    MasterServer_OnUserProfileUpdate(result, requestId, uid, UPF_*).
+    Cross-referenced via Ghidra:
 
-      0   u8  state                                     (online/offline byte;
-                                                        matches UserState enum)
-      1   u16 achievement_id + u32 old_value + u32 new_value
-                                                       (achievement progress
-                                                        delta — e.g. id=80
-                                                        (MILEAGE) bumps from
-                                                        1416 to 1438)
-      2   u16 achievement_id, u8 stage, u64 unlock_time_ms
-                                                       (achievement unlock —
-                                                        e.g. id=88 (Bandit)
-                                                        stage=0 t=2026-05-10
-                                                        12:39:58 UTC. Stage
-                                                        is the achievement
-                                                        rank/tier; the u64
-                                                        is a Unix-epoch
-                                                        timestamp in ms)
-      3   u16                                             (no captures yet)
-      4   cstring newly_unlocked_def
-          (then, when the profile already had an avatars list — case-4
-           handler in OnUserProfileNotification calls FUN_08919100 to
-           read the rest, otherwise it uses the al=0 init path with no
-           tail):
-              cstring current_avatar_def     (often empty)
-              u16     count
-              count × cstring full_list      (every unlocked avatar)
-          Discrimination is server-side state, so the parser uses
-          remaining-bytes as the heuristic.
-      5   cstring                                         (no captures yet —
-                                                        plausibly motto text)
-      6   i32 clearance_score                             (in-game name;
-                                                        bumps in steps that
-                                                        match achievement
-                                                        unlocks — observed
-                                                        750 → 760 right
-                                                        after a batch of
-                                                        sub=2 unlocks)
-      7   FUN_088c0ce0 struct — see sub=7 branch:
-              u32 clearance_score   (matches sub=6's value for the same uid;
-                                     observed: uid 2440894 prefix 750→760
-                                     across captures, identical to its
-                                     sub=6 clearance_score)
-              u1  bag1_present (b1==0)
-              if bag1_present: bag — fixed sparse keys (always 16,
-                30, 31, 32, 48) with u64 values. The keys coincide
-                numerically with both ai.AchievementId and ai.MedalType
-                entries, but neither interpretation fits the data:
-                • Key "16" is non-zero for accounts that didn't alpha-
-                  test, so it's not SC_VETERAN.
-                • Values are 10^17-10^19, far too large to be medal
-                  counts (medals never exceed ~30k).
-                Bit-pop scales with player rank (uid 1438647: 68 bits
-                set, clearance=1480; uid 2440894: 22 bits set,
-                clearance 750/760). Real meaning still TBD.
-              u1  bag2_present (b2==0); never observed in captures.
+      sub  payload                              → lua UPF_*
+      ---  -------------------------------------  ------------------
+      0    u8 state                              UPF_STATE        (0)
+      1    u16 ach_id + u32 old + u32 new        UPF_ACHIEVEMENTS (4)
+                                                 (progress delta)
+      2    u16 ach_id + u8 stage + u64 ts_ms     UPF_ACHIEVEMENTS (4)
+                                                 (unlock event)
+      3    u16 title_id                          UPF_TITLES       (6)
+      4    cstring + (cstring + u16 + N×cstr)    UPF_AVATARS      (7)
+      5    cstring + (cstring + u16 + N×cstr)    UPF_MOTTOS       (8)
+      6    i32 accountExpPool                    UPF_ATLAS        (9)
+      7    Atlas_Deserialize struct              UPF_ATLAS        (9)
+
+    Sub=6 and sub=7 both update the same lua field (profile.atlas).
+    Sub=6 is a fast path that only updates accountExpPool (the i32
+    that's displayed in-game as "Clearance Score"). Sub=7 reloads the
+    full atlas.
+
+    Atlas struct (44 bytes — see Atlas_Deserialize at 0x088c0ce0,
+    Atlas_PushToLua at 0x088c06c0):
+      i32  accountExpPool        (signed; lua exposes as i64)
+      bag  modules              (key=tier-group index;
+                                  u64 value packs 21×3-bit module
+                                  ranks per tier — see
+                                  AtlasModules_PackedToLua at 0x088bfc20)
+      bag  vesselsProgress       (per-vessel research)
+
+    The 0x9249249249249249-style pattern observed in modules-bag values
+    is fully-maxed adjacent modules: each rank=4 packs as `100`, so
+    every 3-bit chunk reads `100` → repeating 0x9249.
     """
     br = BitReader(body)
     sub = br.read_u8()
@@ -408,23 +383,18 @@ def _scmd_user_profile_notification(body: bytes) -> ScmdPayload:
                         br.read_cstring(max_len=60))
         elif sub == 5:      # cstring (uncaptured — possibly motto)
             out["text"] = _kv("str", br.read_cstring(max_len=60))
-        elif sub == 6:      # in-game "Clearance Score"
-            out["clearance_score"] = _kv("i32", br.read_i32())
-        elif sub == 7:      # FUN_088c0ce0 struct
-            # FUN_088c0ce0(buf, struct):
-            #     struct[0] = read_u32(buf)                # clearance_score
-            #     if read_bool(buf) == 0:                   # b1
-            #         FUN_08b1ed60(buf, &struct[+0x4])      # → _read_bag
-            #     if read_bool(buf) == 0:                   # b2
-            #         FUN_08b1ed60(buf, &struct[+0x18])     # → _read_bag
-            # bag1: fixed keys (16, 30, 31, 32, 48) with u64 values
-            # whose magnitudes (10^17-10^19) rule out simple counters.
-            # See docstring above for ruled-out hypotheses.
-            out["clearance_score"] = _kv("u32", br.read_u32())
+        elif sub == 6:      # accountExpPool fast-path (i32 only)
+            out["accountExpPool"] = _kv("i32", br.read_i32())
+        elif sub == 7:      # full atlas reload (Atlas_Deserialize)
+            out["accountExpPool"] = _kv("i32", br.read_i32())
             if not br.read_bool():
-                out["bag1"] = _kv("bag", _read_bag(br))
+                # modules bag: key=tier-group, value=u64 packing
+                # 21 × 3-bit module ranks (see Atlas_PushToLua).
+                out["modules"] = _kv("bag", _read_bag(br))
             if br.remaining() >= 1 and not br.read_bool():
-                out["bag2"] = _kv("bag", _read_bag(br))
+                # vesselsProgress bag (per-vessel research data;
+                # not observed populated in captures so far).
+                out["vesselsProgress"] = _kv("bag", _read_bag(br))
     except EOFError:
         out["_truncated"] = _kv("?", True)
     return ScmdPayload("SCMD_USER_PROFILE_NOTIFICATION", out)
@@ -703,10 +673,10 @@ def _selftest() -> None:
     assert p.bag["field_4"].value == 0xff
     print(f"OK  {format_payload(p)}")
 
-    # SCMD_USER_PROFILE_NOTIFICATION sub_type=6 (i32 clearance_score)
+    # SCMD_USER_PROFILE_NOTIFICATION sub_type=6 (i32 accountExpPool)
     body = make_bits((6, 8), (0x1234, 64), (42, 32))
     p = decode(0x13, body)
-    assert p.bag["clearance_score"].value == 42
+    assert p.bag["accountExpPool"].value == 42
     print(f"OK  {format_payload(p)}")
 
     # SCMD_LEAGUE_NOTIFICATION cmd=3 — ext + flag
