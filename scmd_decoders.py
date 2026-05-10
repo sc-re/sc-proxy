@@ -310,16 +310,25 @@ def _scmd_clan_notification(body: bytes) -> ScmdPayload:
 def _scmd_user_profile_notification(body: bytes) -> ScmdPayload:
     """0x13: u8 upn_type + u64 uid + per-sub-type struct.
 
-    Source: OnUserProfileNotification (0x0832ed90).
+    Source: OnUserProfileNotification (0x0832ed90); the trailing payload
+    types correspond to MasterServer.UserProfileField (lua), which is the
+    set of fields the client tracks for each profile and is what the lua
+    callback `MasterServer_OnUserProfileUpdate(result, requestId, uid,
+    field)` is invoked with.
 
-      0  u8  flag                                — generic profile change
-      1  u16 ?, u32 ?, u32 ?                     — military stats
-      2  u16 ?, u8 ?, u64 ?                      — quest progress
-      3  u16 titleId                             — title set
-      4  cstring[<=60] avatar                    — avatar set
-      5  cstring[<=60] motto                     — motto set
-      6  i32 prestige_int                        — prestige delta
-      7  bag (via FUN_088c0ce0 — clan info)      — clan refresh
+      0  UPF_STATE              u8  state              (online/offline byte)
+      1  UPF_CLAN_ID            u16+u32+u32             (clan_id triple)
+      2  UPF_GENERAL_STATS      u16 stat_id, u8 op, u64 val
+                                                       (UserProfileGeneralStat
+                                                        key + new value)
+      3  UPF_VESSELS_RANK_STATS u16 ?
+      4  UPF_ACHIEVEMENTS       cstring (def-name, ≤60)
+      5  UPF_MEDALS             cstring (def-name, ≤60)
+      6  UPF_TITLES             i32 title_id           (signed for sentinel)
+      7  UPF_AVATARS            property bag (via FUN_088c0ce0)
+                                                       — keyed avatar/motto
+                                                         struct (see
+                                                         notification._read_bag)
     """
     br = BitReader(body)
     sub = br.read_u8()
@@ -329,26 +338,36 @@ def _scmd_user_profile_notification(body: bytes) -> ScmdPayload:
         "uid":      _kv("u64", uid),
     }
     try:
-        if sub == 0:
-            out["flag"] = _kv("u8", br.read_u8())
-        elif sub == 1:
-            out["v16"] = _kv("u16", br.read_u16())
+        if sub == 0:        # UPF_STATE
+            out["state"] = _kv("u8", br.read_u8())
+        elif sub == 1:      # UPF_CLAN_ID
+            out["v16"]  = _kv("u16", br.read_u16())
             out["v32a"] = _kv("u32", br.read_u32())
             out["v32b"] = _kv("u32", br.read_u32())
-        elif sub == 2:
-            out["v16"]  = _kv("u16", br.read_u16())
-            out["v8"]   = _kv("u8",  br.read_u8())
-            out["v64"]  = _kv("u64", br.read_u64())
-        elif sub == 3:
-            out["titleId"] = _kv("u16", br.read_u16())
-        elif sub in (4, 5):
-            out["text"] = _kv("str", br.read_cstring(max_len=60))
-        elif sub == 6:
-            out["prestige"] = _kv("i32", br.read_i32())
-        elif sub == 7:
-            out["_clan_struct_bytes"] = _kv("?", br.remaining())
+        elif sub == 2:      # UPF_GENERAL_STATS
+            out["stat_id"] = _kv("u16", br.read_u16())
+            out["op"]      = _kv("u8",  br.read_u8())
+            out["value"]   = _kv("u64", br.read_u64())
+        elif sub == 3:      # UPF_VESSELS_RANK_STATS
+            out["v16"] = _kv("u16", br.read_u16())
+        elif sub == 4:      # UPF_ACHIEVEMENTS
+            out["achievement_def"] = _kv("str", br.read_cstring(max_len=60))
+        elif sub == 5:      # UPF_MEDALS
+            out["medal_def"] = _kv("str", br.read_cstring(max_len=60))
+        elif sub == 6:      # UPF_TITLES
+            out["title_id"] = _kv("i32", br.read_i32())
+        elif sub == 7:      # UPF_AVATARS — bag-like clan/avatar struct
+            # FUN_088c0ce0 reads a u32 count + iterative entries via
+            # FUN_8b1ed60; observed payloads do NOT decode cleanly with
+            # the SCMD_NOTIFICATION bag reader (the count tier byte
+            # placement differs), but we wire it in here so the surfaced
+            # error pinpoints the divergence and so any future fix to
+            # _read_bag will apply automatically.
+            out["avatar_bag"] = _kv("bag", _read_bag(br))
     except EOFError:
         out["_truncated"] = _kv("?", True)
+    except ValueError as e:
+        out["_bag_error"] = _kv("?", str(e))
     return ScmdPayload("SCMD_USER_PROFILE_NOTIFICATION", out)
 
 

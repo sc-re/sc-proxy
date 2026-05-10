@@ -2233,12 +2233,20 @@ types:
       Bulk player-profile dump. Handler 0x0822ed43 reads u2 num_records
       then `num_records` × per-profile records via FUN_08922e60 (init) +
       FUN_08924e60 (the heavy reader). Each record is bit-packed and
-      flag-driven: the inner reader exposes u8 uid, then a u32 flags
-      word, then optional fields per bit (clan, alliance, rating, big
-      ship-stats arrays at offsets +0x4ee and +0x26b4 of the in-memory
-      struct, leaderboard entries, achievements). Surfaced through
-      `ac_user_profile_get_response_body`; only the leading u2 count is
-      currently exposed cleanly.
+      flag-driven: u8 uid + u32 present_field_mask, then per UPF_* bit:
+      0=UPF_STATE (u8 state + u64 sub_id), 1=UPF_CLAN_ID (u64),
+      2=UPF_GENERAL_STATS (33×u64 keyed by UPGS_*),
+      3=UPF_VESSELS_RANK_STATS (18×33 u64),
+      4=UPF_ACHIEVEMENTS, 5=UPF_MEDALS, 6=UPF_TITLES, 7=UPF_AVATARS,
+      8=UPF_MOTTOS, 9=UPF_ATLAS (bag). Field shapes / names mirror
+      MasterServer.UserProfileField + UserProfileGeneralStat from
+      star-conflict-lua-decompiled/scripts/masterserver.lua and the
+      profile object's lua use-sites in
+      ui/scripts/work/gameobjects/profile.lua. Surfaced through
+      `ac_user_profile_get_response_body`; only the simple bits 0-3 are
+      consumed cleanly today, since the sub-readers for bits 4-9 use
+      width-prefixed varints (FUN_08b1bbd0) that don't line up with
+      BitReader's byte-aligned reads.
     seq:
     - id: data
       type: ac_user_profile_get_response_body
