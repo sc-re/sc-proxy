@@ -99,6 +99,23 @@ UPF_NAMES = {
     9: "UPF_ATLAS",
 }
 
+# MasterServer.UserState enum (from masterserver.lua line 603).
+USER_STATE_NAMES = {
+    0: "NOT_AVAILABLE",
+    1: "ONLINE",
+    2: "OFFLINE",
+}
+
+
+def _fmt_timestamp_ms(ms: int) -> str:
+    """Render a Unix-epoch ms timestamp as ISO-like UTC; fall back to
+    raw integer if it's clearly not a real timestamp."""
+    import datetime
+    if 1_000_000_000_000 < ms < 3_000_000_000_000:
+        return datetime.datetime.fromtimestamp(
+            ms / 1000, datetime.timezone.utc).isoformat(timespec="seconds")
+    return str(ms)
+
 
 def _read_var_uint(br: BitReader) -> int:
     """BitStream_ReadVarUInt (FUN_08b1bbd0): 1+8 / 2+16 / 2+32 encoding."""
@@ -269,15 +286,25 @@ class AcUserProfileGetResponseBody:
         # friends-list lookups.
         lines = [_format_record_long(r) for r in self.records]
         body = "\n  ".join(lines)
+        # Summary for state-only batches (the common shape).
+        summary = ""
+        if all(r.flags == 0x1 for r in self.records) and len(self.records) > 1:
+            from collections import Counter
+            cnt = Counter(r.state for r in self.records)
+            counts = ", ".join(
+                f"{c}×{USER_STATE_NAMES.get(s, str(s))}"
+                for s, c in sorted(cnt.items()))
+            summary = f" [state batch: {counts}]"
         return (f"AcUserProfileGetResponseBody({len(self._raw)}B, "
                 f"records={len(self.records)}/{self.num_records}, "
-                f"slack={slack}b{suffix}):\n  {body}")
+                f"slack={slack}b{suffix}{summary}):\n  {body}")
 
 
 def _format_record_long(r: _ProfileRecord) -> str:
     parts = [f"uid=0x{r.uid:x}"]
     if r.state is not None:
-        parts.append(f"state={r.state}@{r.state_last_change}")
+        sname = USER_STATE_NAMES.get(r.state, str(r.state))
+        parts.append(f"state={sname}@{_fmt_timestamp_ms(r.state_last_change or 0)}")
     if r.clan_id is not None:
         parts.append(f"clan=0x{r.clan_id:x}")
     if r.general_stats is not None:
