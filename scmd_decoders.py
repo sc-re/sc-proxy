@@ -325,10 +325,15 @@ def _scmd_user_profile_notification(body: bytes) -> ScmdPayload:
                                                         delta — e.g. id=80
                                                         (MILEAGE) bumps from
                                                         1416 to 1438)
-      2   u16 stat_id, u8 op, u64 val                    (looks like
-                                                        UserProfileGeneralStat
-                                                        update — stat_id
-                                                        ranges into UPGS_*)
+      2   u16 achievement_id, u8 stage, u64 unlock_time_ms
+                                                       (achievement unlock —
+                                                        e.g. id=88 (Bandit)
+                                                        stage=0 t=2026-05-10
+                                                        12:39:58 UTC. Stage
+                                                        is the achievement
+                                                        rank/tier; the u64
+                                                        is a Unix-epoch
+                                                        timestamp in ms)
       3   u16                                             (no captures yet)
       4   cstring newly_unlocked_def
           (then, when the profile already had an avatars list — case-4
@@ -363,10 +368,10 @@ def _scmd_user_profile_notification(body: bytes) -> ScmdPayload:
             out["achievement_id"] = _kv("u16", br.read_u16())
             out["old_value"]      = _kv("u32", br.read_u32())
             out["new_value"]      = _kv("u32", br.read_u32())
-        elif sub == 2:      # general-stats update
-            out["stat_id"] = _kv("u16", br.read_u16())
-            out["op"]      = _kv("u8",  br.read_u8())
-            out["value"]   = _kv("u64", br.read_u64())
+        elif sub == 2:      # achievement unlock
+            out["achievement_id"] = _kv("u16", br.read_u16())
+            out["stage"]          = _kv("u8",  br.read_u8())
+            out["unlock_time_ms"] = _kv("u64", br.read_u64())
         elif sub == 3:      # u16 (uncaptured)
             out["v16"] = _kv("u16", br.read_u16())
         elif sub == 4:      # avatar unlock (+ optional current + full list)
