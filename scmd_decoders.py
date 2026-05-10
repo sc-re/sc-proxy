@@ -326,10 +326,23 @@ def _scmd_user_profile_notification(body: bytes) -> ScmdPayload:
       4  UPF_ACHIEVEMENTS       cstring (def-name, ≤60)
       5  UPF_MEDALS             cstring (def-name, ≤60)
       6  UPF_TITLES             i32 title_id           (signed for sentinel)
-      7  UPF_AVATARS            property bag (via FUN_088c0ce0)
-                                                       — keyed avatar/motto
-                                                         struct (see
-                                                         notification._read_bag)
+      7  UPF_AVATARS            FUN_088c0ce0 struct: u32 prefix +
+                                                       optional bag at +0x4 +
+                                                       optional bag at +0x18.
+                                                       Each bag is gated by a
+                                                       presence bit. NOT a
+                                                       single bag — calling
+                                                       _read_bag straight on
+                                                       the body desyncs. The
+                                                       inner bags don't decode
+                                                       cleanly either with our
+                                                       BitReader-based bag
+                                                       reader (count comes out
+                                                       absurdly large), so the
+                                                       bag bodies are surfaced
+                                                       as opaque hex until the
+                                                       on-wire format is
+                                                       cracked.
     """
     br = BitReader(body)
     sub = br.read_u8()
@@ -357,18 +370,27 @@ def _scmd_user_profile_notification(body: bytes) -> ScmdPayload:
             out["medal_def"] = _kv("str", br.read_cstring(max_len=60))
         elif sub == 6:      # UPF_TITLES
             out["title_id"] = _kv("i32", br.read_i32())
-        elif sub == 7:      # UPF_AVATARS — bag-like clan/avatar struct
-            # FUN_088c0ce0 reads a u32 count + iterative entries via
-            # FUN_8b1ed60; observed payloads do NOT decode cleanly with
-            # the SCMD_NOTIFICATION bag reader (the count tier byte
-            # placement differs), but we wire it in here so the surfaced
-            # error pinpoints the divergence and so any future fix to
-            # _read_bag will apply automatically.
-            out["avatar_bag"] = _kv("bag", _read_bag(br))
+        elif sub == 7:      # UPF_AVATARS — FUN_088c0ce0 struct
+            # FUN_088c0ce0(buf, struct):
+            #     struct[0]  = read_u32(buf)
+            #     if read_bool(buf) == 0:                  # b1
+            #         FUN_08b1ed60(buf, &struct[+0x4])     # cleanup + read_bag
+            #     if read_bool(buf) == 0:                  # b2
+            #         FUN_08b1ed60(buf, &struct[+0x18])    # cleanup + read_bag
+            # The two inner read_bag calls are FUN_08b1ec70 (= our _read_bag).
+            # On the captured payloads `_read_bag` produces a count of ~2960
+            # which is impossible in 78 bytes — likely the bool prefix is
+            # being mis-read or the inner bag uses a different reader-class.
+            # Surface the prefix + presence flags + remaining bytes as hex
+            # so future debugging has something to grep.
+            out["prefix_u32"] = _kv("u32", br.read_u32())
+            out["bag1_present"] = _kv("bool", not br.read_bool())
+            tail_bit = br.pos
+            out["tail_bits"] = _kv("u32", len(body) * 8 - tail_bit)
+            out["tail_hex"] = _kv("?",
+                body[tail_bit // 8:].hex() + f" (+{tail_bit & 7}b slack)")
     except EOFError:
         out["_truncated"] = _kv("?", True)
-    except ValueError as e:
-        out["_bag_error"] = _kv("?", str(e))
     return ScmdPayload("SCMD_USER_PROFILE_NOTIFICATION", out)
 
 
