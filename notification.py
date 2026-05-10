@@ -365,7 +365,7 @@ def validate(notif: Notification) -> list[str]:
 SN_FIELDS: dict[int, list[tuple[str, str]]] = {
       0: [],  # SN_VESSELS_AUTO_REPAIRED — no C++ handler, no Lua handler
       1: [],  # SN_VESSELS_AUTO_REPAIR_FAILED — no C++ handler, no Lua handler
-      2: [],  # SN_VESSEL_REPAIRED — no C++ handler, no Lua handler
+      2: [("i32", 'withModules'), ("u64", 'vid'), ("i32",'credits'), ("i32", 'goldCredits')],  # SN_VESSEL_REPAIRED — no C++ handler, no Lua handler
       3: [],  # SN_DURABILITY_RESTORED — no C++ handler, no Lua handler
       4: [],  # SN_FREE_REPAIR_USED — no C++ handler, no Lua handler
       5: [],  # SN_VESSELS_AUTO_REFILLED — no C++ handler, no Lua handler
@@ -389,7 +389,7 @@ SN_FIELDS: dict[int, list[tuple[str, str]]] = {
      23: [],  # SN_MODULE_EQUIPPED — no C++ handler, no Lua handler
      24: [],  # SN_MODULE_UNEQUIPPED — no C++ handler, no Lua handler
      25: [("bag", "modules"), ("bag", "munition")],  # SN_MODULE_UNEQUIPPED_MULTI (lua)
-     26: [],  # SN_MUNITION_EQUIPPED — no C++ handler, no Lua handler
+     26: [("u64", "vid"), ("i32", "slot"), ("string", "defName")],  # SN_MUNITION_EQUIPPED — no C++ handler, no Lua handler
      27: [],  # SN_MUNITION_UNEQUIPPED — no C++ handler, no Lua handler
      28: [("?", "bBroken")],  # SN_BATTLE_SLOT_VESSEL_INSTALLED (lua)
      29: [],  # SN_BATTLE_SLOT_VESSEL_REMOVED — no C++ handler, no Lua handler
