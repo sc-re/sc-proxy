@@ -166,7 +166,16 @@ _capture_idx = [0]
 _capture_lock = threading.Lock()
 
 
-def log_packet(tag: str, pkt: dict, extra: str = ""):
+def log_packet(tag: str, pkt: dict, extra: str = "", state: dict | None = None):
+    """Log + capture one framed packet.
+
+    `state`, when given, is a per-connection dict that the proxy uses to
+    accumulate session info (currently just the local user's `uid`).
+    The shard proxy passes one shared dict between its S→C and C→S relay
+    threads; the LB and chat proxies don't pass one. When `state["uid"]`
+    becomes known it is appended to capture filenames so per-user runs
+    are easy to grep.
+    """
     if pkt.get("special"):
         log.info(f"[{tag}] SPECIAL (ff ff ff fe + 8 bytes) {extra}")
         return
@@ -209,6 +218,19 @@ def log_packet(tag: str, pkt: dict, extra: str = ""):
            f"pkt=0x{pkt_t:04x}({pkt_name}) "
            f"cs=0x{pkt['checksum']:04x} body_len={pkt['body_len']}"
            f"{sn_str}{kaitai_str}")
+    # SCMD_USER_PROFILE_NOTIFICATION carries `u8 sub + u64 uid + ...`
+    # The very first one on a shard connection is reliably the local
+    # player's online-state notification, so latch its uid into the
+    # per-connection state so subsequent captures can be tagged with it.
+    # Later UPN events refer to other users (friends/clan members),
+    # so we deliberately don't overwrite once set.
+    if state is not None and pkt_t == 0x13 and len(body) >= 9 \
+            and state.get("uid") is None:
+        try:
+            state["uid"] = int.from_bytes(body[1:9], "big")
+        except Exception:
+            pass
+
     # Save the full body to disk for offline extraction — the log hexdump
     # is still truncated to keep the log readable.
     if body:
@@ -228,7 +250,11 @@ def log_packet(tag: str, pkt: dict, extra: str = ""):
                 sub_suffix = f"_ac{ac_idx:04x}_{pkt_type_name(ac_idx).lower()}"
             elif is_notification and len(body) >= 1:
                 sub_suffix = f"_sn{body[0]:02x}_{sn_name(body[0]).lower()}"
-            fname = (f"{idx:04d}_{direction}_pkt{pkt_t:02x}_{pkt_name.lower()}"
+            uid_suffix = (f"_uid{state['uid']:x}"
+                          if state is not None and state.get("uid") is not None
+                          else "")
+            fname = (f"{idx:04d}_{direction}{uid_suffix}"
+                     f"_pkt{pkt_t:02x}_{pkt_name.lower()}"
                      f"{sub_suffix}_len{len(body)}.bin")
             with open(os.path.join(CAPTURE_DIR, fname), "wb") as f:
                 f.write(body)
@@ -244,16 +270,20 @@ def log_packet(tag: str, pkt: dict, extra: str = ""):
 
 
 def relay_loop(src: socket.socket, dst: socket.socket, tag: str,
-               on_packet=None):
+               on_packet=None, state: dict | None = None):
     """Read framed packets from src, log them, optionally mutate via
     on_packet(pkt) -> pkt (return the packet to forward, or None to drop),
-    then write to dst. Falls back to raw forwarding if framing fails."""
+    then write to dst. Falls back to raw forwarding if framing fails.
+
+    `state`, when given, is a per-connection dict shared between the two
+    relay threads (S→C and C→S) of the same connection; see log_packet.
+    """
     try:
         while True:
             pkt = read_packet(src)
             if pkt is None:
                 break
-            log_packet(tag, pkt)
+            log_packet(tag, pkt, state=state)
             if on_packet is not None:
                 pkt = on_packet(pkt)
                 if pkt is None:

@@ -46,6 +46,11 @@ def _handle(client: socket.socket, addr):
         return
     log.info(f"[SHARD] upstream → {real}")
 
+    # Per-connection state — shared between the two relay threads.
+    # log_packet learns the uid from the first SCMD_USER_PROFILE_NOTIFICATION
+    # and stamps it into subsequent capture filenames.
+    conn_state: dict = {"uid": None}
+
     def on_s2c(pkt):
         if pkt.get("special"):
             log.info("[SHARD S→C] SPECIAL")
@@ -61,13 +66,13 @@ def _handle(client: socket.socket, addr):
     t1 = threading.Thread(
         target=proxy_util.relay_loop,
         args=(upstream, client, "SHARD S→C"),
-        kwargs={"on_packet": on_s2c},
+        kwargs={"on_packet": on_s2c, "state": conn_state},
         daemon=True,
     )
     t2 = threading.Thread(
         target=proxy_util.relay_loop,
         args=(client, upstream, "SHARD C→S"),
-        kwargs={"on_packet": on_c2s},
+        kwargs={"on_packet": on_c2s, "state": conn_state},
         daemon=True,
     )
     t1.start(); t2.start()
@@ -76,7 +81,7 @@ def _handle(client: socket.socket, addr):
     except: pass
     try: upstream.close()
     except: pass
-    log.info(f"[SHARD] connection from {addr} closed")
+    log.info(f"[SHARD] connection from {addr} closed (uid={conn_state['uid']})")
 
 
 def run():
