@@ -218,16 +218,15 @@ def log_packet(tag: str, pkt: dict, extra: str = "", state: dict | None = None):
            f"pkt=0x{pkt_t:04x}({pkt_name}) "
            f"cs=0x{pkt['checksum']:04x} body_len={pkt['body_len']}"
            f"{sn_str}{kaitai_str}")
-    # SCMD_USER_PROFILE_NOTIFICATION carries `u8 sub + u64 uid + ...`
-    # The very first one on a shard connection is reliably the local
-    # player's online-state notification, so latch its uid into the
-    # per-connection state so subsequent captures can be tagged with it.
-    # Later UPN events refer to other users (friends/clan members),
-    # so we deliberately don't overwrite once set.
-    if state is not None and pkt_t == 0x13 and len(body) >= 9 \
+    # SCMD_AUTH_ACK (pkt 0x05) is the server's response to a successful
+    # authentication and carries `u64 uid` at body offset 0 — that's the
+    # local user, sent exactly once per connection well before any
+    # gameplay traffic. Latch it into the per-connection state so
+    # subsequent captures can be tagged with the uid.
+    if state is not None and pkt_t == 0x05 and len(body) >= 8 \
             and state.get("uid") is None:
         try:
-            state["uid"] = int.from_bytes(body[1:9], "big")
+            state["uid"] = int.from_bytes(body[:8], "big")
         except Exception:
             pass
 
