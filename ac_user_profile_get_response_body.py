@@ -259,29 +259,67 @@ class AcUserProfileGetResponseBody:
 
     def __repr__(self) -> str:
         slack = len(self._raw) * 8 - self.bits_consumed
-        head = ""
-        if self.records:
-            r = self.records[0]
-            extras = []
-            if r.atlas is not None:
-                ap = r.atlas.get("accountExpPool")
-                if ap is not None:
-                    extras.append(f"clearance={ap}")
-                mods = r.atlas.get("modules", {})
-                extras.append(f"modules={len(mods)}_keys")
-            if r.titles is not None:
-                extras.append(f"titles={len(r.titles.get('titles', {}))}")
-            if r.avatars is not None:
-                extras.append(f"avatars={r.avatars.get('count', 0)}")
-            head = (f"first=(uid=0x{r.uid:x}, flags=0x{r.flags:x}"
-                    f"{{{','.join(r.fields_present())}}}"
-                    + (" " + " ".join(extras) if extras else "")
-                    + ")")
-        else:
-            head = "first=—"
-        suffix = ""
-        if self.error:
-            suffix = f" ERROR: {self.error}"
+        suffix = f" ERROR: {self.error}" if self.error else ""
+        if not self.records:
+            return (f"AcUserProfileGetResponseBody({len(self._raw)}B, "
+                    f"records=0/{self.num_records}, slack={slack}b{suffix})")
+        # First record gets a detailed dump; remaining records get a
+        # one-line uid+flags summary so multi-profile responses (e.g.
+        # friends-list lookups) don't explode the log.
+        lines = [_format_record_long(self.records[0])]
+        for r in self.records[1:]:
+            lines.append(
+                f"uid=0x{r.uid:x} flags=0x{r.flags:x}"
+                f"{{{','.join(r.fields_present())}}}")
+        body = "\n  ".join(lines)
         return (f"AcUserProfileGetResponseBody({len(self._raw)}B, "
                 f"records={len(self.records)}/{self.num_records}, "
-                f"{head}, slack={slack}b{suffix})")
+                f"slack={slack}b{suffix}):\n  {body}")
+
+
+def _format_record_long(r: _ProfileRecord) -> str:
+    parts = [f"uid=0x{r.uid:x}", f"flags=0x{r.flags:x}"]
+    if r.state is not None:
+        parts.append(f"state={r.state}@{r.state_last_change}")
+    if r.clan_id is not None:
+        parts.append(f"clan=0x{r.clan_id:x}")
+    if r.general_stats is not None:
+        nz = sum(1 for v in r.general_stats if v != 0)
+        parts.append(f"gstats={nz}/{len(r.general_stats)} non-zero")
+    if r.vessels_rank_stats is not None:
+        nz = sum(1 for row in r.vessels_rank_stats for v in row if v != 0)
+        parts.append(f"vrank={nz} non-zero/{18*33}")
+    if r.achievements is not None:
+        nz = sum(1 for v, _ in r.achievements if v != 0)
+        parts.append(f"ach={nz}/{len(r.achievements)} touched")
+    if r.medals is not None:
+        nz = sum(1 for entry in r.medals if any(entry))
+        parts.append(f"medals={nz}/{len(r.medals)} non-zero")
+    if r.titles is not None:
+        active = r.titles["active_title_id"]
+        unlocked = len(r.titles["titles"])
+        parts.append(f"titles=active={active},unlocked={unlocked}")
+    if r.avatars is not None:
+        cur = r.avatars["current"]
+        n = r.avatars["count"]
+        parts.append(f"avatars=current={cur!r},n={n}")
+    if r.mottos is not None:
+        cur = r.mottos["current"]
+        n = r.mottos["count"]
+        parts.append(f"mottos=current={cur!r},n={n}")
+    if r.atlas is not None:
+        ap = r.atlas["accountExpPool"]
+        mods = r.atlas.get("modules", {})
+        vp = r.atlas.get("vesselsProgress", {})
+        # Count non-zero 3-bit ranks across all module tier-keys.
+        nz_modules = 0
+        for v in mods.values():
+            val = v.value if hasattr(v, "value") else v
+            for i in range(21):
+                if (val >> (61 - 3 * i)) & 7:
+                    nz_modules += 1
+        parts.append(
+            f"atlas=clearance={ap},"
+            f"modules={nz_modules}nz_in_{len(mods)}tiers,"
+            f"vesselsProgress={len(vp)}keys")
+    return " ".join(parts)
