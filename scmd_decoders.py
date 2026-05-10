@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Per-SCMD body decoders for packet types beyond SCMD_NOTIFICATION.
 
 Each entry in DECODERS maps an scmd_pkt_type to a function that takes the
@@ -644,10 +645,10 @@ def _selftest() -> None:
     assert p.bag["field_4"].value == 0xff
     print(f"OK  {format_payload(p)}")
 
-    # SCMD_USER_PROFILE_NOTIFICATION sub_type=3 (titleId)
-    body = make_bits((3, 8), (0x1234, 64), (42, 16))
+    # SCMD_USER_PROFILE_NOTIFICATION sub_type=6 (UPF_TITLES, i32 title_id)
+    body = make_bits((6, 8), (0x1234, 64), (42, 32))
     p = decode(0x13, body)
-    assert p.bag["titleId"].value == 42
+    assert p.bag["title_id"].value == 42
     print(f"OK  {format_payload(p)}")
 
     # SCMD_LEAGUE_NOTIFICATION cmd=3 — ext + flag
@@ -675,5 +676,81 @@ def _selftest() -> None:
     print("OK  unknown-type fallback")
 
 
+def _decoder_short_name(fn: Callable) -> str:
+    """`_scmd_user_profile_notification` → `user_profile_notification`."""
+    n = fn.__name__
+    return n[len("_scmd_"):] if n.startswith("_scmd_") else n
+
+
+def _resolve_decoder(spec: str) -> int | None:
+    """Map a CLI `<decoder>` spec to a registered pkt_type, or None.
+
+    Accepts:
+      • hex/decimal int  ("0x13", "19")
+      • exact short name ("user_profile_notification")
+      • unique substring ("user_profile", "vessel")
+    """
+    spec = spec.strip().lower()
+    try:
+        pkt = int(spec, 0)
+        return pkt if pkt in DECODERS else None
+    except ValueError:
+        pass
+    short_to_type = {_decoder_short_name(fn): t for t, fn in DECODERS.items()}
+    if spec in short_to_type:
+        return short_to_type[spec]
+    matches = [t for n, t in short_to_type.items() if spec in n]
+    return matches[0] if len(matches) == 1 else None
+
+
 if __name__ == "__main__":
-    _selftest()
+    import argparse
+    import sys
+
+    ap = argparse.ArgumentParser(
+        description="Decode a raw SCMD body from a .bin file.",
+        epilog="Examples:\n"
+               "  scmd_decoders.py --list\n"
+               "  scmd_decoders.py user_profile body.bin\n"
+               "  scmd_decoders.py 0x13 body.bin\n"
+               "  scmd_decoders.py --selftest",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    ap.add_argument("decoder", nargs="?",
+                    help="pkt_type as int (0x13 / 19) or short name "
+                         "(unique substring of the SCMD name; e.g. "
+                         "'user_profile', 'vessel')")
+    ap.add_argument("path", nargs="?", help="path to a .bin body file")
+    ap.add_argument("--selftest", action="store_true",
+                    help="run the built-in self-tests and exit")
+    ap.add_argument("--list", action="store_true",
+                    help="list registered decoders and exit")
+    args = ap.parse_args()
+
+    if args.selftest:
+        _selftest()
+        sys.exit(0)
+
+    if args.list:
+        print(f"  pkt   short-name                         payload .name")
+        for t, fn in sorted(DECODERS.items()):
+            sample = fn.__doc__.splitlines()[0] if fn.__doc__ else ""
+            sample_name = sample.split(":", 1)[0].strip() if ":" in sample else fn.__name__
+            print(f"  0x{t:02x}  {_decoder_short_name(fn):<33} {fn.__name__}")
+        sys.exit(0)
+
+    if not args.decoder or not args.path:
+        ap.error("supply <decoder> <path>, or use --selftest / --list")
+
+    pkt = _resolve_decoder(args.decoder)
+    if pkt is None:
+        ap.error(f"could not resolve {args.decoder!r} to a registered "
+                 f"decoder; use --list to see options")
+
+    with open(args.path, "rb") as f:
+        body = f.read()
+
+    payload = decode(pkt, body)
+    if payload is None:
+        sys.exit(f"no decoder registered for pkt_type 0x{pkt:02x}")
+    print(format_payload(payload))
