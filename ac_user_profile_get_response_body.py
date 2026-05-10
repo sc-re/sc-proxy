@@ -1,55 +1,80 @@
 """Bit-stream parser for ac_user_profile_get server-to-client response.
 
 Handler 0x0822ed43 reads `u2 num_records` then `num_records` × per-profile
-records via the per-record reader at FUN_08924e60. The per-record reader
-populates a profile struct that the lua side accesses via
-`MasterServer_UserProfileGet(uid)` — the field names below come from
-star-conflict-lua-decompiled/ui/scripts/work/gameobjects/profile.lua and
-match the lua callback `MasterServer_OnUserProfileUpdate(result,
-requestId, uid, field)` where `field` is `MasterServer.UserProfileField`.
+records via UserProfile_DeserializeRecord (FUN_08924e60). Each record is:
 
-Per-record layout:
+    u8be uid                            (BitStream_ReadU64v2)
+    varuint flags                       (BitStream_ReadVarUInt; encoding:
+                                         1+8 / 2+16 / 2+32 bits)
 
-    u8be uid                            (read first via FUN_08b1c360)
-    u4   present_field_mask             (LEB-style u4 via FUN_08b1bbd0;
-                                         observed values fit in 32 bits —
-                                         each bit selects a UPF_* field)
+Then per bit set in `flags`, in this order, with the wire format derived
+from FUN_08924e60 + the named UserProfile_Deserialize* helpers:
 
-Then per bit set in present_field_mask, in this order:
+    bit 0 (UPF_STATE)
+        u8  state                       (UserState enum)
+        u64 stateLastChange             (timestamp / token)
 
-    bit 0  UPF_STATE              u8 state + u64 sub_id
-                                  (state = MasterServer.UserState value)
-    bit 1  UPF_CLAN_ID            u64 clan_id
-    bit 2  UPF_GENERAL_STATS      33 × u64 indexed by
-                                  MasterServer.UserProfileGeneralStat
-                                  (UPGS_KARMA=0 … UPGS_FACTION_REP_CYBER_2=32)
-    bit 3  UPF_VESSELS_RANK_STATS 18 × 33 × u64 (per-vessel rank stat
-                                  matrix; the inner stride matches the
-                                  33-key general-stats table)
-    bit 4  UPF_ACHIEVEMENTS       length-prefixed array of records of
-                                  shape `{value: u64, ranks: [u64,...]}`
-                                  (matches profile.achievements lua use)
-    bit 5  UPF_MEDALS             u32-terminated array of fixed-size records
-    bit 6  UPF_TITLES             FUN_08918870 sub-reader (titles list)
-    bit 7  UPF_AVATARS            FUN_08919100 sub-reader (avatars list)
-    bit 8  UPF_MOTTOS             FUN_08919b50 sub-reader (mottos list)
-    bit 9  UPF_ATLAS              property bag via FUN_088c0ce0
-                                  (atlas: blueprints/research)
+    bit 1 (UPF_CLAN_ID)
+        u64 clan_id
 
-The reads in FUN_08924e60 are byte-aligned u64s/u8s/u32s on the wire-side
-class, but the AC body's bit-stream may have different byte-alignment
-slack from the SCMD framing — we surface the per-flag-bit decode for
-bits 0-3 (simple shapes) and stop at bit 4 to avoid desync, since the
-sub-readers for bits 4-9 are too involved to model without per-flag
-captures.
+    bit 2 (UPF_GENERAL_STATS)
+        33 × u64                        (UPGS_KARMA=0..UPGS_FACTION_REP_CYBER_2=32)
+
+    bit 3 (UPF_VESSELS_RANK_STATS)
+        18 × 33 × u64                   (594 u64s — per-vessel × per-stat)
+
+    bit 4 (UPF_ACHIEVEMENTS)
+        261 × {
+            u32 value
+            u8  num_ranks               (≤16)
+            0..num_ranks × u64 rank_data
+            (loop early-exits on the first all-zero u64 — i.e. unranked
+             entries don't have to write num_ranks zeros, the wire just
+             truncates them)
+        }
+
+    bit 5 (UPF_MEDALS)
+        62 × {
+            1..8 × u32                  (early-exits on first 0)
+        }
+
+    bit 6 (UPF_TITLES) — UserProfile_DeserializeTitles
+        u16 active_title_id
+        loop i = 0..383:
+            u1 present
+            if present: u64 title_data  (likely unlock timestamp)
+
+    bit 7 (UPF_AVATARS) — UserProfile_DeserializeAvatars
+        cstring current_avatar          (≤60)
+        u16 count
+        count × cstring                 (≤60)
+
+    bit 8 (UPF_MOTTOS) — UserProfile_DeserializeMottos
+        cstring current_motto           (≤60)
+        u16 count
+        count × cstring                 (≤60)
+
+    bit 9 (UPF_ATLAS) — Atlas_Deserialize
+        i32 accountExpPool              (lua: profile.atlas.accountExpPool)
+        u1  modules_present
+        if modules_present: bag         (sparse; key=tier-group index,
+                                          value=u64 packing 21 × 3-bit
+                                          module ranks)
+        u1  vesselsProgress_present
+        if vesselsProgress_present: bag (per-vessel research)
+
+The captured `flags` values like 0x80f13fff or 0x027fffff have bits set
+above bit 9. UserProfile_DeserializeRecord ignores those higher bits on
+the wire — they appear to be runtime-only flags (e.g. "loaded from
+disk", "request pending"), set elsewhere — so the wire reader stops
+after bit 9.
 """
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
-from notification import BitReader
+from notification import BitReader, _read_bag
 
-# UserProfileField bit-mapping (mirrored from masterserver.lua line 613).
 UPF_STATE              = 0
 UPF_CLAN_ID            = 1
 UPF_GENERAL_STATS      = 2
@@ -75,20 +100,133 @@ UPF_NAMES = {
 }
 
 
+def _read_var_uint(br: BitReader) -> int:
+    """BitStream_ReadVarUInt (FUN_08b1bbd0): 1+8 / 2+16 / 2+32 encoding."""
+    if br.read_bool() == 0:
+        return br.read_u8()
+    if br.read_bool() == 0:
+        return br.read_u16()
+    return br.read_u32()
+
+
+def _read_titles(br: BitReader) -> dict:
+    """UserProfile_DeserializeTitles (FUN_08918870)."""
+    out = {"active_title_id": br.read_u16(), "titles": {}}
+    for i in range(0x180):
+        if br.read_bool():
+            out["titles"][i] = br.read_u64()
+    return out
+
+
+def _read_avatars_or_mottos(br: BitReader) -> dict:
+    """UserProfile_DeserializeAvatars (08919100) /
+    UserProfile_DeserializeMottos (08919b50). Same wire format."""
+    current = br.read_cstring(max_len=60)
+    n = br.read_u16()
+    items = [br.read_cstring(max_len=60) for _ in range(n)]
+    return {"current": current, "count": n, "items": items}
+
+
+def _read_atlas(br: BitReader) -> dict:
+    """Atlas_Deserialize (FUN_088c0ce0)."""
+    out = {"accountExpPool": br.read_i32()}
+    if br.read_bool() == 0:
+        out["modules"] = _read_bag(br)
+    if br.remaining() >= 1 and br.read_bool() == 0:
+        out["vesselsProgress"] = _read_bag(br)
+    return out
+
+
 @dataclass
 class _ProfileRecord:
     uid: int
     flags: int
+    # bit 0
     state: Optional[int] = None
-    state_sub_id: Optional[int] = None
+    state_last_change: Optional[int] = None
+    # bit 1
     clan_id: Optional[int] = None
-    general_stats: Optional[List[int]] = None      # 33 entries, key = UPGS_*
-    vessels_rank_stats: Optional[List[List[int]]] = None  # 18×33
-    bits_after_simple: int = 0  # consumed bits after bit-3 (or wherever we stopped)
+    # bit 2
+    general_stats: Optional[List[int]] = None      # 33 entries
+    # bit 3
+    vessels_rank_stats: Optional[List[List[int]]] = None  # 18 × 33
+    # bit 4
+    achievements: Optional[List[Tuple[int, List[int]]]] = None
+    # bit 5
+    medals: Optional[List[List[int]]] = None
+    # bit 6
+    titles: Optional[dict] = None
+    # bit 7
+    avatars: Optional[dict] = None
+    # bit 8
+    mottos: Optional[dict] = None
+    # bit 9
+    atlas: Optional[dict] = None
+    bits_consumed: int = 0
 
     def fields_present(self) -> List[str]:
         return [UPF_NAMES.get(i, f"bit{i}")
                 for i in range(10) if (self.flags >> i) & 1]
+
+
+def _read_record(br: BitReader) -> _ProfileRecord:
+    rec = _ProfileRecord(uid=br.read_u64(), flags=_read_var_uint(br))
+
+    if rec.flags & (1 << UPF_STATE):
+        rec.state             = br.read_u8()
+        rec.state_last_change = br.read_u64()
+
+    if rec.flags & (1 << UPF_CLAN_ID):
+        rec.clan_id = br.read_u64()
+
+    if rec.flags & (1 << UPF_GENERAL_STATS):
+        rec.general_stats = [br.read_u64() for _ in range(33)]
+
+    if rec.flags & (1 << UPF_VESSELS_RANK_STATS):
+        rec.vessels_rank_stats = [
+            [br.read_u64() for _ in range(33)] for _ in range(18)
+        ]
+
+    if rec.flags & (1 << UPF_ACHIEVEMENTS):
+        ach = []
+        for _ in range(261):
+            value = br.read_u32()
+            num_ranks = br.read_u8()
+            ranks: List[int] = []
+            for _ in range(num_ranks):
+                rd = br.read_u64()
+                ranks.append(rd)
+                if rd == 0:
+                    break
+            ach.append((value, ranks))
+        rec.achievements = ach
+
+    if rec.flags & (1 << UPF_MEDALS):
+        med = []
+        for _ in range(62):
+            entry: List[int] = []
+            for _ in range(8):
+                v = br.read_u32()
+                entry.append(v)
+                if v == 0:
+                    break
+            med.append(entry)
+        rec.medals = med
+
+    if rec.flags & (1 << UPF_TITLES):
+        rec.titles = _read_titles(br)
+
+    if rec.flags & (1 << UPF_AVATARS):
+        rec.avatars = _read_avatars_or_mottos(br)
+
+    if rec.flags & (1 << UPF_MOTTOS):
+        rec.mottos = _read_avatars_or_mottos(br)
+
+    if rec.flags & (1 << UPF_ATLAS):
+        rec.atlas = _read_atlas(br)
+
+    rec.bits_consumed = br.pos
+    return rec
 
 
 class AcUserProfileGetResponseBody:
@@ -98,53 +236,19 @@ class AcUserProfileGetResponseBody:
         self.num_records: int = 0
         self.records: List[_ProfileRecord] = []
         self.bits_consumed: int = 0
+        self.partial: bool = False
         try:
             br = BitReader(self._raw)
             self.num_records = br.read_u16()
             for _ in range(self.num_records):
-                if br.remaining() < 64 + 32:
-                    break
-                rec = _ProfileRecord(uid=br.read_u64(), flags=br.read_u32())
-
-                # UPF_STATE: u8 state + u64 sub_id
-                if rec.flags & (1 << UPF_STATE):
-                    if br.remaining() < 8 + 64:
-                        self.records.append(rec); break
-                    rec.state        = br.read_u8()
-                    rec.state_sub_id = br.read_u64()
-
-                # UPF_CLAN_ID: u64
-                if rec.flags & (1 << UPF_CLAN_ID):
-                    if br.remaining() < 64:
-                        self.records.append(rec); break
-                    rec.clan_id = br.read_u64()
-
-                # UPF_GENERAL_STATS: 33 × u64
-                if rec.flags & (1 << UPF_GENERAL_STATS):
-                    if br.remaining() < 33 * 64:
-                        self.records.append(rec); break
-                    rec.general_stats = [br.read_u64() for _ in range(33)]
-
-                # UPF_VESSELS_RANK_STATS: 18 × 33 × u64
-                if rec.flags & (1 << UPF_VESSELS_RANK_STATS):
-                    need = 18 * 33 * 64
-                    if br.remaining() < need:
-                        self.records.append(rec); break
-                    rec.vessels_rank_stats = [
-                        [br.read_u64() for _ in range(33)]
-                        for _ in range(18)
-                    ]
-
-                rec.bits_after_simple = br.pos
-                self.records.append(rec)
-
-                # Stop walking as soon as a record needs a sub-reader we
-                # don't model — we'd otherwise desync the bit-stream and
-                # mis-parse the next uid.
-                if rec.flags & ~((1 << UPF_VESSELS_RANK_STATS) |
-                                  (1 << UPF_GENERAL_STATS) |
-                                  (1 << UPF_CLAN_ID) |
-                                  (1 << UPF_STATE)):
+                start = br.pos
+                try:
+                    rec = _read_record(br)
+                    self.records.append(rec)
+                except Exception as e:
+                    self.error = (f"record {len(self.records)}: "
+                                  f"{type(e).__name__}: {e} (bit {start})")
+                    self.partial = True
                     break
             self.bits_consumed = br.pos
         except Exception as e:
@@ -154,28 +258,30 @@ class AcUserProfileGetResponseBody:
         pass
 
     def __repr__(self) -> str:
-        if self.error:
-            return f"AcUserProfileGetResponseBody(<error: {self.error}>)"
-        n_records = len(self.records)
         slack = len(self._raw) * 8 - self.bits_consumed
-        first = self.records[0] if self.records else None
-        if first:
-            first_repr = (f"uid=0x{first.uid:x}, flags=0x{first.flags:x}"
-                          f"{{{','.join(first.fields_present())}}}")
+        head = ""
+        if self.records:
+            r = self.records[0]
             extras = []
-            if first.state is not None:
-                extras.append(f"state={first.state}")
-            if first.clan_id is not None:
-                extras.append(f"clan=0x{first.clan_id:x}")
-            if first.general_stats is not None:
-                extras.append(f"gstats={len(first.general_stats)}")
-            if first.vessels_rank_stats is not None:
-                extras.append(f"vrank={len(first.vessels_rank_stats)}×"
-                              f"{len(first.vessels_rank_stats[0])}")
-            if extras:
-                first_repr += " " + " ".join(extras)
+            if r.atlas is not None:
+                ap = r.atlas.get("accountExpPool")
+                if ap is not None:
+                    extras.append(f"clearance={ap}")
+                mods = r.atlas.get("modules", {})
+                extras.append(f"modules={len(mods)}_keys")
+            if r.titles is not None:
+                extras.append(f"titles={len(r.titles.get('titles', {}))}")
+            if r.avatars is not None:
+                extras.append(f"avatars={r.avatars.get('count', 0)}")
+            head = (f"first=(uid=0x{r.uid:x}, flags=0x{r.flags:x}"
+                    f"{{{','.join(r.fields_present())}}}"
+                    + (" " + " ".join(extras) if extras else "")
+                    + ")")
         else:
-            first_repr = "—"
+            head = "first=—"
+        suffix = ""
+        if self.error:
+            suffix = f" ERROR: {self.error}"
         return (f"AcUserProfileGetResponseBody({len(self._raw)}B, "
-                f"num_records={self.num_records}, parsed={n_records}, "
-                f"first=({first_repr}), slack={slack}b)")
+                f"records={len(self.records)}/{self.num_records}, "
+                f"{head}, slack={slack}b{suffix})")
