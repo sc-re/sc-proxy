@@ -6,8 +6,6 @@ from kaitaistruct import KaitaiStruct, KaitaiStream, BytesIO
 import bag_payload
 import prefixed_bag_payload
 import fed_design_tgp_stream
-import ac_update_yup_purchases_body
-import ac_vessel_strip_improper_battle_body
 import ac_friends_send_request_body
 import ac_load_initial_player_data_body
 import ac_lobby_info_body
@@ -16,10 +14,12 @@ import ac_quests_body
 import ac_ship_quests_body
 import ac_teaching_list_body
 import ac_universe_get_body
+import ac_update_yup_purchases_body
 import ac_use_blueprint_response_body
 import ac_user_profile_get_response_body
 import ac_vessel_change_equip_response_body
 import ac_vessel_change_equip_multi_response_body
+import ac_vessel_strip_improper_battle_body
 from enum import IntEnum
 
 
@@ -5946,10 +5946,15 @@ class StarConflictPackageServer(KaitaiStruct):
 
     class AcUpdateYupPurchases(KaitaiStruct):
         """Server-pushed Yuplay (Gaijin storefront) purchase state. Sent
-        unsolicited shortly after connect to seed the cache.
-        Body format (handler 0x082327ae): u8 status + bag yupPurchases +
-        u8 N + N × cstring(<=60). Surfaced through
-        `ac_update_yup_purchases_body`."""
+        unsolicited shortly after connect to seed the cache; can also be
+        refreshed by the client via MasterServer_UpdateYupPurchases().
+        Wire format (handler 0x082327ae inside OnRecieve):
+          u8  status
+          bag yupPurchases           (DLCs / premium / etc.)
+          u8  num_invalidate
+          N × cstring                (≤60 — purchase IDs to invalidate)
+        Bag cache is exposed to lua via MasterServer_GetCachedYupPurchases.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcUpdateYupPurchases, self).__init__(_io)
             self._parent = _parent
@@ -6097,12 +6102,20 @@ class StarConflictPackageServer(KaitaiStruct):
         """Bulk player-profile dump. Handler 0x0822ed43 reads u2 num_records
         then `num_records` × per-profile records via FUN_08922e60 (init) +
         FUN_08924e60 (the heavy reader). Each record is bit-packed and
-        flag-driven: the inner reader exposes u8 uid, then a u32 flags
-        word, then optional fields per bit (clan, alliance, rating, big
-        ship-stats arrays at offsets +0x4ee and +0x26b4 of the in-memory
-        struct, leaderboard entries, achievements). Surfaced through
-        `ac_user_profile_get_response_body`; only the leading u2 count is
-        currently exposed cleanly.
+        flag-driven: u8 uid + u32 present_field_mask, then per UPF_* bit:
+        0=UPF_STATE (u8 state + u64 sub_id), 1=UPF_CLAN_ID (u64),
+        2=UPF_GENERAL_STATS (33×u64 keyed by UPGS_*),
+        3=UPF_VESSELS_RANK_STATS (18×33 u64),
+        4=UPF_ACHIEVEMENTS, 5=UPF_MEDALS, 6=UPF_TITLES, 7=UPF_AVATARS,
+        8=UPF_MOTTOS, 9=UPF_ATLAS (bag). Field shapes / names mirror
+        MasterServer.UserProfileField + UserProfileGeneralStat from
+        star-conflict-lua-decompiled/scripts/masterserver.lua and the
+        profile object's lua use-sites in
+        ui/scripts/work/gameobjects/profile.lua. Surfaced through
+        `ac_user_profile_get_response_body`; only the simple bits 0-3 are
+        consumed cleanly today, since the sub-readers for bits 4-9 use
+        width-prefixed varints (FUN_08b1bbd0) that don't line up with
+        BitReader's byte-aligned reads.
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcUserProfileGet, self).__init__(_io)
@@ -6595,10 +6608,20 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcVesselStripImproperBattle(KaitaiStruct):
-        """Server-pushed strip-modules notification for "improper" loadouts.
-        Wire format (handler 0x08233d8c):
-          u8 status + u1 has_vessel + (u32 vessel_id) + u32 value
-        Surfaced through `ac_vessel_strip_improper_battle_body`.
+        """Server-pushed notification that one or more vessel modules were
+        stripped from a vessel because the player brought a loadout into
+        battle that the queue/league didn't allow. Handler at 0x08233d8c:
+          u8  status                   (0 = OK; non-zero takes an early-
+                                        exit branch into the event pump,
+                                        no extra wire data)
+          if status == 0:
+            u1  has_vessel
+            if has_vessel: u32 vessel_id   (invalidates the cached
+                                            vessel slot via FUN_0832ed00)
+            u32 account_exp_pool       (player's current Clearance Score —
+                                        matches the same uid's
+                                        Atlas.accountExpPool)
+        All 49 observed captures take the status=0, has_vessel=0 path.
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcVesselStripImproperBattle, self).__init__(_io)

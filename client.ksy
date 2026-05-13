@@ -1488,8 +1488,6 @@ types:
       size-eos: true
   ac_user_notes_add:
     seq:
-    - id: unknown
-      type: u1
     - id: uid
       type: u8be
     - id: note

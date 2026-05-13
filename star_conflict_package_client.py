@@ -4962,7 +4962,6 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.unknown = self._io.read_u1()
             self.uid = self._io.read_u8be()
             self.note = (self._io.read_bytes_term(0, False, True, True)).decode(u"UTF-8")
 
