@@ -187,7 +187,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.table.setAlternatingRowColors(True)
         mono = QtGui.QFontDatabase.systemFont(QtGui.QFontDatabase.FixedFont)
         self.table.setFont(mono)
-        for c, w in enumerate([60, 80, 110, 220, 240, 100, 70]):
+        for c, w in enumerate([60, 80, 110, 312, 448, 100, 70]):
             self.table.setColumnWidth(c, w)
         self.table.selectionModel().currentRowChanged.connect(self._on_row)
 
