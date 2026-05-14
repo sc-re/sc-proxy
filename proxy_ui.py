@@ -18,6 +18,7 @@ import time
 from PySide6 import QtCore, QtGui, QtWidgets
 
 import packet_bus
+import scmd_decoders
 
 
 # ── helpers ─────────────────────────────────────────────────────────────────
@@ -37,6 +38,17 @@ def _hexdump(data: bytes, width: int = 16) -> str:
         asc = "".join(chr(b) if 32 <= b < 127 else "." for b in chunk)
         lines.append(f"{i:06x}  {hx:<{width*3}}  {asc}")
     return "\n".join(lines)
+
+
+def _node_to_item(node: scmd_decoders.DecodeNode) -> QtWidgets.QTreeWidgetItem:
+    """Convert a DecodeNode subtree into a QTreeWidgetItem subtree."""
+    item = QtWidgets.QTreeWidgetItem([node.name, node.value, node.wire_type])
+    if node.wire_type == "error":
+        for col in range(3):
+            item.setForeground(col, QtGui.QColor("#cc4040"))
+    for child in node.children:
+        item.addChild(_node_to_item(child))
+    return item
 
 
 # ── model ───────────────────────────────────────────────────────────────────
@@ -191,25 +203,30 @@ class MainWindow(QtWidgets.QMainWindow):
             self.table.setColumnWidth(c, w)
         self.table.selectionModel().currentRowChanged.connect(self._on_row)
 
-        # Detail tabs
-        self.decoded_text = QtWidgets.QPlainTextEdit(readOnly=True)
-        self.decoded_text.setFont(mono)
-        self.decoded_text.setLineWrapMode(QtWidgets.QPlainTextEdit.NoWrap)
+        # Detail panes — Wireshark-style: a collapsible decode tree and the
+        # raw hex dump, side by side. The TGP header is folded into the tree
+        # as its own top-level branch.
+        self.tree = QtWidgets.QTreeWidget()
+        self.tree.setHeaderLabels(["Field", "Value", "Type"])
+        self.tree.setFont(mono)
+        self.tree.setColumnWidth(0, 340)
+        self.tree.setColumnWidth(1, 380)
+        self.tree.setAlternatingRowColors(True)
+
         self.hex_text = QtWidgets.QPlainTextEdit(readOnly=True)
         self.hex_text.setFont(mono)
         self.hex_text.setLineWrapMode(QtWidgets.QPlainTextEdit.NoWrap)
-        self.header_text = QtWidgets.QPlainTextEdit(readOnly=True)
-        self.header_text.setFont(mono)
-        self.header_text.setLineWrapMode(QtWidgets.QPlainTextEdit.NoWrap)
-        self.tabs = QtWidgets.QTabWidget()
-        self.tabs.addTab(self.decoded_text, "Decoded")
-        self.tabs.addTab(self.hex_text, "Hex")
-        self.tabs.addTab(self.header_text, "Header")
 
-        # Splitter
+        detail = QtWidgets.QSplitter(QtCore.Qt.Horizontal)
+        detail.addWidget(self.tree)
+        detail.addWidget(self.hex_text)
+        detail.setStretchFactor(0, 3)
+        detail.setStretchFactor(1, 2)
+
+        # Splitter — packet table above, detail panes below.
         splitter = QtWidgets.QSplitter(QtCore.Qt.Vertical)
         splitter.addWidget(self.table)
-        splitter.addWidget(self.tabs)
+        splitter.addWidget(detail)
         splitter.setStretchFactor(0, 3)
         splitter.setStretchFactor(1, 2)
 
@@ -247,27 +264,42 @@ class MainWindow(QtWidgets.QMainWindow):
             current, QtCore.Qt.UserRole)
         if r is None:
             return
-        self.decoded_text.setPlainText(_strip_ansi(r.decoded_line))
         self.hex_text.setPlainText(_hexdump(r.body))
-        hdr_lines = [
-            f"send_counter      = 0x{r.send_counter:04x}",
-            f"echo_send_counter = 0x{r.echo_send_counter:04x}",
-            f"scmd_pkt_type     = 0x{r.pkt_type:04x} ({r.pkt_name})",
-            f"checksum          = 0x{r.checksum:04x}",
-            f"body_len          = {r.body_len}",
+        self.tree.clear()
+
+        # TGP header branch — always present.
+        hdr_fields = [
+            ("send_counter", f"0x{r.send_counter:04x}"),
+            ("echo_send_counter", f"0x{r.echo_send_counter:04x}"),
+            ("scmd_pkt_type", f"0x{r.pkt_type:04x} ({r.pkt_name})"),
+            ("checksum", f"0x{r.checksum:04x}"),
+            ("body_len", str(r.body_len)),
         ]
         if r.sub_id is not None:
-            hdr_lines.append(
-                f"sub_id            = 0x{r.sub_id:02x} ({r.sub_name or ''})")
+            hdr_fields.append(("sub", f"0x{r.sub_id:02x} ({r.sub_name or ''})"))
         if r.uid is not None:
-            hdr_lines.append(f"uid               = {r.uid}")
-        hdr_lines += [
-            f"tag               = {r.tag}",
-            f"direction         = {r.direction}",
-            f"timestamp         = "
-            f"{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(r.ts))}",
+            hdr_fields.append(("uid", str(r.uid)))
+        hdr_fields += [
+            ("tag", r.tag),
+            ("direction", r.direction),
+            ("timestamp",
+             time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(r.ts))),
         ]
-        self.header_text.setPlainText("\n".join(hdr_lines))
+        hdr_item = QtWidgets.QTreeWidgetItem(["TGP header", "", ""])
+        for k, v in hdr_fields:
+            hdr_item.addChild(QtWidgets.QTreeWidgetItem([k, v, ""]))
+        self.tree.addTopLevelItem(hdr_item)
+
+        # Decoded payload branch — structured tree when a decoder exists,
+        # else the flat log line as a single leaf.
+        node = scmd_decoders.decode_structured(r.pkt_type, r.body, r.direction)
+        if node is not None:
+            self.tree.addTopLevelItem(_node_to_item(node))
+        elif r.body:
+            self.tree.addTopLevelItem(QtWidgets.QTreeWidgetItem(
+                ["payload", _strip_ansi(r.decoded_line), ""]))
+
+        self.tree.expandToDepth(1)
 
 
 # ── entry point ─────────────────────────────────────────────────────────────

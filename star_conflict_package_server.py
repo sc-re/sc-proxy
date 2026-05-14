@@ -7,6 +7,7 @@ import bag_payload
 import prefixed_bag_payload
 import fed_design_tgp_stream
 import ac_friends_send_request_body
+import ac_leaderboard_get_descs_body
 import ac_load_initial_player_data_body
 import ac_lobby_info_body
 import ac_player_inventory_body
@@ -3578,7 +3579,11 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcLeaderboardGetDescs(KaitaiStruct):
-        """Leaderboard descriptors — u4be header + bag list."""
+        """Leaderboard descriptors — u32 count + count × property bag, one
+        bag per leaderboard config (name, entityType, dir, decay params,
+        rewards). Decoded by
+        ac_leaderboard_get_descs_body.AcLeaderboardGetDescsBody.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcLeaderboardGetDescs, self).__init__(_io)
             self._parent = _parent
@@ -3586,13 +3591,14 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.header = self._io.read_u4be()
-            self.bag = bag_payload.BagPayload(self._io)
+            self._raw_data = self._io.read_bytes_full()
+            _io__raw_data = KaitaiStream(BytesIO(self._raw_data))
+            self.data = ac_leaderboard_get_descs_body.AcLeaderboardGetDescsBody(_io__raw_data)
 
 
         def _fetch_instances(self):
             pass
-            self.bag._fetch_instances()
+            self.data._fetch_instances()
 
 
     class AcLeagueTeamCreate(KaitaiStruct):
@@ -3817,14 +3823,28 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcLoadInitialPlayerData(KaitaiStruct):
-        """Initial player snapshot on login. Body is a single bit-stream the
-        handler at 0x0823103b walks as 22 fields (16 byte-aligned scalars
-        + 6 nested property bags interleaved). Sizes range from 2B
-        (echo-only) and 8B (truncated short form — handler tolerates
-        short reads via its lastReadOK flag) up to ~240 kB full state.
-        Decoded by the ac_load_initial_player_data_body opaque type
-        which mirrors the binary's read sequence and stops cleanly on
-        EOFError when bodies are truncated.
+        """Initial player-state snapshot, sent S→C right after login. The
+        handler at 0x0823103b reads the body as a single bit-stream:
+        
+          head      : profile_revision (u64), format_version (u32, =2),
+                      flags, head_account_field (u32), head_text (cstr60)
+          catalogue : 3 BundleRecord arrays — bundles_steam (~320),
+                      bundles_yuplay (~455), bundles_owned (~6) —
+                      populating the player's purchasable / owned DLC list
+          rotation  : pve_level_reward_modifiers, reward_schedule_default,
+                      reward_schedule_per_gameplay (28 fixed slots)
+          tail      : reward_schedule + pve_scheduled_levels bags,
+                      max_vessel_rank (u8), account_rank (u8),
+                      account_exp_pool (i32, "Clearance Score"),
+                      leading_advert bag (MasterServer_GetLeadingAdvertInfo),
+                      event_item_unlocks bag, BattlePass activation + player
+                      data, plus a per-gameplay scripted-event progress bag
+        
+        Sizes range from 2B (echo-only) and 8B (truncated short form —
+        handler tolerates short reads via its lastReadOK flag) up to
+        ~240 kB full state. Decoded by the ac_load_initial_player_data_body
+        opaque type which mirrors the binary's read sequence and stops
+        cleanly on EOFError when bodies are truncated.
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcLoadInitialPlayerData, self).__init__(_io)

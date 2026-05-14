@@ -53,7 +53,7 @@ Coverage status (from MasterServerEndpoint::OnRecieve, switch cases at
     0x26 (38) SCMD_REPLACE_CHAT_MSG             u64 + u8              full
 """
 from __future__ import annotations
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Callable
 
 from ac_types import pkt_type_name
@@ -782,6 +782,131 @@ def decode_packet(pkt_type: int, body: bytes, direction: str) -> DecodedPacket:
         return out
 
     return out
+
+
+# ── Structured decode (tree view) ─────────────────────────────────────────────
+
+@dataclass
+class DecodeNode:
+    """One node in the structured decode tree the UI renders.
+
+    `value` is the rendered scalar ("" for pure branches); `wire_type`
+    is the on-wire type tag (u64/str/bag/…), "struct"/"bytes" for
+    composite values, "error" for a failed decode, or "" when not
+    applicable. `children` are nested fields.
+    """
+    name: str
+    value: str = ""
+    wire_type: str = ""
+    children: list["DecodeNode"] = field(default_factory=list)
+
+
+_BYTES_PREVIEW = 64  # how many bytes of a blob to show inline before eliding
+
+
+def _struct_attrs(value: Any) -> list[tuple[str, Any]] | None:
+    """Public (name, value) attributes of an object, or None if `value`
+    isn't a walkable struct.
+
+    Handles both __dict__ objects (generated kaitai classes) and
+    __slots__ objects (the hand-written opaque types — BagPayload,
+    PrefixedBagPayload, …). Skips private/dummy attrs and None
+    placeholders that opaque types pre-set on their failure paths.
+    """
+    if hasattr(value, "__dict__"):
+        raw: Any = vars(value).items()
+    else:
+        names: list[str] = []
+        for klass in type(value).__mro__:
+            names.extend(getattr(klass, "__slots__", ()))
+        if not names:
+            return None
+        raw = ((n, getattr(value, n, None)) for n in names)
+    return [(k, v) for k, v in raw
+            if not k.startswith("_") and k != "dummy" and v is not None]
+
+
+def _value_node(name: str, value: Any) -> DecodeNode:
+    """Recursively turn any decoded value into a DecodeNode subtree.
+
+    Handles the shapes the decoders actually emit: Variant (bag entry),
+    plain dict/list (parser records), bytes, kaitai/opaque structs
+    (walked via __dict__ or __slots__), and scalars.
+    """
+    if isinstance(value, Variant):
+        inner = value.value
+        if isinstance(inner, dict):
+            return DecodeNode(name, "", value.tag,
+                              [_value_node(str(k), v) for k, v in inner.items()])
+        if isinstance(inner, (list, tuple)):
+            return DecodeNode(name, f"{len(inner)} items", value.tag,
+                              [_value_node(f"[{i}]", v)
+                               for i, v in enumerate(inner)])
+        return DecodeNode(name, repr(inner), value.tag, [])
+    if isinstance(value, dict):
+        return DecodeNode(name, "", "",
+                          [_value_node(str(k), v) for k, v in value.items()])
+    if isinstance(value, (list, tuple)):
+        return DecodeNode(name, f"{len(value)} items", "",
+                          [_value_node(f"[{i}]", v)
+                           for i, v in enumerate(value)])
+    if isinstance(value, (bytes, bytearray)):
+        if len(value) > _BYTES_PREVIEW:
+            shown = f"{value[:_BYTES_PREVIEW].hex()}… ({len(value)} bytes)"
+        else:
+            shown = value.hex()
+        return DecodeNode(name, shown, "bytes", [])
+    attrs = _struct_attrs(value)
+    if attrs is not None:
+        return DecodeNode(name, type(value).__name__, "struct",
+                          [_value_node(k, v) for k, v in attrs])
+    return DecodeNode(name, repr(value), "", [])
+
+
+def decode_structured(pkt_type: int, body: bytes,
+                      direction: str) -> DecodeNode | None:
+    """Decode a packet into a DecodeNode tree for the UI's tree view.
+
+    Same dispatch as decode_packet, but returns the structured payload
+    instead of a flat string. Returns None for packet types with no
+    structured decode — the UI falls back to the flat log line there.
+    """
+    name = scmd_name(pkt_type)
+
+    if name == "SCMD_NOTIFICATION" and body:
+        try:
+            n = decode_notification(body)
+        except Exception as e:
+            return DecodeNode(name, f"{type(e).__name__}: {e}", "error", [])
+        children = [_value_node(str(k), v) for k, v in n.bag.items()]
+        issues = n.validate()
+        if issues:
+            children.append(
+                DecodeNode("⚠ issues", "; ".join(issues), "error", []))
+        sn_id = body[0]
+        return DecodeNode(f"{name}  sn=0x{sn_id:02x}({sn_name(sn_id)})",
+                          "", "", children)
+
+    if pkt_type in DECODERS and body:
+        try:
+            payload = decode(pkt_type, body)
+        except Exception as e:
+            return DecodeNode(name, f"{type(e).__name__}: {e}", "error", [])
+        return DecodeNode(payload.name, "", "",
+                          [_value_node(str(k), v)
+                           for k, v in payload.bag.items()])
+
+    if name == "CSCMD_ASYNC_REQ":
+        try:
+            if direction == "C→S":
+                parsed = StarConflictPackageClient(KaitaiStream(BytesIO(body)))
+            else:
+                parsed = StarConflictPackageServer(KaitaiStream(BytesIO(body)))
+        except Exception as e:
+            return DecodeNode(name, f"{type(e).__name__}: {e}", "error", [])
+        return _value_node(type(parsed.body).__name__, parsed.body)
+
+    return None
 
 
 # ── Self-test ─────────────────────────────────────────────────────────────────

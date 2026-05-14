@@ -2572,12 +2572,15 @@ types:
     - id: bag
       type: bag_payload
   ac_leaderboard_get_descs:
-    doc: Leaderboard descriptors — u4be header + bag list.
+    doc: |
+      Leaderboard descriptors — u32 count + count × property bag, one
+      bag per leaderboard config (name, entityType, dir, decay params,
+      rewards). Decoded by
+      ac_leaderboard_get_descs_body.AcLeaderboardGetDescsBody.
     seq:
-    - id: header
-      type: u4be
-    - id: bag
-      type: bag_payload
+    - id: data
+      type: ac_leaderboard_get_descs_body
+      size-eos: true
   ac_set_fb_token:
     seq:
     - id: unknown
