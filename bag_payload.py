@@ -20,7 +20,6 @@ against ~88 K SCMD_NOTIFICATION captures) so we don't duplicate the
 variant-tag table here.
 """
 from __future__ import annotations
-from typing import Any
 
 from notification import BitReader, _read_bag, format_bag, Variant
 

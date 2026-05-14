@@ -65,7 +65,7 @@ class AcVesselStripImproperBattleBody:
             return (f"AcVesselStripImproperBattleBody({len(self._raw)}B, "
                     f"status={self.status} (failure), "
                     f"slack={slack}b{suffix})")
-        parts = [f"status=0", f"has_vessel={self.has_vessel}"]
+        parts = ["status=0", f"has_vessel={self.has_vessel}"]
         if self.vessel_id is not None:
             parts.append(f"vessel_id={self.vessel_id}")
         if self.account_exp_pool is not None:

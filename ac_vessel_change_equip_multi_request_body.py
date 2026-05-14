@@ -21,7 +21,6 @@ We surface the prefix and any cs0/cleartext strings we can decode,
 leaving the inter-string binary as opaque hex.
 """
 from __future__ import annotations
-from dataclasses import dataclass, field
 from typing import List, Optional, Tuple
 
 from notification import BitReader

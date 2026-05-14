@@ -49,8 +49,8 @@ cannot identify, it emits a hex run rather than failing the parse.
 """
 
 from __future__ import annotations
-from dataclasses import dataclass, field
-from typing import List, Tuple, Union
+from dataclasses import dataclass
+from typing import List, Tuple
 
 
 # ---------- string decoders ---------------------------------------------------

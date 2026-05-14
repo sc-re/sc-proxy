@@ -25,7 +25,6 @@ the decompiled lua never defines a handler — the cache is just kept
 warm for any later read.
 """
 from __future__ import annotations
-from dataclasses import dataclass
 from typing import List, Optional
 
 from notification import BitReader, _read_bag

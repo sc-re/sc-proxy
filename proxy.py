@@ -11,7 +11,8 @@ Set SC_REAL_HOST / SC_REAL_LB_PORT env vars to override the upstream
 (defaults in proxy_util.DEFAULT_REAL_LB).
 
 Usage:
-    python3 proxy_main.py
+    python3 proxy.py        # console logger only
+    python3 proxy_gui.py    # console logger + Qt packet inspector
 """
 import threading
 import time

@@ -7,8 +7,7 @@ satisfies. Field names come from reverse-engineering the corresponding
 client-side reader in the binary (handler addresses noted on the class).
 """
 from __future__ import annotations
-from dataclasses import dataclass, field
-from typing import List, Tuple
+from typing import List
 
 from notification import BitReader
 

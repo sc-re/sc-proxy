@@ -1,52 +1,21 @@
-"""Shared utilities for MITM proxy modules.
+"""Transport, logging and capture for the MITM proxy modules.
 
-Parses framed TGP packets (same format as protocol.py), logs them with
-hex + text dumps and a decoded header line so we can read back real
-server responses as a reference for our stub server.
+Reads framed TGP packets (same format as protocol.py), hands each one to
+scmd_decoders.decode_packet for interpretation, then logs a one-line
+summary, saves the full body under CAPTURE_DIR, and publishes it on the
+packet bus. All decode logic lives in scmd_decoders / notification — this
+module is purely the relay.
 """
 import socket
-import struct
 import threading
 import time
 import logging
 import os
 
-from protocol import read_packet
-from ac_types import pkt_type_name
-from sn_types import sn_name
-from notification import (decode as decode_notification,
-                          format_bag as _fmt_bag,
-                          format_issues as _fmt_issues)
-from scmd_decoders import (decode as decode_scmd,
-                           format_payload as _fmt_scmd,
-                           DECODERS as _SCMD_DECODERS)
-from star_conflict_package_client import StarConflictPackageClient
-from star_conflict_package_server import StarConflictPackageServer
-from kaitaistruct import KaitaiStream, BytesIO
+from protocol import read_packet, make_packet
+from notification import _GREEN, _RED, _RESET
+import scmd_decoders
 import packet_bus
-
-# scmd_pkt_type → name (mirrors the binary's table at VMA 0x08fe7ac0).
-# See Documentation/SCMD-protocol.md for the full mapping and how this is
-# different from the wire send_counter.
-_SCMD_NAMES = [
-    "SCMD_ASSIGNED_SHARD", "SCMD_LB_QUEUE_INFO", "SCMD_LB_CVARS",
-    "SCMD_AUTH_REQ", "CCMD_AUTH_REQUEST", "SCMD_AUTH_ACK",
-    "SCMD_STEAM_NOT_ATTACHED", "SCMD_ARC_NOT_ATTACHED", "CCMD_STORE",
-    "SCMD_STORE", "SCMD_STORE_SPOILED", "SCMD_CONNECT_DEDICATED_SERVER",
-    "SCMD_GAME_ENDED", "CSCMD_ASYNC_REQ", "SCMD_NOTIFICATION",
-    "SCMD_SQUAD_NOTIFICATION", "SCMD_SOCIAL_NOTIFICATION",
-    "SCMD_TEACH_NOTIFICATION", "SCMD_CLAN_NOTIFICATION",
-    "SCMD_USER_PROFILE_NOTIFICATION", "SCMD_QUEST_NOTIFICATION",
-    "SCMD_LEAGUE_NOTIFICATION", "SCMD_VESSEL_NOTIFICATION",
-    "SCMD_LOBBY_NOTIFICATION", "SCMD_KEEP_ALIVE", "SCMD_BAN_INFO",
-    "SCMD_WELCOME_MSG", "SCMD_DOCK_SPACE_STATION",
-    "SCMD_FREE_SPACE_DEBRIEFING", "SCMD_NEW_MOTD",
-    "SCMD_TOURNAMENT_TEAMS_INFO", "SCMD_BRAWL_SCHEDULE",
-    "SCMD_REWARD_SCHEDULE", "SCMD_PVE_SCHEDULE",
-    "SCMD_LEAGUE_FORBIDDEN_EQUIPMENT", "SCMD_BATTLE_PASS_ACTIVATION",
-    "SCMD_ZONES_WITH_DISABLED_QUESTS", "SCMD_ADVENTURE_NOTIFICATION",
-    "SCMD_REPLACE_CHAT_MSG",
-]
 
 log = logging.getLogger("proxy")
 
@@ -93,59 +62,8 @@ def get_real_chat() -> tuple[str, int]:
         return _state["real_chat"] or DEFAULT_REAL_CHAT
 
 
-def _kaitai_repr(obj) -> str:
-    """Render non-private, non-dummy fields of a KaitaiStruct as key=value pairs.
-
-    Opaque types (e.g. BagPayload, AcLoadInitialPlayerDataBody) define their
-    own __repr__ — defer to it instead of walking __dict__ blindly, otherwise
-    placeholder/None attributes pre-set for failure paths leak out as noise.
-    """
-    if not hasattr(obj, '__dict__'):
-        return repr(obj)
-    # If the value's class has a custom __repr__ (not the bare object default),
-    # trust it — opaque types use this to filter out None placeholders.
-    if type(obj).__repr__ is not object.__repr__:
-        return repr(obj)
-    fields = {k: v for k, v in obj.__dict__.items()
-              if not k.startswith('_') and k != 'dummy'}
-    if not fields:
-        return ""
-    parts = []
-    for k, v in fields.items():
-        if v is None:
-            continue
-        if isinstance(v, (bytes, bytearray)):
-            parts.append(f"{k}={v.hex()}")
-        elif isinstance(v, list):
-            parts.append(f"{k}=[{', '.join(_kaitai_repr(i) for i in v)}]")
-        elif hasattr(v, '__dict__') and hasattr(v, '_io'):
-            parts.append(f"{k}=({_kaitai_repr(v)})")
-        else:
-            parts.append(f"{k}={v!r}")
-    return " ".join(parts)
-
-
-_GREEN = "\033[32m"
-_RED   = "\033[31m"
-_RESET = "\033[0m"
-
-
 def _colorize(text: str, ok: bool) -> str:
     return f"{_GREEN if ok else _RED}{text}{_RESET}"
-
-
-def _parse_kaitai(body: bytes, tag: str) -> tuple[str, bool]:
-    """Try to parse body; return (description, success)."""
-    try:
-        if "C→S" in tag:
-            parsed = StarConflictPackageClient(KaitaiStream(BytesIO(body)))
-        else:
-            parsed = StarConflictPackageServer(KaitaiStream(BytesIO(body)))
-        name = type(parsed.body).__name__
-        detail = _kaitai_repr(parsed.body)
-        return f" [{name}{': ' + detail if detail else ''}]", True if detail else False
-    except Exception as e:
-        return f" [{e}]", False
 
 
 def hexdump(data: bytes, width: int = 16, prefix: str = "    ") -> str:
@@ -182,43 +100,18 @@ def log_packet(tag: str, pkt: dict, extra: str = "", state: dict | None = None):
         return
     body = pkt.get("body", b"")
     pkt_t = pkt['scmd_pkt_type']
-    pkt_name = _SCMD_NAMES[pkt_t] if pkt_t < len(_SCMD_NAMES) else f"?{pkt_t}"
-    is_async_req = pkt_name == "CSCMD_ASYNC_REQ"
-    is_notification = pkt_name == "SCMD_NOTIFICATION"
-    # Skip kaitai entirely for any pkt type that has a dedicated decoder
-    # (notification.decode or scmd_decoders.decode) so per-Variant colours
-    # don't get clobbered by an outer line wrap. Also skip for non-AC packet
-    # types — the *.ksy switch is keyed on a u16 AC index, so feeding e.g. an
-    # SCMD_LB_CVARS body whose first u16 happens to be 0x0000 to it produces
-    # nonsense interpretations as ac_load_initial_player_data.
-    has_dedicated = is_notification or (pkt_t in _SCMD_DECODERS)
-    if has_dedicated or not is_async_req:
-        kaitai_str, ok = "", True
-    else:
-        kaitai_str, ok = _parse_kaitai(body, tag)
-    sn_str = ""
-    if is_notification and len(body) >= 1:
-        sn_id = body[0]
-        sn_str = f" sn=0x{sn_id:02x}({sn_name(sn_id)})"
-        try:
-            n = decode_notification(body)
-            sn_str += f" {_fmt_bag(n.bag)}{_fmt_issues(n.validate())}"
-            if n.validate():
-                ok = False  # so the line as a whole reads as a fault
-        except Exception as e:
-            sn_str += f" {_RED}[decode_err: {type(e).__name__}: {e}]{_RESET}"
-            ok = False
-    elif pkt_t in _SCMD_DECODERS and body:
-        try:
-            sn_str = " " + _fmt_scmd(decode_scmd(pkt_t, body))
-        except Exception as e:
-            sn_str = f" {_RED}[decode_err: {type(e).__name__}: {e}]{_RESET}"
-            ok = False
+    direction = "S→C" if "S→C" in tag else "C→S" if "C→S" in tag else ""
+
+    # Single decode dispatch — async-req kaitai, notification bag and the
+    # per-SCMD struct decoders all live behind scmd_decoders.decode_packet.
+    decoded = scmd_decoders.decode_packet(pkt_t, body, direction)
+
     hdr = (f"[{tag}] send=0x{pkt['send_counter']:04x} "
            f"echo=0x{pkt['echo_send_counter']:04x} "
-           f"pkt=0x{pkt_t:04x}({pkt_name}) "
+           f"pkt=0x{pkt_t:04x}({decoded.pkt_name}) "
            f"cs=0x{pkt['checksum']:04x} body_len={pkt['body_len']}"
-           f"{sn_str}{kaitai_str}")
+           f"{decoded.detail}")
+
     # SCMD_AUTH_ACK (pkt 0x05) is the server's response to a successful
     # authentication and carries `u64 uid` at body offset 0 — that's the
     # local user, sent exactly once per connection well before any
@@ -239,22 +132,19 @@ def log_packet(tag: str, pkt: dict, extra: str = "", state: dict | None = None):
             _capture_idx[0] = idx + 1
         try:
             os.makedirs(CAPTURE_DIR, exist_ok=True)
-            direction = tag.split()[-1].replace("→", "_to_")
-            # Filename always carries the scmd_pkt_type. The "ac<idx>_<name>"
-            # suffix is only meaningful for CSCMD_ASYNC_REQ, where body[:2]
-            # actually IS the AC opcode; for other pkt types those bytes are
-            # arbitrary payload and must not be interpreted as an AC index.
+            # The "ac<idx>"/"sn<idx>" suffix comes straight from the
+            # decode dispatch — sub_id is only set for CSCMD_ASYNC_REQ
+            # (AC opcode) and SCMD_NOTIFICATION (SN id).
             sub_suffix = ""
-            if is_async_req and len(body) >= 2:
-                ac_idx = int.from_bytes(body[:2], "big")
-                sub_suffix = f"_ac{ac_idx:04x}_{pkt_type_name(ac_idx).lower()}"
-            elif is_notification and len(body) >= 1:
-                sub_suffix = f"_sn{body[0]:02x}_{sn_name(body[0]).lower()}"
+            if decoded.pkt_name == "CSCMD_ASYNC_REQ" and decoded.sub_id is not None:
+                sub_suffix = f"_ac{decoded.sub_id:04x}_{decoded.sub_name.lower()}"
+            elif decoded.pkt_name == "SCMD_NOTIFICATION" and decoded.sub_id is not None:
+                sub_suffix = f"_sn{decoded.sub_id:02x}_{decoded.sub_name.lower()}"
             uid_suffix = (f"_uid{state['uid']}"
                           if state is not None and state.get("uid") is not None
                           else "")
-            fname = (f"{idx:04d}_{direction}{uid_suffix}"
-                     f"_pkt{pkt_t:02x}_{pkt_name.lower()}"
+            fname = (f"{idx:04d}_{direction.replace('→', '_to_')}{uid_suffix}"
+                     f"_pkt{pkt_t:02x}_{decoded.pkt_name.lower()}"
                      f"{sub_suffix}_len{len(body)}.bin")
             with open(os.path.join(CAPTURE_DIR, fname), "wb") as f:
                 f.write(body)
@@ -263,31 +153,22 @@ def log_packet(tag: str, pkt: dict, extra: str = "", state: dict | None = None):
             hdr += f" save_error={e}"
     if extra:
         hdr += f" {extra}"
-    log.info(_colorize(hdr, ok))
-    if body and not ok:
+    log.info(_colorize(hdr, decoded.ok))
+    if body and not decoded.ok:
         body_preview = body[:128]
         log.info(_colorize(f"    body[0:{len(body_preview)}]:\n{hexdump(body_preview)}", False))
 
-    # Also push to the in-process packet bus so the Qt UI (and any
-    # other subscriber) can see this packet. The CLI/log path above is
-    # unchanged; publish() is a no-op when no one is subscribed.
-    sub_id, sub_name_str = None, None
-    if is_async_req and len(body) >= 2:
-        sub_id = int.from_bytes(body[:2], "big")
-        sub_name_str = pkt_type_name(sub_id)
-    elif is_notification and len(body) >= 1:
-        sub_id = body[0]
-        sub_name_str = sn_name(sub_id)
-    direction = "S→C" if "S→C" in tag else "C→S" if "C→S" in tag else ""
+    # Also push to the in-process packet bus so the Qt UI (and any other
+    # subscriber) can see this packet. publish() is a no-op with no subscribers.
     packet_bus.publish(packet_bus.PacketRecord(
         idx=0,                          # overwritten by publish()
         ts=time.time(),
         tag=tag,
         direction=direction,
         pkt_type=pkt_t,
-        pkt_name=pkt_name,
-        sub_id=sub_id,
-        sub_name=sub_name_str,
+        pkt_name=decoded.pkt_name,
+        sub_id=decoded.sub_id,
+        sub_name=decoded.sub_name,
         uid=(state["uid"] if state is not None else None),
         body=body or b"",
         send_counter=pkt.get("send_counter", 0),
@@ -295,7 +176,7 @@ def log_packet(tag: str, pkt: dict, extra: str = "", state: dict | None = None):
         checksum=pkt.get("checksum", 0),
         body_len=pkt.get("body_len", len(body) if body else 0),
         decoded_line=hdr,
-        ok=ok,
+        ok=decoded.ok,
     ))
 
 
@@ -322,7 +203,6 @@ def relay_loop(src: socket.socket, dst: socket.socket, tag: str,
                 # special packets are ff ff ff fe + 8 bytes (12 total)
                 dst.sendall(b"\xff\xff\xff\xfe" + b"\x00" * 8)
             else:
-                from protocol import make_packet
                 dst.sendall(make_packet(
                     send_counter=pkt["send_counter"],
                     echo_send_counter=pkt["echo_send_counter"],

@@ -1,5 +1,18 @@
 #!/usr/bin/env python3
-"""Per-SCMD body decoders for packet types beyond SCMD_NOTIFICATION.
+"""The single dispatch point for decoding framed SCMD packets.
+
+`decode_packet(pkt_type, body, direction)` is what the proxy calls for
+every packet. It routes by scmd_pkt_type:
+
+    0x0d  CSCMD_ASYNC_REQ   → kaitai (StarConflictPackage{Client,Server})
+    0x0e  SCMD_NOTIFICATION → notification.decode (bag protocol)
+    0x0f..0x26              → the DECODERS registry below
+    anything else          → left opaque
+
+Everything needed to name and decode a packet lives here: the
+scmd_pkt_type → name table (`SCMD_NAMES` / `scmd_name`), the per-SCMD
+struct decoders, and the async-req kaitai bridge. `proxy_util` only does
+transport, logging and capture — it no longer carries decode logic.
 
 Each entry in DECODERS maps an scmd_pkt_type to a function that takes the
 raw body bytes and returns a representation suitable for logging. The
@@ -43,7 +56,46 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Callable
 
-from notification import BitReader, Variant, _read_bag, format_bag, _BRRED, _RESET
+from ac_types import pkt_type_name
+from sn_types import sn_name
+from notification import (BitReader, Variant, _read_bag, format_bag,
+                          decode as decode_notification,
+                          format_issues, _RED, _RESET)
+from star_conflict_package_client import StarConflictPackageClient
+from star_conflict_package_server import StarConflictPackageServer
+from kaitaistruct import KaitaiStream, BytesIO
+
+
+# ── scmd_pkt_type → name ─────────────────────────────────────────────────────
+# Mirrors the binary's table at VMA 0x08fe7ac0. See
+# Documentation/SCMD-protocol.md for the full mapping and how this differs
+# from the wire send_counter.
+SCMD_NAMES = [
+    "SCMD_ASSIGNED_SHARD", "SCMD_LB_QUEUE_INFO", "SCMD_LB_CVARS",
+    "SCMD_AUTH_REQ", "CCMD_AUTH_REQUEST", "SCMD_AUTH_ACK",
+    "SCMD_STEAM_NOT_ATTACHED", "SCMD_ARC_NOT_ATTACHED", "CCMD_STORE",
+    "SCMD_STORE", "SCMD_STORE_SPOILED", "SCMD_CONNECT_DEDICATED_SERVER",
+    "SCMD_GAME_ENDED", "CSCMD_ASYNC_REQ", "SCMD_NOTIFICATION",
+    "SCMD_SQUAD_NOTIFICATION", "SCMD_SOCIAL_NOTIFICATION",
+    "SCMD_TEACH_NOTIFICATION", "SCMD_CLAN_NOTIFICATION",
+    "SCMD_USER_PROFILE_NOTIFICATION", "SCMD_QUEST_NOTIFICATION",
+    "SCMD_LEAGUE_NOTIFICATION", "SCMD_VESSEL_NOTIFICATION",
+    "SCMD_LOBBY_NOTIFICATION", "SCMD_KEEP_ALIVE", "SCMD_BAN_INFO",
+    "SCMD_WELCOME_MSG", "SCMD_DOCK_SPACE_STATION",
+    "SCMD_FREE_SPACE_DEBRIEFING", "SCMD_NEW_MOTD",
+    "SCMD_TOURNAMENT_TEAMS_INFO", "SCMD_BRAWL_SCHEDULE",
+    "SCMD_REWARD_SCHEDULE", "SCMD_PVE_SCHEDULE",
+    "SCMD_LEAGUE_FORBIDDEN_EQUIPMENT", "SCMD_BATTLE_PASS_ACTIVATION",
+    "SCMD_ZONES_WITH_DISABLED_QUESTS", "SCMD_ADVENTURE_NOTIFICATION",
+    "SCMD_REPLACE_CHAT_MSG",
+]
+
+
+def scmd_name(pkt_type: int) -> str:
+    """scmd_pkt_type → symbolic name, or `?<n>` if out of range."""
+    if 0 <= pkt_type < len(SCMD_NAMES):
+        return SCMD_NAMES[pkt_type]
+    return f"?{pkt_type}"
 
 
 @dataclass
@@ -618,6 +670,120 @@ def format_payload(payload: ScmdPayload) -> str:
     return f"{payload.name} {format_bag(payload.bag)}"
 
 
+# ── CSCMD_ASYNC_REQ (0x0d) — kaitai bridge ────────────────────────────────────
+
+def _kaitai_repr(obj) -> str:
+    """Render the non-private fields of a KaitaiStruct as key=value pairs.
+
+    Opaque types (e.g. BagPayload, AcLoadInitialPlayerDataBody) define their
+    own __repr__ — defer to it instead of walking __dict__ blindly, otherwise
+    placeholder/None attributes pre-set for failure paths leak out as noise.
+    """
+    if not hasattr(obj, '__dict__'):
+        return repr(obj)
+    # If the value's class has a custom __repr__ (not the bare object default),
+    # trust it — opaque types use this to filter out None placeholders.
+    if type(obj).__repr__ is not object.__repr__:
+        return repr(obj)
+    fields = {k: v for k, v in obj.__dict__.items()
+              if not k.startswith('_') and k != 'dummy'}
+    if not fields:
+        return ""
+    parts = []
+    for k, v in fields.items():
+        if v is None:
+            continue
+        if isinstance(v, (bytes, bytearray)):
+            parts.append(f"{k}={v.hex()}")
+        elif isinstance(v, list):
+            parts.append(f"{k}=[{', '.join(_kaitai_repr(i) for i in v)}]")
+        elif hasattr(v, '__dict__') and hasattr(v, '_io'):
+            parts.append(f"{k}=({_kaitai_repr(v)})")
+        else:
+            parts.append(f"{k}={v!r}")
+    return " ".join(parts)
+
+
+def _decode_async_req(body: bytes, direction: str) -> tuple[str, bool]:
+    """Decode a CSCMD_ASYNC_REQ body via the generated kaitai schema.
+
+    `direction` ("C→S" / "S→C") selects the client vs server schema.
+    Returns (detail, ok) — detail has a leading space so it can be
+    appended straight onto a log line.
+    """
+    try:
+        if direction == "C→S":
+            parsed = StarConflictPackageClient(KaitaiStream(BytesIO(body)))
+        else:
+            parsed = StarConflictPackageServer(KaitaiStream(BytesIO(body)))
+        name = type(parsed.body).__name__
+        detail = _kaitai_repr(parsed.body)
+        return f" [{name}{': ' + detail if detail else ''}]", bool(detail)
+    except Exception as e:
+        return f" [{e}]", False
+
+
+# ── Unified dispatch ──────────────────────────────────────────────────────────
+
+@dataclass
+class DecodedPacket:
+    """Result of dispatching one framed packet through decode_packet().
+
+    `detail` is ready to append to a log line — it carries a leading
+    space and any embedded ANSI colour from the bag/struct formatters.
+    `sub_id` / `sub_name` are the AC index (CSCMD_ASYNC_REQ) or SN id
+    (SCMD_NOTIFICATION); both are None for packet types that have neither.
+    `ok` is False when decoding failed or the payload flagged issues.
+    """
+    pkt_type: int
+    pkt_name: str
+    detail: str = ""
+    ok: bool = True
+    sub_id: int | None = None
+    sub_name: str | None = None
+
+
+def decode_packet(pkt_type: int, body: bytes, direction: str) -> DecodedPacket:
+    """Decode one framed SCMD packet — the single entry point the proxy uses.
+
+    Routes SCMD_NOTIFICATION through notification.decode, CSCMD_ASYNC_REQ
+    through the kaitai schema, and 0x0f..0x26 through the DECODERS registry.
+    Any other packet type is left opaque (empty detail, ok=True).
+    """
+    out = DecodedPacket(pkt_type=pkt_type, pkt_name=scmd_name(pkt_type))
+
+    if out.pkt_name == "SCMD_NOTIFICATION" and body:
+        out.sub_id = body[0]
+        out.sub_name = sn_name(out.sub_id)
+        out.detail = f" sn=0x{out.sub_id:02x}({out.sub_name})"
+        try:
+            n = decode_notification(body)
+            out.detail += f" {format_bag(n.bag)}{format_issues(n.validate())}"
+            if n.validate():
+                out.ok = False  # so the line as a whole reads as a fault
+        except Exception as e:
+            out.detail += f" {_RED}[decode_err: {type(e).__name__}: {e}]{_RESET}"
+            out.ok = False
+        return out
+
+    if pkt_type in DECODERS and body:
+        try:
+            out.detail = " " + format_payload(decode(pkt_type, body))
+        except Exception as e:
+            out.detail = f" {_RED}[decode_err: {type(e).__name__}: {e}]{_RESET}"
+            out.ok = False
+        return out
+
+    if out.pkt_name == "CSCMD_ASYNC_REQ":
+        if len(body) >= 2:
+            out.sub_id = int.from_bytes(body[:2], "big")
+            out.sub_name = pkt_type_name(out.sub_id)
+        out.detail, out.ok = _decode_async_req(body, direction)
+        return out
+
+    return out
+
+
 # ── Self-test ─────────────────────────────────────────────────────────────────
 
 def _selftest() -> None:
@@ -760,7 +926,7 @@ if __name__ == "__main__":
         sys.exit(0)
 
     if args.list:
-        print(f"  pkt   short-name                         payload .name")
+        print("  pkt   short-name                         payload .name")
         for t, fn in sorted(DECODERS.items()):
             sample = fn.__doc__.splitlines()[0] if fn.__doc__ else ""
             sample_name = sample.split(":", 1)[0].strip() if ":" in sample else fn.__name__

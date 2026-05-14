@@ -20,7 +20,6 @@ post-action inventory. Decoding the inventory delta works the same
 way as in `ac_player_inventory_body`.
 """
 from __future__ import annotations
-from dataclasses import dataclass, field
 from typing import List, Optional, Tuple
 
 from notification import BitReader

@@ -18,7 +18,7 @@ boundaries — that's why this can't be expressed in native kaitai.
 from __future__ import annotations
 from typing import List, Optional
 
-from notification import BitReader, _read_bag, format_bag, Variant
+from notification import BitReader, _read_bag, format_bag
 
 
 def _read_cstring(br: BitReader, max_len: int = 256) -> str:

@@ -11,11 +11,9 @@ The shard address packet body is bit-packed (see loadbalancer.py
 _BitWriter): [bool][u8][string ip][u16 port][bool][string ip][u16 port].
 """
 import socket
-import struct
 import threading
 import logging
 
-from protocol import make_packet, read_packet
 import proxy_util
 
 log = logging.getLogger("proxy.lb")

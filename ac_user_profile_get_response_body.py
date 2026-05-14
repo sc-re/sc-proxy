@@ -70,7 +70,7 @@ disk", "request pending"), set elsewhere — so the wire reader stops
 after bit 9.
 """
 from __future__ import annotations
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import List, Optional, Tuple
 
 from notification import BitReader, _read_bag

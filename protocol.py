@@ -15,9 +15,6 @@ Field meanings:
                       in the binary). 0x000d = CSCMD_ASYNC_REQ, the wrapper
                       for everything that carries an AC_* opcode in body[0:2].
 - checksum:           16-bit truncated MurmurHash2 (seed 0x1337533d).
-
-read_packet() returns both the new explicit names and legacy aliases
-(`type`, `seq`, `req_id`) so older callers keep working during the rename.
 """
 import struct
 import socket
@@ -93,8 +90,4 @@ def read_packet(sock: socket.socket) -> dict | None:
         "scmd_pkt_type": pkt_type,
         "checksum": cs,
         "body": body,
-        # Legacy aliases — older callers still use these names.
-        "type":    send_counter,
-        "seq":     (echo << 16) | pkt_type,
-        "req_id":  cs,
     }
