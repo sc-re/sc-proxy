@@ -23,6 +23,7 @@ from scmd_decoders import (decode as decode_scmd,
 from star_conflict_package_client import StarConflictPackageClient
 from star_conflict_package_server import StarConflictPackageServer
 from kaitaistruct import KaitaiStream, BytesIO
+import packet_bus
 
 # scmd_pkt_type → name (mirrors the binary's table at VMA 0x08fe7ac0).
 # See Documentation/SCMD-protocol.md for the full mapping and how this is
@@ -266,6 +267,36 @@ def log_packet(tag: str, pkt: dict, extra: str = "", state: dict | None = None):
     if body and not ok:
         body_preview = body[:128]
         log.info(_colorize(f"    body[0:{len(body_preview)}]:\n{hexdump(body_preview)}", False))
+
+    # Also push to the in-process packet bus so the Qt UI (and any
+    # other subscriber) can see this packet. The CLI/log path above is
+    # unchanged; publish() is a no-op when no one is subscribed.
+    sub_id, sub_name_str = None, None
+    if is_async_req and len(body) >= 2:
+        sub_id = int.from_bytes(body[:2], "big")
+        sub_name_str = pkt_type_name(sub_id)
+    elif is_notification and len(body) >= 1:
+        sub_id = body[0]
+        sub_name_str = sn_name(sub_id)
+    direction = "S→C" if "S→C" in tag else "C→S" if "C→S" in tag else ""
+    packet_bus.publish(packet_bus.PacketRecord(
+        idx=0,                          # overwritten by publish()
+        ts=time.time(),
+        tag=tag,
+        direction=direction,
+        pkt_type=pkt_t,
+        pkt_name=pkt_name,
+        sub_id=sub_id,
+        sub_name=sub_name_str,
+        uid=(state["uid"] if state is not None else None),
+        body=body or b"",
+        send_counter=pkt.get("send_counter", 0),
+        echo_send_counter=pkt.get("echo_send_counter", 0),
+        checksum=pkt.get("checksum", 0),
+        body_len=pkt.get("body_len", len(body) if body else 0),
+        decoded_line=hdr,
+        ok=ok,
+    ))
 
 
 def relay_loop(src: socket.socket, dst: socket.socket, tag: str,
