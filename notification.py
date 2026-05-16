@@ -60,13 +60,22 @@ from sn_types import sn_name
 
 
 class BitReader:
-    """Big-endian, MSB-first bit-stream reader (matches BitStream::Read)."""
+    """Big-endian, MSB-first bit-stream reader (matches BitStream::Read).
 
-    __slots__ = ("buf", "pos")
+    `last_read_start` records the bit offset where the most recent
+    top-level read started, so callers can compute a (start, end) bit
+    range for the value they just read. `_read_bag` / `_read_variant`
+    restore `last_read_start` to their own entry-position before
+    returning, so a `_kv("bag", _read_bag(br), br)` call gets the full
+    bag span rather than the last inner read.
+    """
+
+    __slots__ = ("buf", "pos", "last_read_start")
 
     def __init__(self, buf: bytes):
         self.buf = buf
-        self.pos = 0  # bit offset
+        self.pos = 0              # bit offset
+        self.last_read_start = 0  # start of the most recent top-level read
 
     def remaining(self) -> int:
         return len(self.buf) * 8 - self.pos
@@ -83,28 +92,36 @@ class BitReader:
         return val
 
     def read_bool(self) -> bool:
+        self.last_read_start = self.pos
         return self.read_bits(1) == 1
 
     def read_u8(self) -> int:
+        self.last_read_start = self.pos
         return self.read_bits(8)
 
     def read_u16(self) -> int:
+        self.last_read_start = self.pos
         return self.read_bits(16)
 
     def read_u32(self) -> int:
+        self.last_read_start = self.pos
         return self.read_bits(32)
 
     def read_i32(self) -> int:
+        self.last_read_start = self.pos
         v = self.read_bits(32)
         return v - (1 << 32) if v & (1 << 31) else v
 
     def read_u64(self) -> int:
+        self.last_read_start = self.pos
         return self.read_bits(64)
 
     def read_f32(self) -> float:
+        self.last_read_start = self.pos
         return struct.unpack(">f", self.read_bits(32).to_bytes(4, "big"))[0]
 
     def read_cstring(self, max_len: int = 2048) -> str:
+        self.last_read_start = self.pos
         out = bytearray()
         for _ in range(max_len):
             b = self.read_bits(8)
@@ -114,6 +131,7 @@ class BitReader:
         return out.decode("utf-8", errors="replace")
 
     def read_blob(self, nbytes: int) -> bytes:
+        self.last_read_start = self.pos
         return bytes(self.read_bits(8) for _ in range(nbytes))
 
 
@@ -137,13 +155,38 @@ class Variant:
     Repr is `tag(value)` — e.g. `i32(42)`, `f32(3.14)`, `str('hi')` — so
     decoded bags display their on-wire types inline. Use `.value` to get
     the raw Python value.
+
+    `bit_range` (when set) is the (start_bit, end_bit_exclusive) span of
+    the wire bytes this Variant was parsed from — used by the Qt UI to
+    map a tree node to a hex-pane highlight.
     """
     tag: str
     value: Any
     itag: int
+    bit_range: tuple[int, int] | None = None
 
     def __repr__(self) -> str:
         return f"{self.tag}[{self.itag:02x}]({self.value!r})"
+
+
+def read_field(br: BitReader, tag: str, value: Any) -> Variant:
+    """Wrap a freshly-read scalar in a Variant tagged with its on-wire
+    type and the bit range it consumed.
+
+    Idiom for hand-rolled parsers:
+
+        out["foo"] = read_field(br, "u32", br.read_u32())
+
+    The range comes from `br.last_read_start` (set by the read) and
+    `br.pos` (after the read), so the call must come *immediately*
+    after the read with no other read in between.
+
+    For compound reads, `_read_bag` and `_read_variant` restore
+    `last_read_start` to their own entry position, so
+    `read_field(br, "bag", _read_bag(br))` Just Works and the range
+    covers the whole bag (header + entries).
+    """
+    return Variant(tag, value, 0xff, (br.last_read_start, br.pos))
 
 
 # ── ANSI colour rendering ─────────────────────────────────────────────────────
@@ -210,38 +253,57 @@ def format_issues(issues: list[str]) -> str:
 
 
 def _read_variant(br: BitReader) -> Variant:
+    """Read one wire variant. The returned Variant carries `bit_range`
+    spanning its tag byte through the end of its payload, so callers
+    can highlight the corresponding hex bytes in a UI."""
+    start = br.pos
     tag = br.read_u8()
     if tag == TAG_NIL:
-        return Variant("nil", None, tag)
-    if tag == TAG_I32:
-        return Variant("i32", br.read_i32(), tag)
-    if tag == TAG_U64_A:
-        return Variant("u64a", br.read_u64(), tag)
-    if tag == TAG_U64_B:
-        return Variant("u64b", br.read_u64(), tag)
-    if tag == TAG_F32:
-        return Variant("f32", br.read_f32(), tag)
-    if tag == TAG_STR:
-        return Variant("str", br.read_cstring(), tag)
-    if tag == TAG_BAG:
-        return Variant("bag", _read_bag(br), tag)
-    if tag == TAG_BLOB12:
-        return Variant("blob12", br.read_blob(12), tag)
-    if tag == TAG_BOOL:
-        return Variant("bool", br.read_bool(), tag)
-    raise ValueError(f"unknown variant tag 0x{tag:02x} at bit {br.pos - 8}")
+        v = Variant("nil", None, tag)
+    elif tag == TAG_I32:
+        v = Variant("i32", br.read_i32(), tag)
+    elif tag == TAG_U64_A:
+        v = Variant("u64a", br.read_u64(), tag)
+    elif tag == TAG_U64_B:
+        v = Variant("u64b", br.read_u64(), tag)
+    elif tag == TAG_F32:
+        v = Variant("f32", br.read_f32(), tag)
+    elif tag == TAG_STR:
+        v = Variant("str", br.read_cstring(), tag)
+    elif tag == TAG_BAG:
+        v = Variant("bag", _read_bag(br), tag)
+    elif tag == TAG_BLOB12:
+        v = Variant("blob12", br.read_blob(12), tag)
+    elif tag == TAG_BOOL:
+        v = Variant("bool", br.read_bool(), tag)
+    else:
+        raise ValueError(f"unknown variant tag 0x{tag:02x} at bit {br.pos - 8}")
+    end = br.pos
+    # last_read_start so a wrapping _kv(..., br=br) sees the variant's span.
+    br.last_read_start = start
+    return Variant(v.tag, v.value, v.itag, (start, end))
 
 
 def _read_bag(br: BitReader) -> dict:
-    """Returns a dict of {key: value}. Indexed bags use str(idx) as key."""
+    """Returns a dict of {key: value}. Indexed bags use str(idx) as key.
+    Each value Variant's `bit_range` is widened to cover its key bytes
+    too, so the UI can highlight the whole entry on click."""
+    bag_start = br.pos
     num_entries = br.read_u32()
     out: dict[str, Any] = {}
     if num_entries == 0:
+        br.last_read_start = bag_start
         return out
     use_indexed_keys = br.read_bool()
     for i in range(num_entries):
+        entry_start = br.pos
         key = str(i) if use_indexed_keys else br.read_cstring()
-        out[key] = _read_variant(br)
+        v = _read_variant(br)
+        # Widen the variant's range to cover the key too — the tree
+        # shows "key: value" as one node, so highlighting the value
+        # alone would leave the key bytes un-highlighted.
+        out[key] = Variant(v.tag, v.value, v.itag, (entry_start, br.pos))
+    br.last_read_start = bag_start
     return out
 
 
@@ -482,6 +544,21 @@ SN_FIELDS: dict[int, list[tuple[str, str]]] = {
 }
 # ── Self-test ─────────────────────────────────────────────────────────────────
 
+def _strip_bit_ranges(bag: dict) -> dict:
+    """Helper for tests: drop bit_range from every Variant so synthesised
+    Variant objects (constructed without ranges) compare equal."""
+    out = {}
+    for k, v in bag.items():
+        if isinstance(v, Variant):
+            inner = v.value
+            if isinstance(inner, dict):
+                inner = _strip_bit_ranges(inner)
+            out[k] = Variant(v.tag, inner, v.itag)
+        else:
+            out[k] = v
+    return out
+
+
 def _selftest() -> None:
     """Synthesize SN_ATLAS_INIT { atlasModulesNum: 42 } and round-trip it."""
     bits: list[int] = []
@@ -506,7 +583,11 @@ def _selftest() -> None:
     n = decode(buf)
     assert n.sn_id == 0x60, n.sn_id
     assert n.sn_name == "SN_ATLAS_INIT", n.sn_name
-    assert n.bag == {"atlasModulesNum": Variant("i32", 42, TAG_I32)}, n.bag
+    # Compare value/tag/itag — bit_range is set by the parser and differs
+    # per buffer layout, so we ignore it here.
+    assert _strip_bit_ranges(n.bag) == {
+        "atlasModulesNum": Variant("i32", 42, TAG_I32)
+    }, n.bag
     print(f"OK  {n}")
 
     # Indexed-keys bag with mixed types — synthetic but exercises the format.
@@ -526,7 +607,7 @@ def _selftest() -> None:
                 for i in range(0, len(bits), 8))
     n = decode(buf)
     pi = struct.unpack(">f", b"\x40\x49\x0f\xdb")[0]
-    assert n.bag == {
+    assert _strip_bit_ranges(n.bag) == {
         "0": Variant("bool", True, TAG_BOOL),
         "1": Variant("f32", pi, TAG_F32),
         "2": Variant("str", "hi", TAG_STR),

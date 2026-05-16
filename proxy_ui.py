@@ -40,9 +40,18 @@ def _hexdump(data: bytes, width: int = 16) -> str:
     return "\n".join(lines)
 
 
+_BIT_RANGE_ROLE = QtCore.Qt.UserRole + 1
+
+
 def _node_to_item(node: scmd_decoders.DecodeNode) -> QtWidgets.QTreeWidgetItem:
-    """Convert a DecodeNode subtree into a QTreeWidgetItem subtree."""
+    """Convert a DecodeNode subtree into a QTreeWidgetItem subtree.
+
+    Stashes node.bit_range on the item via _BIT_RANGE_ROLE so the row's
+    bytes can be highlighted in the hex pane on selection.
+    """
     item = QtWidgets.QTreeWidgetItem([node.name, node.value, node.wire_type])
+    if node.bit_range is not None:
+        item.setData(0, _BIT_RANGE_ROLE, node.bit_range)
     if node.wire_type == "error":
         for col in range(3):
             item.setForeground(col, QtGui.QColor("#cc4040"))
@@ -217,6 +226,21 @@ class MainWindow(QtWidgets.QMainWindow):
         self.hex_text.setFont(mono)
         self.hex_text.setLineWrapMode(QtWidgets.QPlainTextEdit.NoWrap)
 
+        # Wireshark-style: select a tree node → highlight the matching
+        # bytes (and ASCII glyphs) in the hex pane.
+        self.tree.currentItemChanged.connect(self._on_tree_node)
+
+        # Right-click menus — copy field values / packet bytes to clipboard.
+        self.table.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.table.customContextMenuRequested.connect(self._on_table_menu)
+        self.tree.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.tree.customContextMenuRequested.connect(self._on_tree_menu)
+
+        # Stash the current packet's body / record so the tree-menu's
+        # "Copy bytes" can slice it without going back to the packet model.
+        self._current_body: bytes = b""
+        self._current_record: packet_bus.PacketRecord | None = None
+
         detail = QtWidgets.QSplitter(QtCore.Qt.Horizontal)
         detail.addWidget(self.tree)
         detail.addWidget(self.hex_text)
@@ -265,7 +289,12 @@ class MainWindow(QtWidgets.QMainWindow):
         if r is None:
             return
         self.hex_text.setPlainText(_hexdump(r.body))
+        # Drop any prior highlight — its cursors point at the previous
+        # document which setPlainText() just replaced.
+        self.hex_text.setExtraSelections([])
         self.tree.clear()
+        self._current_body = r.body
+        self._current_record = r
 
         # TGP header branch — always present.
         hdr_fields = [
@@ -300,6 +329,177 @@ class MainWindow(QtWidgets.QMainWindow):
                 ["payload", _strip_ansi(r.decoded_line), ""]))
 
         self.tree.expandToDepth(1)
+
+    def _on_tree_node(self,
+                      current: QtWidgets.QTreeWidgetItem | None,
+                      _previous: QtWidgets.QTreeWidgetItem | None) -> None:
+        """Highlight the wire bytes the selected tree node was decoded
+        from, in both the hex column and the ASCII glyph column."""
+        if current is None:
+            self.hex_text.setExtraSelections([])
+            return
+        bit_range = current.data(0, _BIT_RANGE_ROLE)
+        if not bit_range:
+            self.hex_text.setExtraSelections([])
+            return
+        bit_start, bit_end = bit_range
+        byte_start = bit_start // 8
+        byte_end = (bit_end + 7) // 8     # round up — sub-byte fields highlight their byte
+        self._highlight_hex_bytes(byte_start, byte_end)
+
+    def _highlight_hex_bytes(self, byte_start: int, byte_end: int) -> None:
+        """Apply ExtraSelections to the hex pane covering bytes
+        [byte_start, byte_end). The hex pane format (see _hexdump) is
+        16 bytes per line:
+
+            OFFSET  HH HH HH ... HH    ASCII   ← cols 0..6  8..56  58..74
+
+        so we can compute the cursor positions per intersecting line.
+        Scrolls the pane so the first highlighted byte is in view.
+        """
+        sels: list[QtWidgets.QTextEdit.ExtraSelection] = []
+        width = 16
+        # ASCII column = 6-char offset + "  " + 16×3=48-char hex chunk + "  ".
+        ascii_col = 8 + width * 3 + 2
+        doc = self.hex_text.document()
+        block = doc.firstBlock()
+        first_cursor: QtGui.QTextCursor | None = None
+        while block.isValid():
+            text = block.text()
+            if len(text) >= 6:
+                try:
+                    line_off = int(text[:6], 16)
+                except ValueError:
+                    block = block.next()
+                    continue
+                line_end = line_off + width
+                if byte_start < line_end and line_off < byte_end:
+                    a = max(line_off, byte_start) - line_off
+                    b = min(line_end, byte_end) - line_off
+                    # Hex chunk: byte i occupies cols [8+i*3, 8+i*3+2).
+                    hex_sel = _make_selection(block, 8 + a * 3, 8 + b * 3 - 1)
+                    # ASCII column: byte i = col ascii_col+i.
+                    asc_sel = _make_selection(block, ascii_col + a,
+                                              ascii_col + b)
+                    sels.append(hex_sel)
+                    sels.append(asc_sel)
+                    if first_cursor is None:
+                        first_cursor = hex_sel.cursor
+            block = block.next()
+        # Scroll so the first highlight is visible — otherwise a deep
+        # field in a 240 kB body looks like "no highlight" to the user.
+        if first_cursor is not None:
+            scroll_cursor = QtGui.QTextCursor(first_cursor)
+            scroll_cursor.clearSelection()
+            self.hex_text.setTextCursor(scroll_cursor)
+            self.hex_text.ensureCursorVisible()
+        self.hex_text.setExtraSelections(sels)
+
+    # ---- context menus ------------------------------------------------
+
+    def _on_tree_menu(self, pos: QtCore.QPoint) -> None:
+        """Right-click on a decode-tree row → copy field name / value /
+        bytes to the clipboard."""
+        item = self.tree.itemAt(pos)
+        if item is None:
+            return
+        name, value, type_ = item.text(0), item.text(1), item.text(2)
+        clip = QtWidgets.QApplication.clipboard()
+        menu = QtWidgets.QMenu(self.tree)
+
+        if value:
+            menu.addAction(f"Copy value  ({_elide(value)})",
+                           lambda v=value: clip.setText(v))
+        menu.addAction(f"Copy field name  ({_elide(name)})",
+                       lambda n=name: clip.setText(n))
+        if value:
+            menu.addAction("Copy 'name = value'",
+                           lambda: clip.setText(f"{name} = {value}"))
+        menu.addAction("Copy field path",
+                       lambda it=item: clip.setText(_tree_path(it)))
+        if type_:
+            menu.addAction(f"Copy wire type  ({type_})",
+                           lambda t=type_: clip.setText(t))
+
+        bit_range = item.data(0, _BIT_RANGE_ROLE)
+        if bit_range and self._current_body:
+            bs = bit_range[0] // 8
+            be = (bit_range[1] + 7) // 8
+            chunk = self._current_body[bs:be]
+            menu.addSeparator()
+            menu.addAction(
+                f"Copy bytes  ({len(chunk)} B, {bit_range[1] - bit_range[0]} bits)",
+                lambda c=chunk: clip.setText(c.hex()))
+
+        menu.exec(self.tree.viewport().mapToGlobal(pos))
+
+    def _on_table_menu(self, pos: QtCore.QPoint) -> None:
+        """Right-click on a packet row → copy the decoded line / hex body."""
+        idx = self.table.indexAt(pos)
+        if not idx.isValid():
+            return
+        r: packet_bus.PacketRecord | None = self.proxy.data(
+            idx, QtCore.Qt.UserRole)
+        if r is None:
+            return
+        clip = QtWidgets.QApplication.clipboard()
+        menu = QtWidgets.QMenu(self.table)
+        menu.addAction("Copy decoded line",
+                       lambda: clip.setText(_strip_ansi(r.decoded_line)))
+        menu.addAction(f"Copy body as hex  ({len(r.body)} B)",
+                       lambda: clip.setText(r.body.hex()))
+        menu.addAction("Copy hex dump",
+                       lambda: clip.setText(_hexdump(r.body)))
+        menu.addAction(f"Copy packet name  ({r.pkt_name})",
+                       lambda: clip.setText(r.pkt_name))
+        if r.sub_name:
+            menu.addAction(f"Copy sub name  ({r.sub_name})",
+                           lambda: clip.setText(r.sub_name))
+        if r.uid is not None:
+            menu.addAction(f"Copy uid  ({r.uid})",
+                           lambda: clip.setText(str(r.uid)))
+        menu.exec(self.table.viewport().mapToGlobal(pos))
+
+
+# Highlight colour used for hex-pane byte selections. Bright enough to be
+# visible against both light and dark hex-pane backgrounds.
+_HIGHLIGHT_BG = QtGui.QColor(255, 220, 80)
+_HIGHLIGHT_FG = QtGui.QColor(0, 0, 0)
+
+
+# ── module-level helpers (free functions for the context menus) ────────────
+
+def _elide(s: str, max_len: int = 30) -> str:
+    """Trim a long string for menu-item labels."""
+    return s if len(s) <= max_len else s[:max_len - 1] + "…"
+
+
+def _tree_path(item: QtWidgets.QTreeWidgetItem) -> str:
+    """Build a slash-separated path from the tree root to `item`."""
+    parts: list[str] = []
+    cur = item
+    while cur is not None:
+        parts.append(cur.text(0))
+        cur = cur.parent()
+    return "/".join(reversed(parts))
+
+
+def _make_selection(block: QtGui.QTextBlock, col_start: int,
+                    col_end: int) -> "QtWidgets.QTextEdit.ExtraSelection":
+    """Build one QTextEdit.ExtraSelection spanning [col_start, col_end) of `block`.
+
+    Mutates the selection's existing `.format` instead of replacing it
+    — some PySide6 builds drop a freshly assigned `sel.format = fmt`
+    object after the slot returns, leaving the selection invisible.
+    """
+    cur = QtGui.QTextCursor(block)
+    cur.setPosition(block.position() + col_start)
+    cur.setPosition(block.position() + col_end, QtGui.QTextCursor.KeepAnchor)
+    sel = QtWidgets.QTextEdit.ExtraSelection()
+    sel.cursor = cur
+    sel.format.setBackground(_HIGHLIGHT_BG)
+    sel.format.setForeground(_HIGHLIGHT_FG)
+    return sel
 
 
 # ── entry point ─────────────────────────────────────────────────────────────

@@ -106,7 +106,7 @@ class ScmdPayload:
     bag: dict
 
 
-def _kv(tag: str, val: Any) -> Variant:
+def _kv(tag: str, val: Any, br: BitReader | None = None) -> Variant:
     """Wrap a directly-read scalar so format_bag() can colour it.
 
     `tag` is the wire-level type at the bit position read (u8/u16/u32/u64/u1
@@ -114,8 +114,13 @@ def _kv(tag: str, val: Any) -> Variant:
     bit-stream fields, not bag entries. We reuse the Variant container
     purely for the colour-aware repr; itag=0xff signals "no on-wire
     variant tag byte" (this field was a direct read).
+
+    When `br` is given, the Variant is annotated with the (start, end)
+    bit range of the value's wire bytes (read from `br.last_read_start`
+    + `br.pos`) so the Qt UI can highlight the matching hex bytes.
     """
-    return Variant(tag, val, 0xff)
+    rng = (br.last_read_start, br.pos) if br is not None else None
+    return Variant(tag, val, 0xff, rng)
 
 
 # ── Per-SCMD decoders ────────────────────────────────────────────────────────
@@ -127,8 +132,8 @@ def _scmd_keep_alive(body: bytes) -> ScmdPayload:
         rtt = current_time_ms - timestamp.
     """
     br = BitReader(body)
-    ts = br.read_u64()
-    return ScmdPayload("SCMD_KEEP_ALIVE", {"timestamp_ms": _kv("u64", ts)})
+    return ScmdPayload("SCMD_KEEP_ALIVE",
+                       {"timestamp_ms": _kv("u64", br.read_u64(), br)})
 
 
 def _scmd_free_space_debriefing(body: bytes) -> ScmdPayload:
@@ -138,9 +143,9 @@ def _scmd_free_space_debriefing(body: bytes) -> ScmdPayload:
     augments the bag with `{"docked": cVar15}` before dispatching to UI.
     """
     br = BitReader(body)
-    docked = br.read_bool()
+    docked_kv = _kv("bool", br.read_bool(), br)   # capture range NOW
     bag = _read_bag(br)
-    bag = {"docked": _kv("bool", docked), **bag}
+    bag = {"docked": docked_kv, **bag}
     return ScmdPayload("SCMD_FREE_SPACE_DEBRIEFING", bag)
 
 
@@ -162,15 +167,11 @@ def _scmd_dock_space_station(body: bytes) -> ScmdPayload:
     Source: case 0x1b. status=0 success path uses zone_id+flags.
     """
     br = BitReader(body)
-    status = br.read_u8()
-    zone_id = br.read_u32()
-    dock_flag = br.read_bool()
-    freespace_flag = br.read_bool()
     return ScmdPayload("SCMD_DOCK_SPACE_STATION", {
-        "status": _kv("i32", status),
-        "zone_id": _kv("i32", zone_id),
-        "dock_flag": _kv("bool", dock_flag),
-        "freespace_flag": _kv("bool", freespace_flag),
+        "status":         _kv("i32",  br.read_u8(),   br),
+        "zone_id":        _kv("i32",  br.read_u32(),  br),
+        "dock_flag":      _kv("bool", br.read_bool(), br),
+        "freespace_flag": _kv("bool", br.read_bool(), br),
     })
 
 
@@ -180,11 +181,9 @@ def _scmd_replace_chat_msg(body: bytes) -> ScmdPayload:
     Source: case 0x26.
     """
     br = BitReader(body)
-    msg_id = br.read_u64()
-    flag = br.read_u8()
     return ScmdPayload("SCMD_REPLACE_CHAT_MSG", {
-        "chat_msg_id": _kv("u64", msg_id),
-        "flag": _kv("i32", flag),
+        "chat_msg_id": _kv("u64", br.read_u64(), br),
+        "flag":        _kv("i32", br.read_u8(),  br),
     })
 
 
@@ -214,59 +213,59 @@ def _scmd_squad_notification(body: bytes) -> ScmdPayload:
       0xf-0x1f (gap): no payload
     """
     br = BitReader(body)
-    sub = br.read_u8()
-    out: dict = {"sqn_type": _kv("u8", sub)}
+    out: dict = {"sqn_type": _kv("u8", br.read_u8(), br)}
+    sub = out["sqn_type"].value
     try:
         if sub == 0:
-            out["squad_id"]  = _kv("u64", br.read_u64())
-            out["leader_uid"] = _kv("u64", br.read_u64())
+            out["squad_id"]  = _kv("u64", br.read_u64(), br)
+            out["leader_uid"] = _kv("u64", br.read_u64(), br)
             if br.remaining() >= 64:
-                out["invitee_or_new_leader"] = _kv("u64", br.read_u64())
+                out["invitee_or_new_leader"] = _kv("u64", br.read_u64(), br)
         elif sub == 1:
-            out["squad_id"]   = _kv("u64", br.read_u64())
-            out["leader_uid"] = _kv("u64", br.read_u64())
+            out["squad_id"]   = _kv("u64", br.read_u64(), br)
+            out["leader_uid"] = _kv("u64", br.read_u64(), br)
         elif sub == 2:
-            out["squad_id"]    = _kv("u64", br.read_u64())
-            out["joining_uid"] = _kv("u64", br.read_u64())
+            out["squad_id"]    = _kv("u64", br.read_u64(), br)
+            out["joining_uid"] = _kv("u64", br.read_u64(), br)
         elif sub == 3:
-            out["squad_id"]    = _kv("u64", br.read_u64())
-            out["leaving_uid"] = _kv("u64", br.read_u64())
+            out["squad_id"]    = _kv("u64", br.read_u64(), br)
+            out["leaving_uid"] = _kv("u64", br.read_u64(), br)
         elif sub == 4:
-            out["squad_id"]   = _kv("u64", br.read_u64())
-            out["kicker_uid"] = _kv("u64", br.read_u64())
-            out["kickee_uid"] = _kv("u64", br.read_u64())
+            out["squad_id"]   = _kv("u64", br.read_u64(), br)
+            out["kicker_uid"] = _kv("u64", br.read_u64(), br)
+            out["kickee_uid"] = _kv("u64", br.read_u64(), br)
         elif sub in (5, 6, 7, 8):
-            out["squad_id"] = _kv("u64", br.read_u64())
-            out["uid"]      = _kv("u64", br.read_u64())
-            out["rcType"]   = _kv("u64", br.read_u64())
+            out["squad_id"] = _kv("u64", br.read_u64(), br)
+            out["uid"]      = _kv("u64", br.read_u64(), br)
+            out["rcType"]   = _kv("u64", br.read_u64(), br)
         elif sub == 9:
-            out["done_flag"] = _kv("u1", br.read_bool())
-            out["uid"]       = _kv("u64", br.read_u64())
+            out["done_flag"] = _kv("u1", br.read_bool(), br)
+            out["uid"]       = _kv("u64", br.read_u64(), br)
         elif sub == 10:
-            out["done_flag"]            = _kv("u1", br.read_bool())
-            out["uid"]                  = _kv("u64", br.read_u64())
-            result                      = br.read_u8()
-            out["result"]               = _kv("u8", result)
-            out["minRank"]              = _kv("u8", br.read_u8())
-            out["maxRank"]              = _kv("u8", br.read_u8())
-            out["accountRank"]          = _kv("u8", br.read_u8())
-            out["maxHighestSquadRank"]  = _kv("u8", br.read_u8())
+            out["done_flag"]            = _kv("u1", br.read_bool(), br)
+            out["uid"]                  = _kv("u64", br.read_u64(), br)
+            out["result"]               = _kv("u8", br.read_u8(), br)
+            result                      = out["result"].value
+            out["minRank"]              = _kv("u8", br.read_u8(), br)
+            out["maxRank"]              = _kv("u8", br.read_u8(), br)
+            out["accountRank"]          = _kv("u8", br.read_u8(), br)
+            out["maxHighestSquadRank"]  = _kv("u8", br.read_u8(), br)
             if result == 0x22:    # '"'
-                out["minHighestSquadRank"] = _kv("u8", br.read_u8())
+                out["minHighestSquadRank"] = _kv("u8", br.read_u8(), br)
             elif result == 0x2d:  # '-'
-                out["badLeagueEquipment"]        = _kv("bag", _read_bag(br))
-                out["badLeagueAutogenEquipment"] = _kv("bag", _read_bag(br))
+                out["badLeagueEquipment"]        = _kv("bag", _read_bag(br), br)
+                out["badLeagueAutogenEquipment"] = _kv("bag", _read_bag(br), br)
             elif result == 0x30:  # '0'
-                out["leaverBanTill"] = _kv("u64", br.read_u64())
+                out["leaverBanTill"] = _kv("u64", br.read_u64(), br)
         elif sub in (0x0b, 0x0c):
-            out["done_flag"] = _kv("u1", br.read_bool())
+            out["done_flag"] = _kv("u1", br.read_bool(), br)
         elif sub in (0x0d, 0x20):
-            out["reason"] = _kv("u8", br.read_u8())
+            out["reason"] = _kv("u8", br.read_u8(), br)
         elif sub in (0x0e, 0x21):
-            out["uid"] = _kv("u64", br.read_u64())
+            out["uid"] = _kv("u64", br.read_u64(), br)
         elif sub in (0x22, 0x23):
-            out["squad_id"] = _kv("u64", br.read_u64())
-            out["uid"]      = _kv("u64", br.read_u64())
+            out["squad_id"] = _kv("u64", br.read_u64(), br)
+            out["uid"]      = _kv("u64", br.read_u64(), br)
         # 0xf..0x1f (excluding above): no payload
     except EOFError:
         out["_truncated"] = _kv("?", True)
@@ -286,11 +285,9 @@ def _scmd_social_notification(body: bytes) -> ScmdPayload:
       6/7  no-op
     """
     br = BitReader(body)
-    sub = br.read_u8()
-    uid = br.read_u64()
     return ScmdPayload("SCMD_SOCIAL_NOTIFICATION", {
-        "soc_type": _kv("u8", sub),
-        "uid":      _kv("u64", uid),
+        "soc_type": _kv("u8",  br.read_u8(),  br),
+        "uid":      _kv("u64", br.read_u64(), br),
     })
 
 
@@ -313,13 +310,13 @@ def _scmd_teaching_notification(body: bytes) -> ScmdPayload:
       11 unknown                             uid
     """
     br = BitReader(body)
-    sub = br.read_u8()
-    out: dict = {"command": _kv("u8", sub)}
+    out: dict = {"command": _kv("u8", br.read_u8(), br)}
+    sub = out["command"].value
     if sub in (9, 10):
         return ScmdPayload("SCMD_TEACH_NOTIFICATION", out)
-    out["uid"] = _kv("u64", br.read_u64())
+    out["uid"] = _kv("u64", br.read_u64(), br)
     if sub == 8:
-        out["expReward"] = _kv("i32", br.read_i32())
+        out["expReward"] = _kv("i32", br.read_i32(), br)
     return ScmdPayload("SCMD_TEACH_NOTIFICATION", out)
 
 
@@ -338,23 +335,19 @@ def _scmd_clan_notification(body: bytes) -> ScmdPayload:
     "field_1".."field_4" generically, so we mirror that here.
     """
     br = BitReader(body)
-    cmd = br.read_u8()
-    f1  = br.read_u64()
-    f2  = br.read_u64()
-    f3  = br.read_u64()
-    f4  = br.read_u8()
     out: dict = {
-        "clan_cmd": _kv("u8",  cmd),
-        "field_1":  _kv("u64", f1),
-        "field_2":  _kv("u64", f2),
-        "field_3":  _kv("u64", f3),
-        "field_4":  _kv("u8",  f4),
+        "clan_cmd": _kv("u8",  br.read_u8(),  br),
+        "field_1":  _kv("u64", br.read_u64(), br),
+        "field_2":  _kv("u64", br.read_u64(), br),
+        "field_3":  _kv("u64", br.read_u64(), br),
+        "field_4":  _kv("u8",  br.read_u8(),  br),
     }
+    cmd = out["clan_cmd"].value
     try:
         if cmd == 0x19:
-            out["extra_u32"] = _kv("u32", br.read_u32())
+            out["extra_u32"] = _kv("u32", br.read_u32(), br)
         elif cmd == 0x1a:
-            out["extra_cstring"] = _kv("str", br.read_cstring(max_len=251))
+            out["extra_cstring"] = _kv("str", br.read_cstring(max_len=251), br)
     except EOFError:
         out["_truncated"] = _kv("?", True)
     return ScmdPayload("SCMD_CLAN_NOTIFICATION", out)
@@ -401,52 +394,51 @@ def _scmd_user_profile_notification(body: bytes) -> ScmdPayload:
     every 3-bit chunk reads `100` → repeating 0x9249.
     """
     br = BitReader(body)
-    sub = br.read_u8()
-    uid = br.read_u64()
     out: dict = {
-        "upn_type": _kv("u8",  sub),
-        "uid":      _kv("u64", uid),
+        "upn_type": _kv("u8",  br.read_u8(),  br),
+        "uid":      _kv("u64", br.read_u64(), br),
     }
+    sub = out["upn_type"].value
     try:
         if sub == 0:        # state byte
-            out["state"] = _kv("u8", br.read_u8())
+            out["state"] = _kv("u8", br.read_u8(), br)
         elif sub == 1:      # achievement progress delta
-            out["achievement_id"] = _kv("u16", br.read_u16())
-            out["old_value"]      = _kv("u32", br.read_u32())
-            out["new_value"]      = _kv("u32", br.read_u32())
+            out["achievement_id"] = _kv("u16", br.read_u16(), br)
+            out["old_value"]      = _kv("u32", br.read_u32(), br)
+            out["new_value"]      = _kv("u32", br.read_u32(), br)
         elif sub == 2:      # achievement unlock
-            out["achievement_id"] = _kv("u16", br.read_u16())
-            out["stage"]          = _kv("u8",  br.read_u8())
-            out["unlock_time_ms"] = _kv("u64", br.read_u64())
+            out["achievement_id"] = _kv("u16", br.read_u16(), br)
+            out["stage"]          = _kv("u8",  br.read_u8(), br)
+            out["unlock_time_ms"] = _kv("u64", br.read_u64(), br)
         elif sub == 3:      # u16 (uncaptured)
-            out["v16"] = _kv("u16", br.read_u16())
+            out["v16"] = _kv("u16", br.read_u16(), br)
         elif sub == 4:      # avatar unlock (+ optional current + full list)
-            out["unlocked_avatar"] = _kv("str", br.read_cstring(max_len=60))
+            out["unlocked_avatar"] = _kv("str", br.read_cstring(max_len=60), br)
             # Tail (FUN_08919100) is only emitted when the profile already
             # has an avatars list — server-side state we can't see. Detect
             # by checking that there's room for at least cstring + u16.
             if br.remaining() >= 8 + 16:
                 out["current_avatar"] = _kv("str",
-                    br.read_cstring(max_len=60))
-                n = br.read_u16()
-                out["unlocked_count"] = _kv("u16", n)
+                    br.read_cstring(max_len=60), br)
+                out["unlocked_count"] = _kv("u16", br.read_u16(), br)
+                n = out["unlocked_count"].value
                 for i in range(n):
                     out[f"unlocked[{i}]"] = _kv("str",
-                        br.read_cstring(max_len=60))
+                        br.read_cstring(max_len=60), br)
         elif sub == 5:      # cstring (uncaptured — possibly motto)
-            out["text"] = _kv("str", br.read_cstring(max_len=60))
+            out["text"] = _kv("str", br.read_cstring(max_len=60), br)
         elif sub == 6:      # accountExpPool fast-path (i32 only)
-            out["accountExpPool"] = _kv("i32", br.read_i32())
+            out["accountExpPool"] = _kv("i32", br.read_i32(), br)
         elif sub == 7:      # full atlas reload (Atlas_Deserialize)
-            out["accountExpPool"] = _kv("i32", br.read_i32())
+            out["accountExpPool"] = _kv("i32", br.read_i32(), br)
             if not br.read_bool():
                 # modules bag: key=tier-group, value=u64 packing
                 # 21 × 3-bit module ranks (see Atlas_PushToLua).
-                out["modules"] = _kv("bag", _read_bag(br))
+                out["modules"] = _kv("bag", _read_bag(br), br)
             if br.remaining() >= 1 and not br.read_bool():
                 # vesselsProgress bag (per-vessel research data;
                 # not observed populated in captures so far).
-                out["vesselsProgress"] = _kv("bag", _read_bag(br))
+                out["vesselsProgress"] = _kv("bag", _read_bag(br), br)
     except EOFError:
         out["_truncated"] = _kv("?", True)
     return ScmdPayload("SCMD_USER_PROFILE_NOTIFICATION", out)
@@ -467,30 +459,28 @@ def _scmd_league_notification(body: bytes) -> ScmdPayload:
       8  u1 flag                                     (toggle)
     """
     br = BitReader(body)
-    sub = br.read_u8()
-    league_id = br.read_u64()
-    team_id   = br.read_u64()
     out: dict = {
-        "league_cmd": _kv("u8",  sub),
-        "league_id":  _kv("u64", league_id),
-        "team_id":    _kv("u64", team_id),
+        "league_cmd": _kv("u8",  br.read_u8(),  br),
+        "league_id":  _kv("u64", br.read_u64(), br),
+        "team_id":    _kv("u64", br.read_u64(), br),
     }
+    sub = out["league_cmd"].value
     try:
         if sub in (0, 1, 2):
-            out["ext"] = _kv("u64", br.read_u64())
+            out["ext"] = _kv("u64", br.read_u64(), br)
         elif sub == 3:
-            out["ext"]  = _kv("u64", br.read_u64())
-            out["flag"] = _kv("u8",  br.read_u8())
+            out["ext"]  = _kv("u64", br.read_u64(), br)
+            out["flag"] = _kv("u8",  br.read_u8(),  br)
         elif sub in (4, 5):
-            out["invitee_uid"] = _kv("u64", br.read_u64())
+            out["invitee_uid"] = _kv("u64", br.read_u64(), br)
         elif sub == 6:
             pass  # no extra
         elif sub == 7:
-            out["f32_x"] = _kv("f32", br.read_f32())
-            out["u32_y"] = _kv("u32", br.read_u32())
-            out["u32_z"] = _kv("u32", br.read_u32())
+            out["f32_x"] = _kv("f32", br.read_f32(), br)
+            out["u32_y"] = _kv("u32", br.read_u32(), br)
+            out["u32_z"] = _kv("u32", br.read_u32(), br)
         elif sub == 8:
-            out["flag"] = _kv("u1", br.read_bool())
+            out["flag"] = _kv("u1", br.read_bool(), br)
     except EOFError:
         out["_truncated"] = _kv("?", True)
     return ScmdPayload("SCMD_LEAGUE_NOTIFICATION", out)
@@ -522,54 +512,54 @@ def _scmd_vessel_notification(body: bytes) -> ScmdPayload:
           u1 was_repaired                      — budget level/repair flag
     """
     br = BitReader(body)
-    sub = br.read_u8()
-    out: dict = {"vssln_type": _kv("u8", sub)}
+    out: dict = {"vssln_type": _kv("u8", br.read_u8(), br)}
+    sub = out["vssln_type"].value
     try:
         if sub == 0:
             out["_vessel_record_bytes"] = _kv("?", br.remaining())
         elif sub == 1:
-            out["vid"] = _kv("u64", br.read_u64())
+            out["vid"] = _kv("u64", br.read_u64(), br)
         elif sub == 2:
-            out["prestige"] = _kv("f32", br.read_f32())
+            out["prestige"] = _kv("f32", br.read_f32(), br)
         elif sub == 3:
-            out["vid"]         = _kv("u64", br.read_u64())
-            out["quest_state"] = _kv("u64", br.read_u64())
-            count = br.read_u8()
-            out["count"]  = _kv("u8",  count)
+            out["vid"]         = _kv("u64", br.read_u64(), br)
+            out["quest_state"] = _kv("u64", br.read_u64(), br)
+            out["count"]       = _kv("u8",  br.read_u8(), br)
+            count = out["count"].value
             for i in range(count):
-                out[f"sub_vid_{i}"] = _kv("u64", br.read_u64())
+                out[f"sub_vid_{i}"] = _kv("u64", br.read_u64(), br)
         elif sub == 4:
-            out["vid"] = _kv("u64", br.read_u64())
+            out["vid"] = _kv("u64", br.read_u64(), br)
         elif sub == 5:
-            count = br.read_u8()
-            out["count"] = _kv("u8", count)
+            out["count"] = _kv("u8", br.read_u8(), br)
+            count = out["count"].value
             for i in range(count):
-                out[f"vid_{i}"]   = _kv("u64", br.read_u64())
-                out[f"hp_{i}"]    = _kv("f32", br.read_f32())
-                out[f"stat_{i}"]  = _kv("u32", br.read_u32())
-                out[f"flags_{i}"] = _kv("u8",  br.read_u8())
+                out[f"vid_{i}"]   = _kv("u64", br.read_u64(), br)
+                out[f"hp_{i}"]    = _kv("f32", br.read_f32(), br)
+                out[f"stat_{i}"]  = _kv("u32", br.read_u32(), br)
+                out[f"flags_{i}"] = _kv("u8",  br.read_u8(),  br)
         elif sub == 6:
-            out["vid"]      = _kv("u64", br.read_u64())
-            out["mod_mask"] = _kv("u64", br.read_u64())
-            out["flags"]    = _kv("u8",  br.read_u8())
+            out["vid"]      = _kv("u64", br.read_u64(), br)
+            out["mod_mask"] = _kv("u64", br.read_u64(), br)
+            out["flags"]    = _kv("u8",  br.read_u8(),  br)
         elif sub in (7, 8, 11):
-            out["vid"]   = _kv("u64", br.read_u64())
-            out["flags"] = _kv("u8",  br.read_u8())
+            out["vid"]   = _kv("u64", br.read_u64(), br)
+            out["flags"] = _kv("u8",  br.read_u8(),  br)
         elif sub == 9:
-            out["vid"]  = _kv("u64", br.read_u64())
-            out["stat"] = _kv("u32", br.read_u32())
+            out["vid"]  = _kv("u64", br.read_u64(), br)
+            out["stat"] = _kv("u32", br.read_u32(), br)
         elif sub == 10:
-            out["vid"] = _kv("u64", br.read_u64())
-            out["hp"]  = _kv("f32", br.read_f32())
+            out["vid"] = _kv("u64", br.read_u64(), br)
+            out["hp"]  = _kv("f32", br.read_f32(), br)
         elif sub == 12:
-            out["vid"]    = _kv("u64", br.read_u64())
-            out["budget"] = _kv("u64", br.read_u64())
-            out["boost"]  = _kv("u64", br.read_u64())
+            out["vid"]    = _kv("u64", br.read_u64(), br)
+            out["budget"] = _kv("u64", br.read_u64(), br)
+            out["boost"]  = _kv("u64", br.read_u64(), br)
         elif sub == 13:
-            out["vid"]            = _kv("u64", br.read_u64())
-            out["level"]          = _kv("u8",  br.read_u8())
-            out["repair_budget"]  = _kv("u32", br.read_u32())
-            out["was_repaired"]   = _kv("u1",  br.read_bool())
+            out["vid"]            = _kv("u64", br.read_u64(), br)
+            out["level"]          = _kv("u8",  br.read_u8(),  br)
+            out["repair_budget"]  = _kv("u32", br.read_u32(), br)
+            out["was_repaired"]   = _kv("u1",  br.read_bool(), br)
     except EOFError:
         out["_truncated"] = _kv("?", True)
     return ScmdPayload("SCMD_VESSEL_NOTIFICATION", out)
@@ -586,14 +576,14 @@ def _scmd_lobby_notification(body: bytes) -> ScmdPayload:
       3  u32 lobby_id, u32 incdec   (incdec=0 = decrement counter; else inc)
     """
     br = BitReader(body)
-    sub = br.read_u8()
-    out: dict = {"lbn_type": _kv("u8", sub)}
+    out: dict = {"lbn_type": _kv("u8", br.read_u8(), br)}
+    sub = out["lbn_type"].value
     try:
         if sub == 0:
-            out["bag"] = _kv("bag", _read_bag(br))
+            out["bag"] = _kv("bag", _read_bag(br), br)
         elif sub in (1, 2, 3):
-            out["lobby_id"] = _kv("u32", br.read_u32())
-            out["arg"]      = _kv("u32", br.read_u32())
+            out["lobby_id"] = _kv("u32", br.read_u32(), br)
+            out["arg"]      = _kv("u32", br.read_u32(), br)
     except EOFError:
         out["_truncated"] = _kv("?", True)
     return ScmdPayload("SCMD_LOBBY_NOTIFICATION", out)
@@ -608,9 +598,8 @@ def _scmd_quest_notification(body: bytes) -> ScmdPayload:
     decoded here so the proxy log shows which kind it is.
     """
     br = BitReader(body)
-    sub = br.read_u8()
     return ScmdPayload("SCMD_QUEST_NOTIFICATION", {
-        "sub_type": _kv("u8", sub),
+        "sub_type":        _kv("u8", br.read_u8(), br),
         "_remaining_bits": _kv("?", br.remaining()),
     })
 
@@ -626,9 +615,8 @@ def _scmd_adventure_notification(body: bytes) -> ScmdPayload:
     Only the sub-type byte is decoded here.
     """
     br = BitReader(body)
-    sub = br.read_u8()
     return ScmdPayload("SCMD_ADVENTURE_NOTIFICATION", {
-        "sub_type": _kv("u8", sub),
+        "sub_type":        _kv("u8", br.read_u8(), br),
         "_remaining_bits": _kv("?", br.remaining()),
     })
 
@@ -793,12 +781,15 @@ class DecodeNode:
     `value` is the rendered scalar ("" for pure branches); `wire_type`
     is the on-wire type tag (u64/str/bag/…), "struct"/"bytes" for
     composite values, "error" for a failed decode, or "" when not
-    applicable. `children` are nested fields.
+    applicable. `children` are nested fields. `bit_range` (when set) is
+    the (start_bit, end_bit_exclusive) span in the packet's body bytes
+    — the UI uses it to highlight the matching hex in the side pane.
     """
     name: str
     value: str = ""
     wire_type: str = ""
     children: list["DecodeNode"] = field(default_factory=list)
+    bit_range: tuple[int, int] | None = None
 
 
 _BYTES_PREVIEW = 64  # how many bytes of a blob to show inline before eliding
@@ -826,30 +817,45 @@ def _struct_attrs(value: Any) -> list[tuple[str, Any]] | None:
             if not k.startswith("_") and k != "dummy" and v is not None]
 
 
+def _union_ranges(children: list[DecodeNode]) -> tuple[int, int] | None:
+    """Smallest range that covers every child's range. Used so a parent
+    node (a plain dict / list / struct that didn't itself carry a range)
+    can still highlight its children's combined span on click."""
+    rs = [c.bit_range for c in children if c.bit_range is not None]
+    if not rs:
+        return None
+    return (min(r[0] for r in rs), max(r[1] for r in rs))
+
+
 def _value_node(name: str, value: Any) -> DecodeNode:
     """Recursively turn any decoded value into a DecodeNode subtree.
 
     Handles the shapes the decoders actually emit: Variant (bag entry),
     plain dict/list (parser records), bytes, kaitai/opaque structs
-    (walked via __dict__ or __slots__), and scalars.
+    (walked via __dict__ or __slots__), and scalars. Parent nodes that
+    don't carry an explicit range derive one from their children's union.
     """
     if isinstance(value, Variant):
         inner = value.value
+        rng = value.bit_range
         if isinstance(inner, dict):
             return DecodeNode(name, "", value.tag,
-                              [_value_node(str(k), v) for k, v in inner.items()])
+                              [_value_node(str(k), v) for k, v in inner.items()],
+                              bit_range=rng)
         if isinstance(inner, (list, tuple)):
             return DecodeNode(name, f"{len(inner)} items", value.tag,
                               [_value_node(f"[{i}]", v)
-                               for i, v in enumerate(inner)])
-        return DecodeNode(name, repr(inner), value.tag, [])
+                               for i, v in enumerate(inner)],
+                              bit_range=rng)
+        return DecodeNode(name, repr(inner), value.tag, [], bit_range=rng)
     if isinstance(value, dict):
-        return DecodeNode(name, "", "",
-                          [_value_node(str(k), v) for k, v in value.items()])
+        children = [_value_node(str(k), v) for k, v in value.items()]
+        return DecodeNode(name, "", "", children,
+                          bit_range=_union_ranges(children))
     if isinstance(value, (list, tuple)):
-        return DecodeNode(name, f"{len(value)} items", "",
-                          [_value_node(f"[{i}]", v)
-                           for i, v in enumerate(value)])
+        children = [_value_node(f"[{i}]", v) for i, v in enumerate(value)]
+        return DecodeNode(name, f"{len(value)} items", "", children,
+                          bit_range=_union_ranges(children))
     if isinstance(value, (bytes, bytearray)):
         if len(value) > _BYTES_PREVIEW:
             shown = f"{value[:_BYTES_PREVIEW].hex()}… ({len(value)} bytes)"
@@ -858,8 +864,9 @@ def _value_node(name: str, value: Any) -> DecodeNode:
         return DecodeNode(name, shown, "bytes", [])
     attrs = _struct_attrs(value)
     if attrs is not None:
-        return DecodeNode(name, type(value).__name__, "struct",
-                          [_value_node(k, v) for k, v in attrs])
+        children = [_value_node(k, v) for k, v in attrs]
+        return DecodeNode(name, type(value).__name__, "struct", children,
+                          bit_range=_union_ranges(children))
     return DecodeNode(name, repr(value), "", [])
 
 
@@ -904,9 +911,24 @@ def decode_structured(pkt_type: int, body: bytes,
                 parsed = StarConflictPackageServer(KaitaiStream(BytesIO(body)))
         except Exception as e:
             return DecodeNode(name, f"{type(e).__name__}: {e}", "error", [])
-        return _value_node(type(parsed.body).__name__, parsed.body)
+        node = _value_node(type(parsed.body).__name__, parsed.body)
+        # The opaque body's BitReader operates on `body[2:]` (kaitai
+        # consumed the 2-byte AC index first), so every range produced
+        # under here is body-relative-to-body[2:]. Shift by +16 bits so
+        # the UI's hex pane (which shows full body) lines up.
+        _shift_bit_ranges(node, 16)
+        return node
 
     return None
+
+
+def _shift_bit_ranges(node: DecodeNode, bits: int) -> None:
+    """In-place add `bits` to every bit_range in the subtree."""
+    if node.bit_range is not None:
+        a, b = node.bit_range
+        node.bit_range = (a + bits, b + bits)
+    for c in node.children:
+        _shift_bit_ranges(c, bits)
 
 
 # ── Self-test ─────────────────────────────────────────────────────────────────
