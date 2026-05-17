@@ -4681,6 +4681,12 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcTeachingAllow(KaitaiStruct):
+        """Teaching-allow toggle C→S — single u1 `allow` bit. The role
+        (teacher vs student) is not on the wire; the server keeps the
+        current role context and writes the new allow value to the
+        matching slot. The matching S→C response echoes status, role,
+        and allow back.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcTeachingAllow, self).__init__(_io)
             self._parent = _parent
@@ -4688,7 +4694,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.unknown = self._io.read_bytes_full()
+            self.allow = self._io.read_bits_int_be(1) != 0
 
 
         def _fetch_instances(self):

@@ -967,9 +967,13 @@ types:
     - id: unknown
       size-eos: true
   ac_teaching_allow:
+    doc: |
+      Teaching-allow toggle — single u1 `allow` bit. The role (teacher
+      vs student) is not on the wire; the server keeps the current role
+      context and updates the matching allow slot.
     seq:
-    - id: unknown
-      size-eos: true
+    - id: allow
+      type: b1
   ac_referrals:
     seq:
     - id: unknown

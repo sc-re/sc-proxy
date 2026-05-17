@@ -1565,13 +1565,17 @@ types:
       type: u1
   ac_teaching_allow:
     doc: |
-      Field sequence from handler at 0x0822b852 in OnRecieve dispatch.
-      Reads: u8 u8
+      Teaching-allow update — handler 0x0822b852 reads u8 status + u8
+      role + u1 allow, then (when status==0) writes `allow` into game
+      state at +0xba709 for role==2 (teacher) or +0xba708 for role==1
+      (student). Role values outside {1, 2} are ignored.
     seq:
     - id: status
       type: u1
-    - id: field_1
+    - id: role
       type: u1
+    - id: allow
+      type: b1
   ac_referrals:
     doc: Referral program info; flags=0x80 when no active referrer
     seq:

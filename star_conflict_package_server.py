@@ -5718,8 +5718,10 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcTeachingAllow(KaitaiStruct):
-        """Field sequence from handler at 0x0822b852 in OnRecieve dispatch.
-        Reads: u8 u8
+        """Teaching-allow update — handler 0x0822b852 reads u8 status +
+        u8 role + u1 allow, then (when status==0) writes `allow` into
+        game-state offset 0xba709 for role==2 (teacher) or 0xba708 for
+        role==1 (student). Role values not in {1, 2} are ignored.
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcTeachingAllow, self).__init__(_io)
@@ -5729,7 +5731,8 @@ class StarConflictPackageServer(KaitaiStruct):
 
         def _read(self):
             self.status = self._io.read_u1()
-            self.field_1 = self._io.read_u1()
+            self.role = self._io.read_u1()
+            self.allow = self._io.read_bits_int_be(1) != 0
 
 
         def _fetch_instances(self):
