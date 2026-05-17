@@ -58,7 +58,6 @@ import proxy_util
 
 log = logging.getLogger("proxy.chat")
 
-LISTEN_PORT = 3815
 FRAME_HEADER_LEN = 11
 
 CTR_AUTH      = 0
@@ -475,11 +474,12 @@ def _handle(client: socket.socket, addr):
 
 
 def run():
+    port = proxy_util.CHAT_LISTEN_PORT
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    s.bind(("0.0.0.0", LISTEN_PORT))
+    s.bind(("0.0.0.0", port))
     s.listen(8)
-    log.info(f"[CHAT] listening on port {LISTEN_PORT}")
+    log.info(f"[CHAT] listening on port {port}")
     while True:
         conn, addr = s.accept()
         threading.Thread(target=_handle, args=(conn, addr), daemon=True).start()

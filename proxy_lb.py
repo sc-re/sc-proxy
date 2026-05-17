@@ -18,8 +18,6 @@ import proxy_util
 
 log = logging.getLogger("proxy.lb")
 
-LISTEN_PORT = 3801
-
 # scmd_pkt_type values pushed by the LB.
 _PKT_LB_CVARS       = 2  # SCMD_LB_CVARS
 _PKT_ASSIGNED_SHARD = 0  # SCMD_ASSIGNED_SHARD
@@ -161,8 +159,11 @@ def _handle(client: socket.socket, addr):
     # shard_addr, then closes. Identify packets by position — the real
     # server's msg_type values vary per connection (observed 0x8ff4,
     # 0x9020, 0x7dfb etc.), so type-based matching is unreliable.
-    fake_shard = ("127.0.0.1", 19803)
-    fake_chat  = ("127.0.0.1", 3815)
+    # Shard/chat ports follow proxy_util so --local-server's shifted
+    # listen ports get propagated into the rewritten address the game
+    # connects to.
+    fake_shard = ("192.168.2.66", proxy_util.SHARD_LISTEN_PORT)
+    fake_chat  = ("192.168.2.66", proxy_util.CHAT_LISTEN_PORT)
     s2c_idx = [0]  # list for closure mutation
 
     def on_s2c(pkt):
@@ -194,11 +195,12 @@ def _handle(client: socket.socket, addr):
 
 
 def run():
+    port = proxy_util.LB_LISTEN_PORT
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    s.bind(("0.0.0.0", LISTEN_PORT))
+    s.bind(("0.0.0.0", port))
     s.listen(8)
-    log.info(f"[LB] listening on port {LISTEN_PORT}")
+    log.info(f"[LB] listening on port {port}")
     while True:
         conn, addr = s.accept()
         threading.Thread(target=_handle, args=(conn, addr), daemon=True).start()

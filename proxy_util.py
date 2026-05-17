@@ -39,6 +39,14 @@ DEFAULT_REAL_SHARD = (os.environ.get("SC_REAL_HOST", "185.253.20.238"),
 DEFAULT_REAL_CHAT  = (os.environ.get("SC_REAL_HOST", "185.253.20.238"),
                       int(os.environ.get("SC_REAL_CHAT_PORT", "3815")))
 
+# Ports the proxy listens on. Each sub-proxy reads these at start() so a
+# late call to set_local_server_mode() before the threads launch takes
+# effect. Defaults match the upstream prod values (so the game's
+# unchanged configuration finds the proxy first).
+LB_LISTEN_PORT    = 3801
+SHARD_LISTEN_PORT = 19803
+CHAT_LISTEN_PORT  = 3815
+
 
 def set_real_shard(host: str, port: int):
     with _state_lock:
@@ -77,12 +85,48 @@ def hexdump(data: bytes, width: int = 16, prefix: str = "    ") -> str:
 
 
 # Full bodies go here so they can be recovered as exact bytes; the log
-# still only holds a preview so it doesn't become unreadable.
+# still only holds a preview so it doesn't become unreadable. The base
+# directory can be flipped at runtime via set_local_server_mode() so the
+# --local-server flag lands its captures in captures_debug/ instead.
 _capture_base = os.environ.get("SC_CAPTURE_DIR", "captures/")
 _session_ts = time.strftime("%Y%m%d_%H%M%S")
 CAPTURE_DIR = os.path.join(_capture_base, _session_ts)
 _capture_idx = [0]
 _capture_lock = threading.Lock()
+
+
+def set_local_server_mode(host: str = "192.168.2.32") -> None:
+    """Switch the proxy to point at the local dev server at `host`.
+
+    Effects, all applied to the module globals so the sub-proxies pick
+    them up when they next read these names:
+
+      * Upstream LB / shard / chat → `host`:3801 / :3802 / :3815
+        (the local dev server uses the same standard ports as prod).
+      * Listen ports → 4801 / 4802 / 4815 (shifted by +1000 so a
+        prod-mode proxy can run side-by-side without conflict).
+      * Capture directory base → `captures_debug/` (new session
+        subdirectory under it, matching the prod-mode layout).
+
+    Call this BEFORE the sub-proxy run() threads start. Listen ports
+    are only consumed at bind() time, and CAPTURE_DIR is consulted
+    per-packet, so a one-shot call at startup is enough.
+    """
+    global DEFAULT_REAL_LB, DEFAULT_REAL_SHARD, DEFAULT_REAL_CHAT
+    global LB_LISTEN_PORT, SHARD_LISTEN_PORT, CHAT_LISTEN_PORT
+    global CAPTURE_DIR
+    DEFAULT_REAL_LB    = (host, 3801)
+    DEFAULT_REAL_SHARD = (host, 3802)
+    DEFAULT_REAL_CHAT  = (host, 3815)
+    LB_LISTEN_PORT    = 4801
+    SHARD_LISTEN_PORT = 4802
+    CHAT_LISTEN_PORT  = 4815
+    CAPTURE_DIR = os.path.join("captures_debug", _session_ts)
+    log.info(
+        f"[proxy] local-server mode: upstream={host}, "
+        f"listen=({LB_LISTEN_PORT}/{SHARD_LISTEN_PORT}/{CHAT_LISTEN_PORT}), "
+        f"captures={CAPTURE_DIR}"
+    )
 
 
 def log_packet(tag: str, pkt: dict, extra: str = "", state: dict | None = None):

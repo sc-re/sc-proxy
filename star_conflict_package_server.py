@@ -3,14 +3,19 @@
 
 import kaitaistruct
 from kaitaistruct import KaitaiStruct, KaitaiStream, BytesIO
+import ac_account_auras_body
 import bag_payload
 import prefixed_bag_payload
 import fed_design_tgp_stream
 import ac_friends_send_request_body
 import ac_leaderboard_get_descs_body
+import ac_league_team_info_body
 import ac_load_initial_player_data_body
 import ac_lobby_info_body
+import ac_lobby_list_body
+import ac_mail_get_body
 import ac_player_inventory_body
+import ac_player_vessels_body
 import ac_quests_body
 import ac_ship_quests_body
 import ac_teaching_list_body
@@ -21,6 +26,7 @@ import ac_user_profile_get_response_body
 import ac_vessel_change_equip_response_body
 import ac_vessel_change_equip_multi_response_body
 import ac_vessel_strip_improper_battle_body
+import ac_zones_lua_active_events_update_body
 from enum import IntEnum
 
 
@@ -1640,8 +1646,11 @@ class StarConflictPackageServer(KaitaiStruct):
             self.body._fetch_instances()
 
     class AcAccountAuras(KaitaiStruct):
-        """Field sequence from handler at 0x0822f87d in OnRecieve dispatch.
-        Reads: u8
+        """Player's account auras — daily multipliers, permanent DLC
+        bonuses, etc. Handler 0x0822f87d. Wire shape:
+          u1 status_flag + u8 count + count × { cstring def_name,
+          u32 flags, u64 value }. Decoded by
+          ac_account_auras_body.AcAccountAurasBody.
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcAccountAuras, self).__init__(_io)
@@ -1650,11 +1659,14 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.status = self._io.read_u1()
+            self._raw_data = self._io.read_bytes_full()
+            _io__raw_data = KaitaiStream(BytesIO(self._raw_data))
+            self.data = ac_account_auras_body.AcAccountAurasBody(_io__raw_data)
 
 
         def _fetch_instances(self):
             pass
+            self.data._fetch_instances()
 
 
     class AcAchievements(KaitaiStruct):
@@ -2782,7 +2794,12 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcClanRequestProfile(KaitaiStruct):
-        """Clan profile for a player; uid is the queried player."""
+        """Clan profile for a player — `u64 uid + u64 cid`. uid is the
+        queried player; cid is their clan id (0 = not in a clan).
+        Verified across 304 captures: cid=1867 appears for 256 distinct
+        uids (a populated clan), cid=0 for 11 uids (no clan), and a
+        tail of small cids for individual members of other clans.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcClanRequestProfile, self).__init__(_io)
             self._parent = _parent
@@ -2791,7 +2808,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
         def _read(self):
             self.uid = self._io.read_u8be()
-            self.unknown = self._io.read_u8be()
+            self.cid = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -3620,8 +3637,11 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcLeagueTeamInfo(KaitaiStruct):
-        """Field sequence from handler at 0x08232b6c in OnRecieve dispatch.
-        Reads: u8
+        """League-team state — handler 0x08232b6c reads `u8 status` and on
+        status==0 calls FUN_088ee800 (the body reader). Surfaced through
+        `ac_league_team_info_body.AcLeagueTeamInfoBody` so the GUI tree
+        shows the full record (team_id, names, captain, member uids,
+        rating, …).
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcLeagueTeamInfo, self).__init__(_io)
@@ -3630,11 +3650,14 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.status = self._io.read_u1()
+            self._raw_data = self._io.read_bytes_full()
+            _io__raw_data = KaitaiStream(BytesIO(self._raw_data))
+            self.data = ac_league_team_info_body.AcLeagueTeamInfoBody(_io__raw_data)
 
 
         def _fetch_instances(self):
             pass
+            self.data._fetch_instances()
 
 
     class AcLeagueTeamInviteAccept(KaitaiStruct):
@@ -4126,6 +4149,10 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcLobbyList(KaitaiStruct):
+        """Current open-lobbies list — `u32 count + count × LobbyInfo`, with
+        each LobbyInfo using the same wire format as `ac_lobby_info`.
+        Decoded by `ac_lobby_list_body.AcLobbyListBody`.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcLobbyList, self).__init__(_io)
             self._parent = _parent
@@ -4133,11 +4160,14 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.unknown = self._io.read_bytes_full()
+            self._raw_data = self._io.read_bytes_full()
+            _io__raw_data = KaitaiStream(BytesIO(self._raw_data))
+            self.data = ac_lobby_list_body.AcLobbyListBody(_io__raw_data)
 
 
         def _fetch_instances(self):
             pass
+            self.data._fetch_instances()
 
 
     class AcLobbyModify(KaitaiStruct):
@@ -4233,10 +4263,12 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcMailGet(KaitaiStruct):
-        """Mailbox listing. Handler at 0x0822e030 reads u8 status. Body is
-        either 6B empty (`00 d0 00 00 00 00`) or 100B+ full mailbox with
-        bit-packed mail records the linear handler walk doesn't capture.
-        Status + opaque tail until per-mail layout is reversed.
+        """Mailbox listing — handler 0x0822e030 reads u8 status + u1
+        keep_existing then calls FUN_088f6480, which reads u16v2 num_mails
+        followed by num_mails × MailRecord (FUN_088f43a0). Each record has
+        mail_id, flags, from/to uids, send/read times, a couple of flags,
+        and a list of attachments (u8 type + bag). Decoded by
+        `ac_mail_get_body.AcMailGetBody`.
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcMailGet, self).__init__(_io)
@@ -4245,12 +4277,14 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.status = self._io.read_u1()
-            self.payload = self._io.read_bytes_full()
+            self._raw_data = self._io.read_bytes_full()
+            _io__raw_data = KaitaiStream(BytesIO(self._raw_data))
+            self.data = ac_mail_get_body.AcMailGetBody(_io__raw_data)
 
 
         def _fetch_instances(self):
             pass
+            self.data._fetch_instances()
 
 
     class AcMailRemove(KaitaiStruct):
@@ -4561,8 +4595,13 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcPlayerVessels(KaitaiStruct):
-        """Field sequence from handler at 0x0822e436 in OnRecieve dispatch.
-        Reads: u16 f32 f32
+        """Player's owned-vessel catalogue. The handler at 0x0822e436 reads
+        `u16 num_vessels + num_vessels × VesselRecord + f32 + f32`, where
+        each VesselRecord (FUN_08925ae0) starts with a u64 iid (0 = empty
+        slot, body skipped) followed by def_name, a 35×u64 slot array,
+        slot-config pairs, a handful of scalars, a perk list and ten
+        long-string customisation slots. Decoded by
+        ac_player_vessels_body.AcPlayerVesselsBody.
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcPlayerVessels, self).__init__(_io)
@@ -4571,13 +4610,14 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.u16_0 = self._io.read_u2be()
-            self.value = self._io.read_f4be()
-            self.value1 = self._io.read_f4be()
+            self._raw_data = self._io.read_bytes_full()
+            _io__raw_data = KaitaiStream(BytesIO(self._raw_data))
+            self.data = ac_player_vessels_body.AcPlayerVesselsBody(_io__raw_data)
 
 
         def _fetch_instances(self):
             pass
+            self.data._fetch_instances()
 
 
     class AcPremiumBuy(KaitaiStruct):
@@ -6865,7 +6905,15 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcZonesLuaActiveEventsUpdate(KaitaiStruct):
-        """Active Lua event status for zones."""
+        """Scripted-event state for every zone — pushed S→C whenever the
+        server's active-events table changes. Wire shape:
+        `u1 has_data + bag {zone_id: {event_id: f32 seconds_or_sentinel}}`,
+        where the f32 leaves are positive seconds-remaining or one of
+        the `ai.ScriptsServer.{DISABLE,TIMEOUT,COMPLETED,FAILED,REMOVED}_EVENT`
+        sentinels (-100500..-100504). Same shape as `bag_27` in
+        `ac_load_initial_player_data`. Decoded by
+        `ac_zones_lua_active_events_update_body.AcZonesLuaActiveEventsUpdateBody`.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcZonesLuaActiveEventsUpdate, self).__init__(_io)
             self._parent = _parent
@@ -6873,11 +6921,14 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.status = self._io.read_u1()
+            self._raw_data = self._io.read_bytes_full()
+            _io__raw_data = KaitaiStream(BytesIO(self._raw_data))
+            self.data = ac_zones_lua_active_events_update_body.AcZonesLuaActiveEventsUpdateBody(_io__raw_data)
 
 
         def _fetch_instances(self):
             pass
+            self.data._fetch_instances()
 
 
     class ZoneInstanceJoin(KaitaiStruct):

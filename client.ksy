@@ -1233,15 +1233,16 @@ types:
       size-eos: true
   ac_user_profile_get:
     doc: |
-      Bulk-fetch user profiles (encoding #6 — partial decode).
-      u4be count + count × {u8be uid + u8 flag} + variable trailer.
-      Trailer is 2 B for tiny requests (count=1), grows to ~14 B for
-      count=96 — semantics not yet identified. The flag byte after each
-      UID has only one bit set (0x80, 0x40, … cycling) which suggests
-      the records are written from a per-uid bitmask, but we haven't
-      confirmed the field's role yet.
+      Bulk-fetch user profiles request — bit-packed u32 count + count ×
+      {u64 uid + varuint flags}, where `flags` is a UPF_* bitmask asking
+      the server which fields to include in the response. No per-flag
+      payload follows in the request; that's why each record is exactly
+      73 bits (when flags fit in 1+8 varuint) and successive records'
+      byte-alignment slides by 1 bit per record. Decoded by
+      ac_user_profile_get_request_body.AcUserProfileGetRequestBody.
     seq:
-    - id: unknown
+    - id: data
+      type: ac_user_profile_get_request_body
       size-eos: true
   ac_achievements:
     doc: |

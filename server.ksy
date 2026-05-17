@@ -525,11 +525,15 @@ types:
       type: u1
   ac_account_auras:
     doc: |
-      Field sequence from handler at 0x0822f87d in OnRecieve dispatch.
-      Reads: u8
+      Player's account auras — daily multipliers, permanent DLC
+      bonuses, etc. Handler 0x0822f87d. Wire shape:
+        u1 status_flag + u8 count + count × { cstring def_name,
+        u32 flags, u64 value }. Decoded by
+        ac_account_auras_body.AcAccountAurasBody.
     seq:
-    - id: status
-      type: u1
+    - id: data
+      type: ac_account_auras_body
+      size-eos: true
   ac_add_account_aura:
     seq:
     - id: unknown
@@ -671,15 +675,17 @@ types:
       type: u4be
   ac_player_vessels:
     doc: |
-      Field sequence from handler at 0x0822e436 in OnRecieve dispatch.
-      Reads: u16 f32 f32
+      Player's owned-vessel catalogue. The handler at 0x0822e436 reads
+      `u16 num_vessels + num_vessels × VesselRecord + f32 + f32`, where
+      each VesselRecord (FUN_08925ae0) starts with a u64 iid (0 = empty
+      slot, body skipped) followed by def_name, a 35×u64 slot array,
+      slot-config pairs, a handful of scalars, a perk list and ten
+      long-string customisation slots. Decoded by
+      ac_player_vessels_body.AcPlayerVesselsBody.
     seq:
-    - id: u16_0
-      type: u2be
-    - id: value
-      type: f4be
-    - id: value1
-      type: f4be
+    - id: data
+      type: ac_player_vessels_body
+      size-eos: true
   ac_vessel_equipment:
     seq:
     - id: unknown
@@ -1270,11 +1276,13 @@ types:
       type: u1
   ac_league_team_info:
     doc: |
-      Field sequence from handler at 0x08232b6c in OnRecieve dispatch.
-      Reads: u8
+      League-team state — handler 0x08232b6c reads u8 status and on
+      status==0 calls FUN_088ee800 (the body reader). Decoded by
+      ac_league_team_info_body.AcLeagueTeamInfoBody.
     seq:
-    - id: status
-      type: u1
+    - id: data
+      type: ac_league_team_info_body
+      size-eos: true
   ac_league_team_create:
     doc: |
       Field sequence from handler at 0x082306bf in OnRecieve dispatch.
@@ -1620,8 +1628,13 @@ types:
     - id: status
       type: u1
   ac_lobby_list:
+    doc: |
+      Current open-lobbies list — `u32 count + count × LobbyInfo`, with
+      each LobbyInfo using the same wire format as `ac_lobby_info`.
+      Decoded by `ac_lobby_list_body.AcLobbyListBody`.
     seq:
-    - id: unknown
+    - id: data
+      type: ac_lobby_list_body
       size-eos: true
   ac_lobby_join:
     doc: |
@@ -1999,11 +2012,16 @@ types:
         1: member
         0: ceo
   ac_clan_request_profile:
-    doc: Clan profile for a player; uid is the queried player
+    doc: |
+      Clan profile for a player — `u64 uid + u64 cid`. uid is the
+      queried player; cid is their clan id (0 = not in a clan).
+      Verified across 304 captures: cid=1867 appears for 256 distinct
+      uids (a populated clan), cid=0 for 11 uids (no clan), and a
+      tail of small cids for individual members of other clans.
     seq:
     - id: uid
       type: u8be
-    - id: unknown
+    - id: cid
       type: u8be
   ac_clan_joinreq_create:
     doc: |
@@ -2466,14 +2484,15 @@ types:
             type: f4be
   ac_mail_get:
     doc: |
-      Mailbox listing. Handler at 0x0822e030 reads u8 status. Body is
-      either 6B empty (`00 d0 00 00 00 00`) or 100B+ full mailbox with
-      bit-packed mail records the linear handler walk doesn't capture.
-      Status + opaque tail until per-mail layout is reversed.
+      Mailbox listing — handler 0x0822e030 reads u8 status + u1
+      keep_existing then calls FUN_088f6480 → u16v2 num_mails followed by
+      num_mails × MailRecord (FUN_088f43a0). Each record has mail_id,
+      flags, from/to uids, send/read times, two flag bytes, and a list of
+      attachments (u8 type + bag). Decoded by
+      ac_mail_get_body.AcMailGetBody.
     seq:
-    - id: status
-      type: u1
-    - id: payload
+    - id: data
+      type: ac_mail_get_body
       size-eos: true
   ac_mail_deliver:
     doc: |
@@ -2776,10 +2795,19 @@ types:
     - id: status
       type: u1
   ac_zones_lua_active_events_update:
-    doc: Active Lua event status for zones
+    doc: |
+      Scripted-event state for every zone — pushed S→C whenever the
+      server's active-events table changes. Wire shape:
+      `u1 has_data + bag {zone_id: {event_id: f32 seconds_or_sentinel}}`,
+      where the f32 leaves are positive seconds-remaining or one of
+      the `ai.ScriptsServer.{DISABLE,TIMEOUT,COMPLETED,FAILED,REMOVED}_EVENT`
+      sentinels (-100500..-100504). Same shape as `bag_27` in
+      `ac_load_initial_player_data`. Decoded by
+      `ac_zones_lua_active_events_update_body.AcZonesLuaActiveEventsUpdateBody`.
     seq:
-    - id: status
-      type: u1
+    - id: data
+      type: ac_zones_lua_active_events_update_body
+      size-eos: true
   ac_adventures:
     doc: |
       Available adventures list. u1 status + u1 count + count×u2be

@@ -19,8 +19,6 @@ import proxy_util
 
 log = logging.getLogger("proxy.shard")
 
-LISTEN_PORT = 19803
-
 
 def _tag_packet(pkt: dict, base: str) -> str:
     """Append a human-readable hint about what the packet is."""
@@ -85,11 +83,12 @@ def _handle(client: socket.socket, addr):
 
 
 def run():
+    port = proxy_util.SHARD_LISTEN_PORT
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    s.bind(("0.0.0.0", LISTEN_PORT))
+    s.bind(("0.0.0.0", port))
     s.listen(8)
-    log.info(f"[SHARD] listening on port {LISTEN_PORT}")
+    log.info(f"[SHARD] listening on port {port}")
     while True:
         conn, addr = s.accept()
         threading.Thread(target=_handle, args=(conn, addr), daemon=True).start()

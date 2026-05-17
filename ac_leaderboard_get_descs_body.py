@@ -47,5 +47,5 @@ class AcLeaderboardGetDescsBody:
         if len(names) > 6:
             preview += f", … +{len(names) - 6}"
         return (f"AcLeaderboardGetDescsBody({len(self._raw)}B, "
-                f"count={self.count}, descs={len(self.descs)}={{{preview}}}, "
+                f"count={self.count}, descs={len(self.descs)}={{{self.descs}}}, "
                 f"slack={slack}b{suffix})")

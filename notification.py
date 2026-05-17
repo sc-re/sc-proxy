@@ -159,17 +159,24 @@ class Variant:
     `bit_range` (when set) is the (start_bit, end_bit_exclusive) span of
     the wire bytes this Variant was parsed from — used by the Qt UI to
     map a tree node to a hex-pane highlight.
+
+    `display` (when set) is a parser-supplied human-readable rendering
+    of the value (e.g. an enum-name list for a bitmask). The tree
+    renderer prefers it over `repr(value)` so the GUI mirrors what the
+    CLI's custom `__repr__` already shows.
     """
     tag: str
     value: Any
     itag: int
     bit_range: tuple[int, int] | None = None
+    display: str | None = None
 
     def __repr__(self) -> str:
         return f"{self.tag}[{self.itag:02x}]({self.value!r})"
 
 
-def read_field(br: BitReader, tag: str, value: Any) -> Variant:
+def read_field(br: BitReader, tag: str, value: Any,
+               display: str | None = None) -> Variant:
     """Wrap a freshly-read scalar in a Variant tagged with its on-wire
     type and the bit range it consumed.
 
@@ -185,8 +192,13 @@ def read_field(br: BitReader, tag: str, value: Any) -> Variant:
     `last_read_start` to their own entry position, so
     `read_field(br, "bag", _read_bag(br))` Just Works and the range
     covers the whole bag (header + entries).
+
+    Pass `display=` to override what the Qt tree shows in the value
+    column — e.g. decoded enum/bitmask names alongside the raw int.
     """
-    return Variant(tag, value, 0xff, (br.last_read_start, br.pos))
+    return Variant(tag, value, 0xff,
+                   (br.last_read_start, br.pos),
+                   display=display)
 
 
 # ── ANSI colour rendering ─────────────────────────────────────────────────────

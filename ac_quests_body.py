@@ -6,7 +6,7 @@ Handler 0x0822d960 reads, in order:
   u1 d, u1 e, u1 f, u1 g                  (four flag bits)
 
   u1 num_dailies
-  num_dailies × { u4 daily_id, u1 daily_state }
+  num_dailies × { u4 daily_id, u1 daily_state_bit }
 
   u1 num_quests
   num_quests × {
@@ -84,7 +84,7 @@ class AcQuestsBody:
             f = br.read_bool(); g = br.read_bool()
             self.flags = (d, e, f, g)
             for _ in range(br.read_u8()):
-                self.dailies.append(DailyQuest(br.read_u32(), br.read_u8() & 1))
+                self.dailies.append(DailyQuest(br.read_u32(), int(br.read_bool())))
             for _ in range(br.read_u8()):
                 qid = br.read_u16()
                 status = br.read_u8()

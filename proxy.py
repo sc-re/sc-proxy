@@ -1,22 +1,31 @@
 #!/usr/bin/env python3
 """StarConflict load-balancer proxy.
 
-Proxies the real upstream LB on port 3801, intercepts the shard-address
-packet (0x8109), and rewrites shard/chat IPs to 127.0.0.1 so the game
-connects to local servers.  No iptables needed — after the rewrite the
-game dials localhost:19803 (shard) and localhost:3815 (chat) directly,
-which masterserver.py serves.
+Two operating modes (pick with the `--local-server` flag):
 
-Set SC_REAL_HOST / SC_REAL_LB_PORT env vars to override the upstream
-(defaults in proxy_util.DEFAULT_REAL_LB).
+  * default              — proxy talks to the real upstream
+                           (185.253.20.238:3801/3802/3815), listens on
+                           the standard ports (3801/19803/3815),
+                           captures into `captures/<session>/`.
+  * `--local-server`     — proxy talks to the local dev server at
+                           192.168.2.32 (same standard upstream ports),
+                           listens on shifted ports (4801/4802/4815)
+                           so a default-mode proxy can run alongside,
+                           captures into `captures_debug/<session>/`.
+
+Set `SC_REAL_HOST` / `SC_REAL_LB_PORT` env vars to override the
+default-mode upstream (see proxy_util.DEFAULT_REAL_LB).
 
 Usage:
-    python3 proxy.py        # console logger only
-    python3 proxy_gui.py    # console logger + Qt packet inspector
+    python3 proxy.py                  # default-mode console logger
+    python3 proxy.py --local-server   # local-server console logger
+    python3 proxy_gui.py              # default-mode + Qt inspector
+    python3 proxy_gui.py --local-server
 """
+import argparse
+import logging
 import threading
 import time
-import logging
 
 import proxy_util
 import proxy_lb
@@ -30,8 +39,22 @@ logging.basicConfig(
 )
 log = logging.getLogger("main")
 
-if __name__ == "__main__":
-    log.info(f"upstream LB: {proxy_util.DEFAULT_REAL_LB[0]}:{proxy_util.DEFAULT_REAL_LB[1]}")
+
+def main() -> None:
+    ap = argparse.ArgumentParser(description=__doc__,
+                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--local-server", action="store_true",
+                    help="point the proxy at the LAN dev server "
+                         "(192.168.2.32), listen on the shifted port set "
+                         "(4801/4802/4815), and save captures into "
+                         "captures_debug/.")
+    args = ap.parse_args()
+
+    if args.local_server:
+        proxy_util.set_local_server_mode()
+
+    log.info(f"upstream LB: {proxy_util.DEFAULT_REAL_LB[0]}:"
+             f"{proxy_util.DEFAULT_REAL_LB[1]}")
     try:
         threading.Thread(target=proxy_lb.run, daemon=True).start()
         threading.Thread(target=proxy_shard.run, daemon=True).start()
@@ -44,3 +67,7 @@ if __name__ == "__main__":
         pass
     finally:
         log.info("Stopped.")
+
+
+if __name__ == "__main__":
+    main()

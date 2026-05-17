@@ -12,9 +12,11 @@ Wire format (in read order):
     u32    field_u32         (maybe owner uid / privacy flags)
     cstrN  level_def         (≤ 250 bytes — map/level def name)
     u8     a                 (game mode / gameplay id)
-    u8     b
+    u8     bot_count         (number of bots filling empty slots)
     u8     c
-    u1×6   flag1..flag6
+    u1     friendly_fire     (allow shooting allies)
+    u1     self_fire         (allow your own rockets to damage you)
+    u1×4   flag3..flag6
     f32    x                 (position / progress)
     f32    y
     u16v2  allowed_ship_roles  (bitmask — `ai.ShipRoleMask` in
@@ -26,8 +28,9 @@ Wire format (in read order):
                                    8=GUARD 9=ENGINEER 10=OVERSEER
                                  0x0000 in most lobbies; 0x07fc and
                                  0x039e seen in `s1338_pandora_anomaly`.)
-    u32    e
-    u1     flag7
+    u32    allowed_ship_ranks (bitmap of allowed ship ranks/tiers —
+                                 bit i set ⇒ rank i allowed)
+    u1     autobalance       (server auto-balances teams)
     u64v2  some_u64
     u8     num_members
     num_members × LobbyMember (FUN_088efe80):
@@ -42,7 +45,7 @@ Wire format (in read order):
                                  'BotsLobby3' — picks which set of bots
                                  fill empty slots)
     cstrN  s2                  (empty in every observed capture)
-    u1     flag8
+    u1     esports             (esports/competitive ruleset toggle)
     u1     flag9
     cstrN  team1_dreadnought   (def name of team 1's chosen dreadnought)
     cstrN  team2_dreadnought   (def name of team 2's chosen dreadnought)
@@ -77,6 +80,80 @@ def decode_ship_role_mask(mask: int) -> str:
             names.append(SHIP_ROLES[bit] if bit < len(SHIP_ROLES)
                          else f"bit{bit}")
     return ",".join(names)
+
+
+def decode_ship_rank_mask(mask: int) -> str:
+    """Render the allowed_ship_ranks bitmap as a comma-separated rank list.
+
+    SC ships have ranks 1..15 (mostly displayed as T1..T5 with sub-ranks).
+    `mask=0` → "(none)"; unset top bits stay quiet.
+    """
+    if mask == 0:
+        return "(none)"
+    return ",".join(f"R{bit}" for bit in range(32) if mask & (1 << bit))
+
+
+def _read_lobby_info(br: BitReader) -> dict:
+    """Read one LobbyInfo record from an existing BitReader.
+
+    Used by both AcLobbyInfoBody (which holds exactly one) and
+    AcLobbyListBody (which holds `u32 count` of these back-to-back).
+    Restores `br.last_read_start` to the lobby's start position so a
+    wrapping `read_field(br, "struct", _read_lobby_info(br))` gets the
+    full lobby's bit range.
+    """
+    start = br.pos
+    out: dict[str, object] = {}
+    out["lobby_id"]   = read_field(br, "u64", br.read_u64())
+    out["name"]       = read_field(br, "str",
+                                   br.read_cstring(max_len=_CSTR_MAX))
+    out["field_u32"]  = read_field(br, "u32", br.read_u32())
+    out["level_def"]  = read_field(br, "str",
+                                   br.read_cstring(max_len=_CSTR_MAX))
+    out["a"]            = read_field(br, "u8",   br.read_u8())
+    out["bot_count"]    = read_field(br, "u8",   br.read_u8())
+    out["c"]            = read_field(br, "u8",   br.read_u8())
+    out["friendly_fire"] = read_field(br, "bool", br.read_bool())
+    out["self_fire"]    = read_field(br, "bool", br.read_bool())
+    out["flag3"]        = read_field(br, "bool", br.read_bool())
+    out["flag4"]        = read_field(br, "bool", br.read_bool())
+    out["flag5"]        = read_field(br, "bool", br.read_bool())
+    out["flag6"]        = read_field(br, "bool", br.read_bool())
+    out["x"]            = read_field(br, "f32",  br.read_f32())
+    out["y"]            = read_field(br, "f32",  br.read_f32())
+    asr = br.read_u16()
+    out["allowed_ship_roles"] = read_field(
+        br, "u16", asr,
+        display=f"0x{asr:04x} ({decode_ship_role_mask(asr)})")
+    asr_ranks = br.read_u32()
+    out["allowed_ship_ranks"] = read_field(
+        br, "u32", asr_ranks,
+        display=f"0x{asr_ranks:08x} ({decode_ship_rank_mask(asr_ranks)})")
+    out["autobalance"]  = read_field(br, "bool", br.read_bool())
+    out["some_u64"]     = read_field(br, "u64",  br.read_u64())
+
+    # Member array — u8 count + count × FUN_088efe80.
+    members_start = br.pos
+    out["num_members"] = read_field(br, "u8", br.read_u8())
+    members: List[dict] = [
+        _read_lobby_member(br) for _ in range(out["num_members"].value)
+    ]
+    br.last_read_start = members_start
+    out["members"] = Variant("list", members, 0xff,
+                             (members_start, br.pos))
+
+    out["bot_preset"]        = read_field(br, "str",
+                                          br.read_cstring(max_len=_CSTR_MAX))
+    out["s2"]                = read_field(br, "str",
+                                          br.read_cstring(max_len=_CSTR_MAX))
+    out["esports"]           = read_field(br, "bool", br.read_bool())
+    out["flag9"]             = read_field(br, "bool", br.read_bool())
+    out["team1_dreadnought"] = read_field(br, "str",
+                                          br.read_cstring(max_len=_CSTR_MAX))
+    out["team2_dreadnought"] = read_field(br, "str",
+                                          br.read_cstring(max_len=_CSTR_MAX))
+    br.last_read_start = start
+    return out
 
 
 def _read_lobby_member(br: BitReader) -> dict:
@@ -120,49 +197,11 @@ class AcLobbyInfoBody:
 
         br = BitReader(self._raw)
         try:
-            self.lobby_id   = read_field(br, "u64", br.read_u64())
-            self.name       = read_field(br, "str",
-                                         br.read_cstring(max_len=_CSTR_MAX))
-            self.field_u32  = read_field(br, "u32", br.read_u32())
-            self.level_def  = read_field(br, "str",
-                                         br.read_cstring(max_len=_CSTR_MAX))
-            self.a          = read_field(br, "u8",  br.read_u8())
-            self.b          = read_field(br, "u8",  br.read_u8())
-            self.c          = read_field(br, "u8",  br.read_u8())
-            self.flag1      = read_field(br, "bool", br.read_bool())
-            self.flag2      = read_field(br, "bool", br.read_bool())
-            self.flag3      = read_field(br, "bool", br.read_bool())
-            self.flag4      = read_field(br, "bool", br.read_bool())
-            self.flag5      = read_field(br, "bool", br.read_bool())
-            self.flag6      = read_field(br, "bool", br.read_bool())
-            self.x          = read_field(br, "f32", br.read_f32())
-            self.y          = read_field(br, "f32", br.read_f32())
-            self.allowed_ship_roles = read_field(br, "u16", br.read_u16())
-            self.e          = read_field(br, "u32", br.read_u32())
-            self.flag7      = read_field(br, "bool", br.read_bool())
-            self.some_u64   = read_field(br, "u64", br.read_u64())
-
-            # Member array — u8 count + count × FUN_088efe80.
-            members_start = br.pos
-            self.num_members = read_field(br, "u8", br.read_u8())
-            members: List[dict] = [
-                _read_lobby_member(br)
-                for _ in range(self.num_members.value)
-            ]
-            br.last_read_start = members_start
-            self.members = Variant("list", members, 0xff,
-                                   (members_start, br.pos))
-
-            self.bot_preset = read_field(br, "str",
-                                         br.read_cstring(max_len=_CSTR_MAX))
-            self.s2 = read_field(br, "str",
-                                 br.read_cstring(max_len=_CSTR_MAX))
-            self.flag8 = read_field(br, "bool", br.read_bool())
-            self.flag9 = read_field(br, "bool", br.read_bool())
-            self.team1_dreadnought = read_field(br, "str",
-                                                br.read_cstring(max_len=_CSTR_MAX))
-            self.team2_dreadnought = read_field(br, "str",
-                                                br.read_cstring(max_len=_CSTR_MAX))
+            fields = _read_lobby_info(br)
+            # Unpack the shared reader's dict into instance attrs so the
+            # existing repr/tree code keeps working unchanged.
+            for k, v in fields.items():
+                setattr(self, k, v)
             self.bits_consumed = br.pos
         except EOFError:
             # Short-form bodies (e.g. 16 B "no lobby" responses) are
@@ -193,18 +232,25 @@ class AcLobbyInfoBody:
         _add("id", "lobby_id", lambda n: f"0x{n:x}")
         _add("name", "name")
         _add("level_def", "level_def")
-        flag_attrs = ("flag1", "flag2", "flag3", "flag4", "flag5", "flag6",
-                      "flag7")
-        flags = [str(int(getattr(self, n).value)) for n in flag_attrs
-                 if hasattr(self, n)]
-        if flags:
-            parts.append(f"flags=({','.join(flags)})")
+        for n in ("bot_count", "friendly_fire", "self_fire",
+                  "autobalance", "esports"):
+            if hasattr(self, n):
+                parts.append(f"{n}={getattr(self, n).value}")
+        extra_flags = [f"{n}={int(getattr(self, n).value)}"
+                       for n in ("flag3", "flag4", "flag5", "flag6", "flag9")
+                       if hasattr(self, n)]
+        if extra_flags:
+            parts.append("(" + ",".join(extra_flags) + ")")
         if hasattr(self, "x") and hasattr(self, "y"):
             parts.append(f"pos=({self.x.value:g}, {self.y.value:g})")
         if hasattr(self, "allowed_ship_roles"):
             v = self.allowed_ship_roles.value
             parts.append(
                 f"allowed_ship_roles=0x{v:04x}({decode_ship_role_mask(v)})")
+        if hasattr(self, "allowed_ship_ranks"):
+            v = self.allowed_ship_ranks.value
+            parts.append(
+                f"allowed_ship_ranks=0x{v:08x}({decode_ship_rank_mask(v)})")
         if hasattr(self, "members"):
             parts.append(f"members={len(self.members.value)}")
         if hasattr(self, "bot_preset"):

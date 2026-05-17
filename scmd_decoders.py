@@ -838,16 +838,20 @@ def _value_node(name: str, value: Any) -> DecodeNode:
     if isinstance(value, Variant):
         inner = value.value
         rng = value.bit_range
+        # `display` lets the parser override the value-column text — e.g.
+        # for a bitmask, show the decoded role list instead of "0x07fc".
+        shown = value.display if value.display is not None else None
         if isinstance(inner, dict):
-            return DecodeNode(name, "", value.tag,
+            return DecodeNode(name, shown or "", value.tag,
                               [_value_node(str(k), v) for k, v in inner.items()],
                               bit_range=rng)
         if isinstance(inner, (list, tuple)):
-            return DecodeNode(name, f"{len(inner)} items", value.tag,
+            return DecodeNode(name, shown or f"{len(inner)} items", value.tag,
                               [_value_node(f"[{i}]", v)
                                for i, v in enumerate(inner)],
                               bit_range=rng)
-        return DecodeNode(name, repr(inner), value.tag, [], bit_range=rng)
+        return DecodeNode(name, shown if shown is not None else repr(inner),
+                          value.tag, [], bit_range=rng)
     if isinstance(value, dict):
         children = [_value_node(str(k), v) for k, v in value.items()]
         return DecodeNode(name, "", "", children,

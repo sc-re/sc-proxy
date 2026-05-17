@@ -4,6 +4,7 @@
 import kaitaistruct
 from kaitaistruct import KaitaiStruct, KaitaiStream, BytesIO
 import bag_payload
+import ac_user_profile_get_request_body
 import ac_vessel_change_equip_multi_request_body
 from enum import IntEnum
 
@@ -4998,13 +4999,14 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcUserProfileGet(KaitaiStruct):
-        """Bulk-fetch user profiles (encoding #6 — partial decode).
-        u4be count + count × {u8be uid + u8 flag} + variable trailer.
-        Trailer is 2 B for tiny requests (count=1), grows to ~14 B for
-        count=96 — semantics not yet identified. The flag byte after each
-        UID has only one bit set (0x80, 0x40, … cycling) which suggests
-        the records are written from a per-uid bitmask, but we haven't
-        confirmed the field's role yet.
+        """Bulk-fetch user profiles request — handler 0x0822ed43 reads
+        u32 count + count × {u64 uid + varuint flags}, bit-packed. The
+        flags varuint is a UPF_* bitmask saying which fields the client
+        wants in the response (the per-flag-bit data only appears in the
+        response, not the request — that's why successive records'
+        byte-alignment slides by 1 bit, producing the 0x80/0x40/0x20/…
+        shifting pattern in hex dumps). Decoded by
+        `ac_user_profile_get_request_body.AcUserProfileGetRequestBody`.
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcUserProfileGet, self).__init__(_io)
@@ -5013,11 +5015,14 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.unknown = self._io.read_bytes_full()
+            self._raw_data = self._io.read_bytes_full()
+            _io__raw_data = KaitaiStream(BytesIO(self._raw_data))
+            self.data = ac_user_profile_get_request_body.AcUserProfileGetRequestBody(_io__raw_data)
 
 
         def _fetch_instances(self):
             pass
+            self.data._fetch_instances()
 
 
     class AcVesselActivateNode(KaitaiStruct):
