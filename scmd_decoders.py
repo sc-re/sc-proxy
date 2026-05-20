@@ -25,6 +25,8 @@ Coverage status (from MasterServerEndpoint::OnRecieve, switch cases at
 
     pkt_type  name                              shape                 sub-handler
     --------  --------------------------------  --------------------  --------------
+    0x09 ( 9) SCMD_STORE                        u8 type + per-type    0x08242d9c →
+                                                                       0x0820e4b0
     0x0d (13) CSCMD_ASYNC_REQ                   u16 ac + body         ac_types + server.ksy
     0x0e (14) SCMD_NOTIFICATION                 u8 sn + bag           notification.py
     0x0f (15) SCMD_SQUAD_NOTIFICATION           u8 sub + struct       OnSquadNotification
@@ -53,6 +55,7 @@ Coverage status (from MasterServerEndpoint::OnRecieve, switch cases at
     0x26 (38) SCMD_REPLACE_CHAT_MSG             u64 + u8              full
 """
 from __future__ import annotations
+import zlib
 from dataclasses import dataclass, field
 from typing import Any, Callable
 
@@ -621,9 +624,414 @@ def _scmd_adventure_notification(body: bytes) -> ScmdPayload:
     })
 
 
+def _scmd_store(body: bytes) -> ScmdPayload:
+    """0x09: u8 wrapper_type + payload-shape per type.
+
+    Source: handler `0x08242d9c` → `0x0820e4b0`. The server pushes one
+    of three frame shapes to keep the client's store catalog in sync.
+
+      type=0x00 (5B)  u32 catalog_hash
+                      "no-data" ack — the catalog the client already has
+                      matches `catalog_hash`, nothing to apply. Observed
+                      `c9c95436` in every capture (server's current hash).
+
+      type=0x02 (~)   u32 chunk_size + u32 prev_buffered + u32 uncompressed_size + deflate[]
+                      compressed store-patch (same record schema as the
+                      initial type=0x01 catalog push). The C++ pipeline (see
+                      `FUN_08259f60` case 2 → `FUN_08258c60` →
+                      `FUN_08911a70`):
+                        1. consumes a 9-byte chunk-header (chunk_size,
+                           previously-buffered bytes for resume) before
+                           appending payload to a reassembly buffer;
+                        2. once full, treats first u32 of the appended
+                           payload as the inflated-size, inflates, and
+                           re-attaches the bit-stream to the inflated
+                           buffer;
+                        3. reads `u32 record_count` then walks
+                           `record_count` patch records via
+                           `FUN_08911a70`. Each record is the
+                           in-game store-item shape — what
+                           `GameStore_GetStore()` returns to Lua, keyed by
+                           the `def_name` cstring (matching `Def[<name>]`
+                           in gamedata).
+                      Per-record field names are authoritative — taken
+                      from the Lua-table deserializer `FUN_08911bd0`,
+                      which reads each struct index back by its Lua key.
+                      See `_read_store_delta` for the full layout.
+
+      type=0x03 (~27 KB) full catalog push (uncompressed). Per
+                      `FUN_08259f60` case 3 the body is:
+                        u32   catalog_version       (= 10000 observed)
+                        cstr  chest_def_name        ("Bundle_Chest_Gold_Reward")
+                        u32   chest_field_a         (= 400 observed)
+                        u32   chest_field_b         (= 1000 observed)
+                        f32×3 chest_drop_weights    (drop_weight per
+                                                     Def.Bundle_Chest_Gold_Reward.random_contents)
+                        u32   credit_pack_count     (= 6: credit-pack tiers)
+                        credit_pack_count × {u32 price_gs, u32 value, u32 bonus_value,
+                                             cstr def_name(≤159)}
+                                                    (per GameStore_GetCreditPacksInfo:
+                                                     TinyCreditPack → GreatCreditPack)
+                        u32   gold_pack_count       (≈ 289: gaijin gold-pack purchases)
+                        gold_pack_count × {bit hidden, u32 value,
+                                           u32 field_b, u32 license_hours,
+                                           f32 weight, cstr guid, cstr gaijin_url,
+                                           f32 arc_cost, f32 display_price, f32 field_p3,
+                                           cstr lang, u32 steam_cost_minor,
+                                           cstr localized_name, cstr steam_currency,
+                                           u32 arc_item_id, u32 steam_item_id,
+                                           cstr category}
+                                                    (per GameStore_GetGoldPacksInfo)
+                        … tail of store-wide config tables (event timestamps,
+                        currency-tier ladders, pack-tier matrix) decoded
+                        below as `table_*` and `m_*` fields with C++-side
+                        member offsets in their names.
+    """
+    br = BitReader(body)
+    out: dict = {"wrapper_type": _kv("u8", br.read_u8(), br)}
+    t = out["wrapper_type"].value
+    try:
+        if t == 0x00:
+            out["catalog_hash"] = _kv("u32", br.read_u32(), br)
+        elif t == 0x02:
+            out["stored_size"]       = _kv("u32", br.read_u32(), br)
+            out["uncompressed_size"] = _kv("u64", br.read_u64(), br)
+            remaining = (len(body) * 8 - br.pos) // 8
+            deflate = br.read_blob(remaining)
+            out["deflate"] = _kv("bytes", deflate, br)
+            try:
+                inflated = zlib.decompress(deflate, -15)
+            except zlib.error as e:
+                out["_inflate_err"] = _kv("?", f"{type(e).__name__}: {e}")
+                return ScmdPayload("SCMD_STORE", out)
+            out["inflated"] = _read_store_delta(inflated)
+        elif t == 0x03:
+            _read_store_catalog(br, out)
+        else:
+            remaining = (len(body) * 8 - br.pos) // 8
+            out["payload"] = _kv("bytes", br.read_blob(remaining), br)
+    except EOFError:
+        out["_truncated"] = _kv("?", True)
+    return ScmdPayload("SCMD_STORE", out)
+
+
+def _read_store_delta(inflated: bytes) -> Variant:
+    """Walk the inflated type=0x02 store-patch stream —
+    `FUN_08258c60` → `FUN_08911a70` in the binary. (The initial
+    type=0x01 catalog load uses the identical record schema via
+    `FUN_08258a00`.)
+
+    Field names are authoritative: they come from the matching
+    Lua-table deserializer `FUN_08911bd0`, which reads each struct index
+    back out by its Lua key (`price`, `premiumPrice`, `basePrice`,
+    `race`, `requiredRank`, `stacks`, `cantBeBought`, `type`, `defName`,
+    `flags`, `requiredAccountAura`, `deleteFromInventory`, …). Enums are
+    from `scripts/gamestore.lua`.
+
+    Top-level: `u32 record_count + count × record`. Each record:
+
+        u32  store_item_id          (patch key — binary-searched against
+                                     the live store; a miss logs
+                                     "StoreSvc::ApplyStorePatch:
+                                     !patchee for id %u")
+        u32  price                  (current CREDITS price, after sale)
+        u32  premium_price          (current GOLD price)
+        u32  token_price            (current TOKEN price)
+        u32  event_price            (current EVENT-CREDITS price)
+        u32  base_price             (base/"was" CREDITS price)
+        u32  base_premium_price     (base/"was" GOLD price)
+        u32  base_token_price       (base/"was" TOKEN price)
+        u32  base_event_price       (base/"was" EVENT-CREDITS price)
+        u32  trade_price            (resale CREDITS value; symmetric
+                                     with trade_premium_price — not read
+                                     back by FUN_08911bd0)
+        u32  trade_premium_price    (Lua "tradePremiumPrice" — resale
+                                     GOLD value)
+        u8   race                   (Lua "race": 0/1/2 faction, 5 for
+                                     race-agnostic bundles)
+        u32  required_rank          (Lua "requiredRank")
+        u1   stacks                 (Lua "stacks" bool)
+        u1   cant_be_bought         (Lua "cantBeBought" bool — set on
+                                     craft-only items e.g.
+                                     Ship_*_PremiumCraft)
+        u8   item_type              (Lua "type" = `GameStore.ItemType`:
+                                     0=VESSEL, 1=MODULE, 2=ROCKET,
+                                     3=DRUG, 4=BUNDLE, 5=RESOURCE,
+                                     6=BLUEPRINT, 7=AVATAR, 8=MOTTO,
+                                     9=JUNK)
+        cstr def_name               (Lua "defName", ≤60 — gamedata key)
+        u8   item_flags             (Lua "flags" = `GameStore.ItemFlags`
+                                     bitmask: 1=NEW, 2=SALE, 4=HOT,
+                                     8=SHOW, 16=ADVERT)
+        cstr required_account_aura  (Lua "requiredAccountAura", ≤60 —
+                                     empty unless the item is gated
+                                     behind an account aura)
+        u1   delete_from_inventory  (Lua "deleteFromInventory" bool)
+    """
+    out: dict = {}
+    try:
+        br = BitReader(inflated)
+        out["record_count"] = _kv("u32", br.read_u32(), br)
+        count = out["record_count"].value
+        records: list[Variant] = []
+        for _ in range(count):
+            rec: dict = {}
+            rec_start = br.pos
+            try:
+                rec["store_item_id"]       = _kv("u32", br.read_u32(), br)
+                rec["price"]               = _kv("u32", br.read_u32(), br)
+                rec["premium_price"]       = _kv("u32", br.read_u32(), br)
+                rec["token_price"]         = _kv("u32", br.read_u32(), br)
+                rec["event_price"]         = _kv("u32", br.read_u32(), br)
+                rec["base_price"]          = _kv("u32", br.read_u32(), br)
+                rec["base_premium_price"]  = _kv("u32", br.read_u32(), br)
+                rec["base_token_price"]    = _kv("u32", br.read_u32(), br)
+                rec["base_event_price"]    = _kv("u32", br.read_u32(), br)
+                rec["trade_price"]         = _kv("u32", br.read_u32(), br)
+                rec["trade_premium_price"] = _kv("u32", br.read_u32(), br)
+                rec["race"]                = _kv("u8",  br.read_u8(),  br)
+                rec["required_rank"]       = _kv("u32", br.read_u32(), br)
+                rec["stacks"]              = _kv("u1",  br.read_bool(), br)
+                rec["cant_be_bought"]      = _kv("u1",  br.read_bool(), br)
+                rec["item_type"]           = _kv("u8",  br.read_u8(),  br)
+                cs_start = br.pos
+                rec["def_name"] = Variant(
+                    "str", br.read_cstring(max_len=60), 0xff,
+                    (cs_start, br.pos))
+                rec["item_flags"]          = _kv("u8",  br.read_u8(),  br)
+                cs_start = br.pos
+                rec["required_account_aura"] = Variant(
+                    "str", br.read_cstring(max_len=60), 0xff,
+                    (cs_start, br.pos))
+                rec["delete_from_inventory"] = _kv("u1", br.read_bool(), br)
+            except EOFError as e:
+                rec["_truncated"] = _kv("?", str(e))
+            records.append(Variant("rec", rec, 0xff, (rec_start, br.pos)))
+        out["records"] = Variant(
+            "list", records, 0xff,
+            (records[0].bit_range[0] if records else 0,
+             records[-1].bit_range[1] if records else 0))
+    except EOFError:
+        out["_truncated"] = _kv("?", True)
+    return Variant("struct", out, 0xff, (0, len(inflated) * 8))
+
+
+def _read_store_catalog(br: BitReader, out: dict) -> None:
+    """Walk the type=0x03 full-catalog body — `FUN_08259f60` case 3.
+
+    Field names derived by cross-referencing the bit-stream reads in
+    `FUN_08259f60` with Lua usage in the decompiled client (see
+    `ui/scripts/windows/yup2goldwnd.lua` for gold-pack record fields
+    and `ui/scripts/windows/gold2creditswnd.lua` for credit-pack
+    fields). Fields whose semantics couldn't be tied to a Lua use are
+    left with descriptive offset-based names.
+    """
+    try:
+        out["catalog_version"] = _kv("u32", br.read_u32(), br)
+        # The leading cstring identifies the "chest" bundle whose
+        # random-drop pool is configured by the credit/gold pack tables
+        # below — always "Bundle_Chest_Gold_Reward" in observed pushes,
+        # matching `Def.Bundle_Chest_Gold_Reward` in
+        # gamedata/def/objects/bundles.lua.
+        cstr_start = br.pos
+        chest_name = br.read_cstring(max_len=60)
+        out["chest_def_name"] = Variant(
+            "str", chest_name, 0xff, (cstr_start, br.pos))
+        out["chest_field_a"]   = _kv("u32", br.read_u32(), br)
+        out["chest_field_b"]   = _kv("u32", br.read_u32(), br)
+        out["chest_w0"]        = _kv("f32", br.read_f32(), br)
+        out["chest_w1"]        = _kv("f32", br.read_f32(), br)
+        out["chest_w2"]        = _kv("f32", br.read_f32(), br)
+
+        # Credit-pack tiers — feed `GameStore_GetCreditPacksInfo()` →
+        # serverData.creditsInfo[]. Lua reads fields .price, .value,
+        # .bonusValue (see ui/.../gold2creditswnd.lua:510-540).
+        credit_pack_count = br.read_u32()
+        out["credit_pack_count"] = _kv("u32", credit_pack_count)
+        credit_packs: list[Variant] = []
+        for _ in range(credit_pack_count):
+            rec_start = br.pos
+            rec = {
+                "price":       _kv("u32", br.read_u32(), br),  # cost in GS gold
+                "value":       _kv("u32", br.read_u32(), br),  # credits paid out
+                "bonus_value": _kv("u32", br.read_u32(), br),  # extra credits
+            }
+            cstr_start = br.pos
+            rec["def_name"] = Variant(
+                "str", br.read_cstring(max_len=159), 0xff,
+                (cstr_start, br.pos))
+            credit_packs.append(
+                Variant("rec", rec, 0xff, (rec_start, br.pos)))
+        out["credit_packs"] = Variant(
+            "list", credit_packs, 0xff,
+            (credit_packs[0].bit_range[0] if credit_packs else 0,
+             credit_packs[-1].bit_range[1] if credit_packs else 0))
+
+        # Gold packs — feed `GameStore_GetGoldPacksInfo()` →
+        # serverData.goldPacksInfo[]. Lua reads .hidden, .guid, .lang,
+        # .steamCurrency, .steamCost, .arcCost, .value (yup2goldwnd.lua).
+        # Gold-standart packs use `value` for the gold amount and have a
+        # localized_name like "600 Gold standarts"; Premium-license packs
+        # set `license_hours` (480=20d, 1440=60d, 2400=100d, 8760=365d)
+        # and leave the localized_name empty.
+        gold_pack_count = br.read_u32()
+        out["gold_pack_count"] = _kv("u32", gold_pack_count)
+        gold_packs: list[Variant] = []
+        for _ in range(gold_pack_count):
+            rec_start = br.pos
+            rec: dict = {}
+            try:
+                rec["hidden"]        = _kv("u1",  br.read_bool(), br)
+                rec["value"]         = _kv("u32", br.read_u32(), br)  # gold given
+                rec["field_b"]       = _kv("u32", br.read_u32(), br)  # always 0 observed
+                rec["license_hours"] = _kv("u32", br.read_u32(), br)  # 0 for gold packs
+                rec["weight"]        = _kv("f32", br.read_f32(), br)  # = 1.0 observed
+                cs_start = br.pos
+                rec["guid"] = Variant(
+                    "str", br.read_cstring(max_len=159), 0xff,
+                    (cs_start, br.pos))
+                cs_start = br.pos
+                rec["gaijin_url"] = Variant(
+                    "str", br.read_cstring(max_len=159), 0xff,
+                    (cs_start, br.pos))
+                rec["arc_cost"]      = _kv("f32", br.read_f32(), br)
+                rec["display_price"] = _kv("f32", br.read_f32(), br)  # major currency
+                rec["field_p3"]      = _kv("f32", br.read_f32(), br)
+                cs_start = br.pos
+                rec["lang"] = Variant(
+                    "str", br.read_cstring(max_len=59), 0xff,
+                    (cs_start, br.pos))
+                rec["steam_cost"]    = _kv("u32", br.read_u32(), br)  # minor units (cents)
+                cs_start = br.pos
+                rec["localized_name"] = Variant(
+                    "str", br.read_cstring(max_len=159), 0xff,
+                    (cs_start, br.pos))
+                cs_start = br.pos
+                rec["steam_currency"] = Variant(
+                    "str", br.read_cstring(max_len=11), 0xff,
+                    (cs_start, br.pos))
+                rec["arc_item_id"]   = _kv("u32", br.read_u32(), br)
+                rec["steam_item_id"] = _kv("u32", br.read_u32(), br)
+                cs_start = br.pos
+                rec["category"] = Variant(
+                    "str", br.read_cstring(max_len=159), 0xff,
+                    (cs_start, br.pos))
+            except EOFError as e:
+                rec["_truncated"] = _kv("?", str(e))
+                gold_packs.append(Variant("rec", rec, 0xff, (rec_start, br.pos)))
+                break
+            gold_packs.append(Variant("rec", rec, 0xff, (rec_start, br.pos)))
+        out["gold_packs"] = Variant(
+            "list", gold_packs, 0xff,
+            (gold_packs[0].bit_range[0] if gold_packs else 0,
+             gold_packs[-1].bit_range[1] if gold_packs else 0))
+
+        # Tail: store-wide config tables (~1221 bytes). See `FUN_08259f60`
+        # case 3 after the main-record loop, addresses 0x825acd0..0x825b1be.
+        # Each name below uses the C++-side member-offset (state.member_at_X)
+        # as a stable identifier since the field's gameplay meaning isn't
+        # always obvious from the wire.
+        tail_start = br.pos
+        try:
+            # 6 f32 + 3 u32 (chest-bundle weights / counts)
+            out["m_1933a0_f32"] = _kv("f32", br.read_f32(), br)
+            out["m_1933a4_f32"] = _kv("f32", br.read_f32(), br)
+            out["m_1933a8_f32"] = _kv("f32", br.read_f32(), br)
+            out["m_1933ac_f32"] = _kv("f32", br.read_f32(), br)
+            out["m_1933b0_f32"] = _kv("f32", br.read_f32(), br)
+            out["m_1933b4_f32"] = _kv("f32", br.read_f32(), br)
+            out["m_1933c4_u32"] = _kv("u32", br.read_u32(), br)
+            out["m_1933c8_u32"] = _kv("u32", br.read_u32(), br)
+            out["m_1933cc_u32"] = _kv("u32", br.read_u32(), br)
+
+            # 32 × {u32, u32, u32} — three parallel 32-entry tables
+            # (interleaved on the wire, stored at +0x193480, +0x193500,
+            # +0x193580 in the state struct)
+            tbl1: list = []
+            t1_start = br.pos
+            for _ in range(32):
+                e = (br.read_u32(), br.read_u32(), br.read_u32())
+                tbl1.append(e)
+            out["table_a_32x3"] = Variant(
+                "u32[]", tbl1, 0xff, (t1_start, br.pos))
+
+            # 32 × {u32, u32, u32} — second batch (+0x193600, +0x193680, +0x193700)
+            tbl2: list = []
+            t2_start = br.pos
+            for _ in range(32):
+                e = (br.read_u32(), br.read_u32(), br.read_u32())
+                tbl2.append(e)
+            out["table_b_32x3"] = Variant(
+                "u32[]", tbl2, 0xff, (t2_start, br.pos))
+
+            out["m_1933b8_bool"] = _kv("u8",  br.read_u8(),  br)
+            out["m_1933bc_f32"]  = _kv("f32", br.read_f32(), br)
+            out["m_1933c0_f32"]  = _kv("f32", br.read_f32(), br)
+            out["m_1933dc_u32"]  = _kv("u32", br.read_u32(), br)
+            out["m_1933e0_u32"]  = _kv("u32", br.read_u32(), br)
+            out["m_1933e4_u32"]  = _kv("u32", br.read_u32(), br)
+            out["m_19347c_f32"]  = _kv("f32", br.read_f32(), br)
+
+            # 14 u32 at +0x1933e8
+            arr_a_start = br.pos
+            arr_a = [br.read_u32() for _ in range(14)]
+            out["array_a_14u32"] = Variant(
+                "u32[]", arr_a, 0xff, (arr_a_start, br.pos))
+
+            # 14 u32 at +0x193420
+            arr_b_start = br.pos
+            arr_b = [br.read_u32() for _ in range(14)]
+            out["array_b_14u32"] = Variant(
+                "u32[]", arr_b, 0xff, (arr_b_start, br.pos))
+
+            # 7 u32 at +0x193458
+            arr_c_start = br.pos
+            arr_c = [br.read_u32() for _ in range(7)]
+            out["array_c_7u32"] = Variant(
+                "u32[]", arr_c, 0xff, (arr_c_start, br.pos))
+
+            out["m_193474_f32"] = _kv("f32", br.read_f32(), br)
+            out["m_193478_f32"] = _kv("f32", br.read_f32(), br)
+
+            # 25 × {u32, u32}
+            tbl3_start = br.pos
+            tbl3 = [(br.read_u32(), br.read_u32()) for _ in range(25)]
+            out["table_c_25x2"] = Variant(
+                "u32[]", tbl3, 0xff, (tbl3_start, br.pos))
+
+            out["m_193848_f32"] = _kv("f32", br.read_f32(), br)
+            out["m_19384c_f32"] = _kv("f32", br.read_f32(), br)
+
+            # Three Unix-epoch-ms timestamps. Observed values span Feb..Jun
+            # of the current year and look like an event window with a
+            # mid-point — likely the active sale/event start, end and a
+            # transition point (couldn't confirm exact Lua names).
+            out["event_ts_a_ms"] = _kv("u64", br.read_u64(), br)
+            out["event_ts_b_ms"] = _kv("u64", br.read_u64(), br)
+            out["event_ts_c_ms"] = _kv("u64", br.read_u64(), br)
+
+            out["m_193868_i32"] = _kv("i32", br.read_i32(), br)
+            out["tail_bit"]     = _kv("u1",  br.read_bool(), br)
+            out["m_19386c_i32"] = _kv("i32", br.read_i32(), br)
+            out["m_193870_i32"] = _kv("i32", br.read_i32(), br)
+        except EOFError as e:
+            out["_tail_truncated"] = _kv("?", str(e))
+
+        # Any leftover bits are zero-padding from byte alignment
+        if br.remaining() > 0:
+            pad_start = br.pos
+            pad_bits = br.remaining()
+            out["_pad"] = Variant(
+                "bits", f"({pad_bits} bits)", 0xff,
+                (pad_start, pad_start + pad_bits))
+    except EOFError:
+        out["_truncated"] = _kv("?", True)
+
+
 # ── Dispatch ──────────────────────────────────────────────────────────────────
 
 DECODERS: dict[int, Callable[[bytes], ScmdPayload]] = {
+    0x09: _scmd_store,
     0x0f: _scmd_squad_notification,
     0x10: _scmd_social_notification,
     0x11: _scmd_teaching_notification,
@@ -953,6 +1361,57 @@ def _selftest() -> None:
     p = decode(0x18, struct.pack(">Q", 0x0000018e_a4310f0d))
     assert p.bag["timestamp_ms"].value == 0x0000018e_a4310f0d
     print(f"OK  {format_payload(p)}")
+
+    # SCMD_STORE type=0x00 (no-data ack with catalog hash)
+    p = decode(0x09, struct.pack(">BI", 0x00, 0xc9c95436))
+    assert p.bag["wrapper_type"].value == 0 and p.bag["catalog_hash"].value == 0xc9c95436
+    print(f"OK  {format_payload(p)}")
+
+    # SCMD_STORE type=0x02 (compressed delta) — synthesize a minimal stream
+    # with one record. Layout per FUN_08911a70:
+    #   u32 count + record_body, where each record is:
+    #     11×u32 + u8 + u32 + bit + bit + u8 + cstring + u8 + cstring + bit
+    import zlib as _zl
+    record_body = (struct.pack(">II", 1, 0x12345678)
+                   + b"\x00" * (10 * 4)            # 10 more u32s (= 0)
+                   + bytes([5])                    # f11_u8
+                   + b"\x00" * 4                   # f12_u32
+                   + bytes([0])                    # bits 13+14 packed into byte
+                   + bytes([0])                    # f15_u8
+                   + b"AB\x00"                     # cstring1 = "AB"
+                   + bytes([0])                    # f17_u8
+                   + b"\x00"                       # cstring2 = "" (just NUL)
+                   + bytes([0]))                   # f19_bit packed into byte
+    # The bit-packing means the above bytes don't line up exactly with our
+    # field offsets, but the synthetic test just needs the parser to round
+    # -trip without errors. Build a raw payload by serialising u32 count + a
+    # zero-padded record-body buffer and inflating; the parser doesn't care
+    # whether the fields are sensible, only that there's enough bits.
+    payload_bytes = struct.pack(">I", 1) + b"A\x00" * 60   # 121-byte minimum
+    payload_bytes = payload_bytes.ljust(200, b"\x00")
+    raw = _zl.compress(payload_bytes)[2:-4]
+    body = struct.pack(">BIQ", 0x02, len(raw) + 4, len(payload_bytes)) + raw
+    p = decode(0x09, body)
+    assert p.bag["wrapper_type"].value == 2
+    inner = p.bag["inflated"].value
+    assert inner["record_count"].value == 1
+    assert len(inner["records"].value) == 1
+    print(f"OK  SCMD_STORE type=0x02 walked 1 record")
+
+    # SCMD_STORE type=0x03 (uncompressed full catalog) — synthesize a minimal
+    # body: u8 type + u32 catalog_version + cstr + 2 u32 + 3 f32 + u32 sub=0 + u32 main=0
+    # + tail-opaque-bytes.
+    catalog = (struct.pack(">BI", 0x03, 10000) + b"Bundle_x\x00"
+               + struct.pack(">II", 400, 1000)
+               + struct.pack(">fff", 0.1, 0.5, 0.0)
+               + struct.pack(">II", 0, 0))   # credit_pack_count=0, gold_pack_count=0
+    p = decode(0x09, catalog)
+    assert p.bag["wrapper_type"].value == 3
+    assert p.bag["catalog_version"].value == 10000
+    assert p.bag["chest_def_name"].value == "Bundle_x"
+    assert p.bag["credit_pack_count"].value == 0
+    assert p.bag["gold_pack_count"].value == 0
+    print(f"OK  SCMD_STORE type=0x03 catalog v=10000 credit_packs=0 gold_packs=0")
 
     # SCMD_REWARD_SCHEDULE: empty bag (count=0, no flag bit)
     p = decode(0x20, b"\x00\x00\x00\x00")
