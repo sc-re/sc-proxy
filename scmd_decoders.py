@@ -635,7 +635,7 @@ def _scmd_store(body: bytes) -> ScmdPayload:
                       matches `catalog_hash`, nothing to apply. Observed
                       `c9c95436` in every capture (server's current hash).
 
-      type=0x02 (~)   u32 chunk_size + u32 prev_buffered + u32 uncompressed_size + deflate[]
+      type=0x02 (~)   u32 stored_size + u32 from_byte + u32 uncompressed_size + deflate[]
                       compressed store-patch (same record schema as the
                       initial type=0x01 catalog push). The C++ pipeline (see
                       `FUN_08259f60` case 2 → `FUN_08258c60` →
@@ -694,16 +694,72 @@ def _scmd_store(body: bytes) -> ScmdPayload:
         if t == 0x00:
             out["catalog_hash"] = _kv("u32", br.read_u32(), br)
         elif t == 0x02:
+            # Chunk header — `StoreSvc::Recieve` case 1/2 (0x08259f60):
+            #   u32 stored_size  size of the reassembly payload for this transfer.
+            #                    The stock server counts the 4-byte
+            #                    `uncompressed_size` prefix the payload begins
+            #                    with, so stored_size == len(deflate) + 4.
+            #   u32 from_byte    byte offset this chunk appends at; the client
+            #                    discards it ("fromByte != GetNumBytesUsed(),
+            #                    ignoring, resending") unless from_byte equals
+            #                    the bytes it has already buffered. 0 = first/only
+            #                    chunk. (Previously this and uncompressed_size were
+            #                    misread together as one u64 — only worked because
+            #                    from_byte is 0 in single-chunk transfers.)
+            #   u32 uncompressed_size  first u32 of the payload; inflated size.
             out["stored_size"]       = _kv("u32", br.read_u32(), br)
-            out["uncompressed_size"] = _kv("u64", br.read_u64(), br)
-            remaining = (len(body) * 8 - br.pos) // 8
-            deflate = br.read_blob(remaining)
-            out["deflate"] = _kv("bytes", deflate, br)
-            try:
-                inflated = zlib.decompress(deflate, -15)
-            except zlib.error as e:
-                out["_inflate_err"] = _kv("?", f"{type(e).__name__}: {e}")
+            out["from_byte"]         = _kv("u32", br.read_u32(), br)
+            out["uncompressed_size"] = _kv("u32", br.read_u32(), br)
+            stored = out["stored_size"].value
+            avail  = (len(body) * 8 - br.pos) // 8
+            region = br.read_blob(avail)
+            # Inflate ONLY the deflate run. A deflate stream is self-delimiting,
+            # so bound the input to the declared compressed size and let
+            # decompressobj report exactly where the stream ends; anything past
+            # it is not compressed data and must be surfaced, not silently
+            # dropped the way one-shot zlib.decompress does.
+            defl_input = region[:min(stored, avail)] if stored else region
+            # The stock server emits RAW deflate (wbits=-15) — that's what the
+            # client's inflater expects. Try that first; fall back to an
+            # auto-detected zlib/gzip header (wbits=47) so the inspector can still
+            # read non-conformant streams (e.g. our own server currently wraps
+            # output in a zlib header, which the live client would reject).
+            inflated = dec = last_err = None
+            for wbits in (-15, 47):
+                dec = zlib.decompressobj(wbits)
+                try:
+                    inflated = dec.decompress(defl_input) + dec.flush()
+                    break
+                except zlib.error as e:
+                    last_err = e
+                    inflated = None
+            if inflated is None:
+                out["deflate"] = _kv("bytes", region, br)
+                out["_inflate_err"] = _kv("?", f"{type(last_err).__name__}: {last_err}")
                 return ScmdPayload("SCMD_STORE", out)
+            if wbits != -15:
+                out["_deflate_note"] = _kv("?",
+                    f"zlib/gzip-wrapped stream (decoded with wbits={wbits}); the "
+                    f"stock protocol uses raw deflate (-15) and the live client "
+                    f"would reject this framing")
+            consumed = len(defl_input) - len(dec.unused_data)
+            deflate  = region[:consumed]
+            trailing = region[consumed:]
+            defl_bit = 13 * 8                       # header is u8 + 3×u32 = 13 bytes
+            out["deflate"] = Variant("bytes", deflate, 0xff,
+                                     (defl_bit, defl_bit + len(deflate) * 8))
+            # Stock framing: stored_size == len(deflate) + 4 (the prefix). Our
+            # own server omits the +4 (stored_size == len(deflate)); flag anything
+            # outside both so a framing bug is obvious in the inspector.
+            if stored not in (len(deflate), len(deflate) + 4):
+                out["_stored_size_note"] = _kv("?",
+                    f"stored_size={stored} but deflate run is {len(deflate)}B "
+                    f"(expected {len(deflate)} or {len(deflate) + 4})")
+            out["inflated_raw"] = Variant("bytes", inflated, 0xff, (0, len(inflated)))
+            if trailing:
+                tr_bit = (13 + consumed) * 8
+                out["trailing"] = Variant("bytes", trailing, 0xff,
+                                          (tr_bit, tr_bit + len(trailing) * 8))
             out["inflated"] = _read_store_delta(inflated)
         elif t == 0x03:
             _read_store_catalog(br, out)
