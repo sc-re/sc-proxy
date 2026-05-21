@@ -408,9 +408,11 @@ types:
       Player wallet snapshot. Handler 0x08231c56 → FUN_088e9ec0 reads
       a u16 flag word then byte-aligned per-bit currency balances:
       bit 1 → credits, bit 2 → goldCredits, bit 3 → tokenCredits,
-      bit 4 → loyalty + loyalty_time, bit 5 → vid, bit 6 → premium,
-      bit 7 → 5 × craft resources. All fields are byte-sized so the
-      layout maps cleanly to native kaitai.
+      bit 4 → loyalty + loyalty_time, bit 5 → vid, bit 6 → freeSynergy
+      (free experience — confirmed against FUN_088e9ec0, a u32 read at
+      flag 0x40; previously mislabeled "premium"), bit 7 → 5 × craft
+      resources. All fields are byte-sized so the layout maps cleanly
+      to native kaitai.
     seq:
     - id: flags
       type: u2be
@@ -432,7 +434,8 @@ types:
     - id: vid
       type: u8be
       if: 'flags & 0x20 != 0'
-    - id: premium
+    - id: free_synergy
+      doc: Free synergy / free experience (not bound to a ship).
       type: u4be
       if: 'flags & 0x40 != 0'
     - id: craft_resources
@@ -2513,22 +2516,33 @@ types:
     - id: flags
       type: u2be
   ac_mail_send:
-    doc: Result of sending mail; status + assigned mail ID
+    doc: |
+      Send-mail ACK — handler 0x0822e200 reads u8 status then branches:
+      status==0 → u1 has_data (if set, server echoes the freshly-stored
+      mail back via u32 mail_id + bag + MailRecord); status==0x0e → i32
+      error_value + u1 error_flag; otherwise nothing. Common observed
+      response is status=0 has_data=0 (= u8+u1 = 9 bits + padding).
     seq:
     - id: status
       type: u1
-    - id: unknown
-      type: u1
-    - id: mail_id
-      type: u4be
+    - id: has_data
+      type: b1
+      if: status == 0
+    - id: error_value
+      type: s4be
+      if: status == 0x0e
+    - id: error_flag
+      type: b1
+      if: status == 0x0e
   ac_mail_remove:
     doc: |
-      Field sequence from handler at 0x0822e184 in OnRecieve dispatch.
-      Reads: u8 u64
+      Remove-mail ACK — handler 0x0822e184 reads u8 status + u64
+      mail_id, then (when status==0) drops the matching mail from the
+      local mailbox.
     seq:
     - id: status
       type: u1
-    - id: uid
+    - id: mail_id
       type: u8be
   ac_mail_acknowledge_expiration:
     doc: Acknowledge expired mail; mail_id=0xffffffff means all

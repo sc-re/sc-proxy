@@ -4288,8 +4288,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcMailRemove(KaitaiStruct):
-        """Field sequence from handler at 0x0822e184 in OnRecieve dispatch.
-        Reads: u8 u64
+        """Remove-mail ACK — handler 0x0822e184 reads u8 status + u64
+        mail_id, then (when status==0) calls FUN_088f7c40 to drop the
+        matching mail from the local mailbox.
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcMailRemove, self).__init__(_io)
@@ -4299,7 +4300,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
         def _read(self):
             self.status = self._io.read_u1()
-            self.uid = self._io.read_u8be()
+            self.mail_id = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -4307,7 +4308,19 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcMailSend(KaitaiStruct):
-        """Result of sending mail; status + assigned mail ID."""
+        """Send-mail ACK — handler 0x0822e200 reads `u8 status` and
+        branches:
+          * status == 0  → `u1 has_data`; if set, the server echoes the
+                           freshly-stored mail back (u32 mail_id + bag +
+                           MailRecord). Common case is has_data == 0 →
+                           body is just u8+u1 (9 bits, 7 bits padding).
+          * status == 0xe → `i32 + u1` (insufficient-funds / pricing
+                            error).
+          * other         → nothing more.
+
+        We expose `status` and the has_data bit for the common branch;
+        the optional tail isn't decoded yet (no captures with it).
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcMailSend, self).__init__(_io)
             self._parent = _parent
@@ -4316,8 +4329,11 @@ class StarConflictPackageServer(KaitaiStruct):
 
         def _read(self):
             self.status = self._io.read_u1()
-            self.unknown = self._io.read_u1()
-            self.mail_id = self._io.read_u4be()
+            if self.status == 0:
+                self.has_data = self._io.read_bits_int_be(1) != 0
+            elif self.status == 0x0e:
+                self.error_value = self._io.read_s4be()
+                self.error_flag = self._io.read_bits_int_be(1) != 0
 
 
         def _fetch_instances(self):
@@ -4462,9 +4478,11 @@ class StarConflictPackageServer(KaitaiStruct):
         """Player wallet snapshot. Handler 0x08231c56 → FUN_088e9ec0 reads
         a u16 flag word then byte-aligned per-bit currency balances:
         bit 1 → credits, bit 2 → goldCredits, bit 3 → tokenCredits,
-        bit 4 → loyalty + loyalty_time, bit 5 → vid, bit 6 → premium,
-        bit 7 → 5 × craft resources. All fields are byte-sized so the
-        layout maps cleanly to native kaitai.
+        bit 4 → loyalty + loyalty_time, bit 5 → vid, bit 6 → freeSynergy
+        (free experience — confirmed against FUN_088e9ec0, a u32 read at
+        flag 0x40; previously mislabeled "premium"), bit 7 → 5 × craft
+        resources. All fields are byte-sized so the layout maps cleanly
+        to native kaitai.
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcPlayerCredits, self).__init__(_io)
@@ -4500,7 +4518,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
             if self.flags & 64 != 0:
                 pass
-                self.premium = self._io.read_u4be()
+                self.free_synergy = self._io.read_u4be()
 
             if self.flags & 128 != 0:
                 pass

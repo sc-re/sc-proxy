@@ -297,10 +297,12 @@
     "name": "AC_LOBBY_JOIN",
     "addr": "0x0822b264",
     "reader_calls": [
-      "BitStream_ReadU8"
+      "BitStream_ReadU8",
+      "BitStream_ReadBool"
     ],
     "field_tags": [
-      "u8"
+      "u8",
+      "bool"
     ]
   },
   "141": {
@@ -342,8 +344,12 @@
   "136": {
     "name": "AC_OBTAIN_REFERRAL_KEY",
     "addr": "0x0822b4a2",
-    "reader_calls": [],
-    "field_tags": []
+    "reader_calls": [
+      "BitStream_ReadBool"
+    ],
+    "field_tags": [
+      "bool"
+    ]
   },
   "135": {
     "name": "AC_SET_REFERRER",
@@ -359,10 +365,12 @@
     "name": "AC_FINALIZE_STEAM_MTXN",
     "addr": "0x0822b52b",
     "reader_calls": [
+      "BitStream_ReadBool",
       "BitStream_ReadU8",
       "BitStream_ReadCStringLen"
     ],
     "field_tags": [
+      "bool",
       "u8",
       "cstrN"
     ]
@@ -371,12 +379,14 @@
     "name": "AC_REFERRALS",
     "addr": "0x0822b751",
     "reader_calls": [
+      "BitStream_ReadBool",
       "BitStream_ReadU64v2",
       "BitStream_ReadU8",
       "BitStream_ReadU64v2",
       "BitStream_ReadU32"
     ],
     "field_tags": [
+      "bool",
       "u64",
       "u8",
       "u64",
@@ -388,11 +398,13 @@
     "addr": "0x0822b852",
     "reader_calls": [
       "BitStream_ReadU8",
-      "BitStream_ReadU8"
+      "BitStream_ReadU8",
+      "BitStream_ReadBool"
     ],
     "field_tags": [
       "u8",
-      "u8"
+      "u8",
+      "bool"
     ]
   },
   "139": {
@@ -418,8 +430,12 @@
   "252": {
     "name": "AC_ADVENTURE_CANCEL",
     "addr": "0x0822b940",
-    "reader_calls": [],
-    "field_tags": []
+    "reader_calls": [
+      "BitStream_ReadBool"
+    ],
+    "field_tags": [
+      "bool"
+    ]
   },
   "132": {
     "name": "AC_TEACHING_CHECK",
@@ -455,12 +471,14 @@
     "reader_calls": [
       "BitStream_ReadU8",
       "BitStream_ReadU64v2",
-      "BitStream_ReadU8"
+      "BitStream_ReadU8",
+      "BitStream_ReadBool"
     ],
     "field_tags": [
       "u8",
       "u64",
-      "u8"
+      "u8",
+      "bool"
     ]
   },
   "27": {
@@ -486,20 +504,26 @@
       "BitStream_ReadU8",
       "BitStream_ReadU16v2",
       "BitStream_ReadU16v2",
-      "BitStream_ReadU64"
+      "BitStream_ReadU64",
+      "BitStream_ReadBool"
     ],
     "field_tags": [
       "u8",
       "u16",
       "u16",
-      "u64"
+      "u64",
+      "bool"
     ]
   },
   "29": {
     "name": "AC_SHIP_QUESTS",
     "addr": "0x0822bdf8",
-    "reader_calls": [],
-    "field_tags": []
+    "reader_calls": [
+      "BitStream_ReadBool"
+    ],
+    "field_tags": [
+      "bool"
+    ]
   },
   "128": {
     "name": "AC_TEACHING_REQUEST_TO_TEACHER",
@@ -543,10 +567,12 @@
     "name": "AC_ENTER_TOURNAMENT",
     "addr": "0x0822c02e",
     "reader_calls": [
+      "BitStream_ReadBool",
       "BitStream_ReadU8",
       "Bag_Deserialize"
     ],
     "field_tags": [
+      "bool",
       "u8",
       "BAG"
     ]
@@ -758,8 +784,12 @@
   "250": {
     "name": "AC_ZONES_LUA_ACTIVE_EVENTS_UPDATE",
     "addr": "0x0822ca25",
-    "reader_calls": [],
-    "field_tags": []
+    "reader_calls": [
+      "BitStream_ReadBool"
+    ],
+    "field_tags": [
+      "bool"
+    ]
   },
   "222": {
     "name": "AC_LEADERBOARD_GET_DESCS",
@@ -825,10 +855,12 @@
     "name": "AC_SET_VISITED_ZONE",
     "addr": "0x0822cec6",
     "reader_calls": [
-      "BitStream_ReadU16"
+      "BitStream_ReadU16",
+      "BitStream_ReadBool"
     ],
     "field_tags": [
-      "u16"
+      "u16",
+      "bool"
     ]
   },
   "215": {
@@ -930,8 +962,12 @@
   "22": {
     "name": "AC_ADD_ACCOUNT_AURA",
     "addr": "0x0822d36f",
-    "reader_calls": [],
-    "field_tags": []
+    "reader_calls": [
+      "BitStream_ReadBool"
+    ],
+    "field_tags": [
+      "bool"
+    ]
   },
   "81": {
     "name": "AC_AUTOGEN_INV_EXT_BUY",
@@ -957,17 +993,23 @@
     "name": "AC_GET_BLUEPRINTS",
     "addr": "0x0822d434",
     "reader_calls": [
+      "BitStream_ReadBool",
       "Bag_Deserialize"
     ],
     "field_tags": [
+      "bool",
       "BAG"
     ]
   },
   "241": {
     "name": "AC_EMM_CHANGE_READY",
     "addr": "0x0822d4a0",
-    "reader_calls": [],
-    "field_tags": []
+    "reader_calls": [
+      "BitStream_ReadBool"
+    ],
+    "field_tags": [
+      "bool"
+    ]
   },
   "240": {
     "name": "AC_BUY_PRODUCT_FROM_ADVERT",
@@ -1040,32 +1082,50 @@
       "BitStream_ReadU32",
       "BitStream_ReadU32",
       "BitStream_ReadU32",
+      "BitStream_ReadBool",
+      "BitStream_ReadBool",
+      "BitStream_ReadBool",
+      "BitStream_ReadBool",
       "BitStream_ReadU8",
       "BitStream_ReadU32",
+      "BitStream_ReadBool",
       "BitStream_ReadU8",
       "BitStream_ReadU16v2",
       "BitStream_ReadU8",
       "BitStream_ReadU32",
-      "BitStream_ReadU64v2"
+      "BitStream_ReadBool",
+      "BitStream_ReadU64v2",
+      "BitStream_ReadBool"
     ],
     "field_tags": [
       "u32",
       "u32",
       "u32",
+      "bool",
+      "bool",
+      "bool",
+      "bool",
       "u8",
       "u32",
+      "bool",
       "u8",
       "u16",
       "u8",
       "u32",
-      "u64"
+      "bool",
+      "u64",
+      "bool"
     ]
   },
   "23": {
     "name": "AC_CANCEL_ACCOUNT_AURA",
     "addr": "0x0822dc26",
-    "reader_calls": [],
-    "field_tags": []
+    "reader_calls": [
+      "BitStream_ReadBool"
+    ],
+    "field_tags": [
+      "bool"
+    ]
   },
   "25": {
     "name": "AC_QUEST_ACCEPT",
@@ -1117,22 +1177,26 @@
     "reader_calls": [
       "BitStream_ReadU8",
       "BitStream_ReadU64v2",
-      "BitStream_ReadU32"
+      "BitStream_ReadU32",
+      "BitStream_ReadBool"
     ],
     "field_tags": [
       "u8",
       "u64",
-      "u32"
+      "u32",
+      "bool"
     ]
   },
   "208": {
     "name": "AC_MAIL_GET",
     "addr": "0x0822e030",
     "reader_calls": [
-      "BitStream_ReadU8"
+      "BitStream_ReadU8",
+      "BitStream_ReadBool"
     ],
     "field_tags": [
-      "u8"
+      "u8",
+      "bool"
     ]
   },
   "207": {
@@ -1295,9 +1359,11 @@
     "name": "AC_ADD_THUMB_UP",
     "addr": "0x0822edb0",
     "reader_calls": [
+      "BitStream_ReadBool",
       "BitStream_ReadU64v2"
     ],
     "field_tags": [
+      "bool",
       "u64"
     ]
   },
@@ -1385,9 +1451,11 @@
     "name": "AC_CLAN_HISTORY_GET",
     "addr": "0x0822f2da",
     "reader_calls": [
+      "BitStream_ReadBool",
       "Bag_Deserialize"
     ],
     "field_tags": [
+      "bool",
       "BAG"
     ]
   },
@@ -1491,9 +1559,11 @@
     "name": "AC_ACCOUNT_AURAS",
     "addr": "0x0822f87d",
     "reader_calls": [
+      "BitStream_ReadBool",
       "BitStream_ReadU8"
     ],
     "field_tags": [
+      "bool",
       "u8"
     ]
   },
@@ -1593,12 +1663,14 @@
     "reader_calls": [
       "BitStream_ReadU8",
       "BitStream_ReadU64v2",
-      "BitStream_ReadU8"
+      "BitStream_ReadU8",
+      "BitStream_ReadBool"
     ],
     "field_tags": [
       "u8",
       "u64",
-      "u8"
+      "u8",
+      "bool"
     ]
   },
   "85": {
@@ -1641,10 +1713,12 @@
     "name": "AC_TALENTS_UPDATE",
     "addr": "0x082304ad",
     "reader_calls": [
-      "BitStream_ReadU8"
+      "BitStream_ReadU8",
+      "BitStream_ReadBool"
     ],
     "field_tags": [
-      "u8"
+      "u8",
+      "bool"
     ]
   },
   "9": {
@@ -1656,6 +1730,7 @@
       "BitStream_ReadU64v2",
       "BitStream_ReadU64v2",
       "BitStream_ReadI32",
+      "BitStream_ReadBool",
       "Bag_Deserialize"
     ],
     "field_tags": [
@@ -1664,6 +1739,7 @@
       "u64",
       "u64",
       "i32",
+      "bool",
       "BAG"
     ]
   },
@@ -1748,11 +1824,13 @@
     "addr": "0x08230ad8",
     "reader_calls": [
       "BitStream_ReadU64v2",
-      "BitStream_ReadU8"
+      "BitStream_ReadU8",
+      "BitStream_ReadBool"
     ],
     "field_tags": [
       "u64",
-      "u8"
+      "u8",
+      "bool"
     ]
   },
   "62": {
@@ -1779,10 +1857,16 @@
     "name": "AC_VESSEL_REPAIR_BATTLE",
     "addr": "0x08230d28",
     "reader_calls": [
-      "BitStream_ReadU8"
+      "BitStream_ReadU8",
+      "BitStream_ReadBool",
+      "BitStream_ReadBool",
+      "BitStream_ReadBool"
     ],
     "field_tags": [
-      "u8"
+      "u8",
+      "bool",
+      "bool",
+      "bool"
     ]
   },
   "95": {
@@ -1810,8 +1894,14 @@
   "91": {
     "name": "AC_SQUAD_INFO",
     "addr": "0x08230f7c",
-    "reader_calls": [],
-    "field_tags": []
+    "reader_calls": [
+      "BitStream_ReadBool",
+      "BitStream_ReadBool"
+    ],
+    "field_tags": [
+      "bool",
+      "bool"
+    ]
   },
   "248": {
     "name": "AC_USER_NOTES_DELETE",
@@ -1829,7 +1919,9 @@
     "reader_calls": [
       "BitStream_ReadU64",
       "BitStream_ReadU32",
+      "BitStream_ReadBool",
       "BitStream_ReadU32",
+      "BitStream_ReadBool",
       "BitStream_ReadU64",
       "BitStream_ReadCStringLen",
       "BitStream_ReadU32",
@@ -1838,22 +1930,28 @@
       "Bag_Deserialize",
       "Bag_Deserialize",
       "BitStream_ReadU32",
+      "BitStream_ReadBool",
       "BitStream_ReadU8",
       "BitStream_ReadU8",
       "BitStream_ReadI32",
+      "BitStream_ReadBool",
       "Bag_Deserialize",
       "Bag_Deserialize",
       "BitStream_ReadI32",
       "BitStream_ReadI32",
+      "BitStream_ReadBool",
       "BitStream_ReadI32",
       "BitStream_ReadU64v2",
       "BitStream_ReadI32",
+      "BitStream_ReadBool",
       "Bag_Deserialize"
     ],
     "field_tags": [
       "u64",
       "u32",
+      "bool",
       "u32",
+      "bool",
       "u64",
       "cstrN",
       "u32",
@@ -1862,16 +1960,20 @@
       "BAG",
       "BAG",
       "u32",
+      "bool",
       "u8",
       "u8",
       "i32",
+      "bool",
       "BAG",
       "BAG",
       "i32",
       "i32",
+      "bool",
       "i32",
       "u64",
       "i32",
+      "bool",
       "BAG"
     ]
   },
@@ -1889,9 +1991,13 @@
     "name": "AC_LEAVE_MM_QUEUE",
     "addr": "0x08231acc",
     "reader_calls": [
+      "BitStream_ReadBool",
+      "BitStream_ReadBool",
       "BitStream_ReadU8"
     ],
     "field_tags": [
+      "bool",
+      "bool",
       "u8"
     ]
   },
@@ -1915,9 +2021,13 @@
     "name": "AC_MM_INFO",
     "addr": "0x08231dbc",
     "reader_calls": [
+      "BitStream_ReadBool",
+      "BitStream_ReadBool",
       "Bag_Deserialize"
     ],
     "field_tags": [
+      "bool",
+      "bool",
       "BAG"
     ]
   },
@@ -1925,6 +2035,7 @@
     "name": "AC_ENTER_MM_QUEUE",
     "addr": "0x08231e51",
     "reader_calls": [
+      "BitStream_ReadBool",
       "BitStream_ReadU8",
       "BitStream_ReadU8",
       "BitStream_ReadU8",
@@ -1936,6 +2047,7 @@
       "Bag_Deserialize"
     ],
     "field_tags": [
+      "bool",
       "u8",
       "u8",
       "u8",
@@ -1980,8 +2092,12 @@
   "6": {
     "name": "AC_LEAVE_TOURNAMENT",
     "addr": "0x08232361",
-    "reader_calls": [],
-    "field_tags": []
+    "reader_calls": [
+      "BitStream_ReadBool"
+    ],
+    "field_tags": [
+      "bool"
+    ]
   },
   "239": {
     "name": "AC_ADVERT_GET",
@@ -2107,10 +2223,12 @@
     "name": "AC_SQUAD_READY",
     "addr": "0x08232bf4",
     "reader_calls": [
-      "BitStream_ReadU8"
+      "BitStream_ReadU8",
+      "BitStream_ReadBool"
     ],
     "field_tags": [
-      "u8"
+      "u8",
+      "bool"
     ]
   },
   "106": {
@@ -2207,7 +2325,9 @@
       "BitStream_ReadU64v2",
       "BitStream_ReadU8",
       "BitStream_ReadU8",
-      "BitStream_ReadU32"
+      "BitStream_ReadBool",
+      "BitStream_ReadU32",
+      "BitStream_ReadBool"
     ],
     "field_tags": [
       "u64",
@@ -2216,7 +2336,9 @@
       "u64",
       "u8",
       "u8",
-      "u32"
+      "bool",
+      "u32",
+      "bool"
     ]
   },
   "232": {
@@ -2258,11 +2380,13 @@
     "addr": "0x0823353e",
     "reader_calls": [
       "BitStream_ReadU8",
-      "BitStream_ReadU64v2"
+      "BitStream_ReadU64v2",
+      "BitStream_ReadBool"
     ],
     "field_tags": [
       "u8",
-      "u64"
+      "u64",
+      "bool"
     ]
   },
   "83": {
@@ -2310,11 +2434,13 @@
     "addr": "0x08233754",
     "reader_calls": [
       "BitStream_ReadU8",
-      "BitStream_ReadU8"
+      "BitStream_ReadU8",
+      "BitStream_ReadBool"
     ],
     "field_tags": [
       "u8",
-      "u8"
+      "u8",
+      "bool"
     ]
   },
   "115": {
@@ -2452,11 +2578,13 @@
     "addr": "0x08233dd0",
     "reader_calls": [
       "BitStream_ReadU32",
-      "BitStream_ReadU8"
+      "BitStream_ReadU8",
+      "BitStream_ReadBool"
     ],
     "field_tags": [
       "u32",
-      "u8"
+      "u8",
+      "bool"
     ]
   },
   "72": {
@@ -2547,6 +2675,8 @@
     "reader_calls": [
       "BitStream_ReadU8",
       "BitStream_ReadU8",
+      "BitStream_ReadBool",
+      "BitStream_ReadBool",
       "BitStream_ReadU8v2",
       "BitStream_ReadU8",
       "BitStream_ReadU32"
@@ -2554,6 +2684,8 @@
     "field_tags": [
       "u8",
       "u8",
+      "bool",
+      "bool",
       "u8",
       "u8",
       "u32"
@@ -2575,11 +2707,13 @@
     "reader_calls": [
       "BitStream_ReadU8",
       "BitStream_ReadU8",
+      "BitStream_ReadBool",
       "BitStream_ReadU64v2"
     ],
     "field_tags": [
       "u8",
       "u8",
+      "bool",
       "u64"
     ]
   },
@@ -2591,14 +2725,16 @@
       "BitStream_ReadU64v2",
       "BitStream_ReadU64v2",
       "BitStream_ReadU8",
-      "BitStream_ReadU8"
+      "BitStream_ReadU8",
+      "BitStream_ReadBool"
     ],
     "field_tags": [
       "u8",
       "u64",
       "u64",
       "u8",
-      "u8"
+      "u8",
+      "bool"
     ]
   },
   "46": {
@@ -2616,11 +2752,13 @@
     "addr": "0x08234924",
     "reader_calls": [
       "BitStream_ReadU8",
-      "BitStream_ReadU64v2"
+      "BitStream_ReadU64v2",
+      "BitStream_ReadBool"
     ],
     "field_tags": [
       "u8",
-      "u64"
+      "u64",
+      "bool"
     ]
   },
   "40": {
@@ -2635,11 +2773,13 @@
     "reader_calls": [
       "BitStream_ReadU64v2",
       "BitStream_ReadU8",
+      "BitStream_ReadBool",
       "BitStream_ReadU32"
     ],
     "field_tags": [
       "u64",
       "u8",
+      "bool",
       "u32"
     ]
   },
@@ -2681,7 +2821,10 @@
       "BitStream_ReadU8",
       "BitStream_ReadU8",
       "BitStream_ReadU64v2",
-      "BitStream_ReadU64v2"
+      "BitStream_ReadU64v2",
+      "BitStream_ReadBool",
+      "BitStream_ReadBool",
+      "BitStream_ReadBool"
     ],
     "field_tags": [
       "u8",
@@ -2690,7 +2833,10 @@
       "u8",
       "u8",
       "u64",
-      "u64"
+      "u64",
+      "bool",
+      "bool",
+      "bool"
     ]
   },
   "38": {
