@@ -397,35 +397,20 @@ types:
       type: u2be
   ac_player_credentials:
     doc: |
-      Player nickname and session credentials. Handler 0x082305c7 reads,
-      all big-endian: nickname (NUL-terminated), flag1 (bool, always 1),
-      steam_id64 (SteamID64, 0 if not Steam-linked), account_id (stable
-      64-bit account id), level (small account-progress level), flag2
-      (bool, always 0), then a trailing property bag (empty in every
-      capture). Total length = 28 + len(nickname). Verified against 93
-      captures.
+      Player nickname and session credentials. Handler 0x082305c7 reads
+      (bit-stream order): nickname (NUL-terminated), flag1 (u8 byte,
+      always 1), steam_id64 (SteamID64, 0 if not Steam-linked), account_id
+      (stable 64-bit account id), level (small account-progress level),
+      flag2 (a single-BIT bool — ReadBool @8b1b6d0), then a trailing
+      property bag. Because flag2 is 1 bit, the bag is read bit-misaligned
+      (shifted 1 bit) with up to 7 padding bits at the end, so this can't
+      be modelled with native byte-aligned kaitai — decoded by
+      ac_player_credentials_body.AcPlayerCredentialsBody. Verified against
+      all 96 captures (flag1=1, flag2=0, bag empty).
     seq:
-    - id: nickname
-      type: strz
-      encoding: ASCII
-    - id: flag1
-      type: u1
-      doc: bool, always 0x01 observed
-    - id: steam_id64
-      type: u8be
-      doc: SteamID64 (0x0110000100000000 | accountID); 0 for dev-login.
-    - id: account_id
-      type: u8be
-      doc: account-stable 64-bit id (not echoed elsewhere).
-    - id: level
-      type: s4be
-      doc: small account-progress level.
-    - id: flag2
-      type: u1
-      doc: bool, always 0x00 observed.
-    - id: extra
-      type: bag_payload
-      doc: trailing property bag, empty (entry count 0) in all captures.
+    - id: data
+      type: ac_player_credentials_body
+      size-eos: true
   ac_player_credits:
     doc: |
       Player wallet snapshot. Handler 0x08231c56 → FUN_088e9ec0 reads

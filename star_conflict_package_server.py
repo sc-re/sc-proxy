@@ -15,6 +15,7 @@ import ac_lobby_info_body
 import ac_lobby_list_body
 import ac_mail_get_body
 import ac_player_autogen_inventory_body
+import ac_player_credentials_body
 import ac_player_inventory_body
 import ac_player_vessels_body
 import ac_quests_body
@@ -4474,13 +4475,16 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcPlayerCredentials(KaitaiStruct):
-        """Player nickname and session credentials. Handler 0x082305c7 reads,
-        all big-endian: nickname (NUL-terminated), flag1 (bool, always 1),
-        steam_id64 (SteamID64, 0 if not Steam-linked), account_id (stable
-        64-bit account id), level (small account-progress level), flag2
-        (bool, always 0), then a trailing property bag (empty in every
-        capture). Total length = 28 + len(nickname). Verified against 93
-        captures.
+        """Player nickname and session credentials. Handler 0x082305c7 reads
+        (bit-stream order): nickname (NUL-terminated), flag1 (u8 byte,
+        always 1), steam_id64 (SteamID64, 0 if not Steam-linked), account_id
+        (stable 64-bit account id), level (small account-progress level),
+        flag2 (a single-BIT bool — ReadBool @8b1b6d0), then a trailing
+        property bag. Because flag2 is 1 bit, the bag is read bit-misaligned
+        (shifted 1 bit) with up to 7 padding bits at the end, so this can't
+        be modelled with native byte-aligned kaitai — decoded by
+        ac_player_credentials_body.AcPlayerCredentialsBody. Verified against
+        all 96 captures (flag1=1, flag2=0, bag empty).
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcPlayerCredentials, self).__init__(_io)
@@ -4489,18 +4493,14 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.nickname = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
-            self.flag1 = self._io.read_u1()
-            self.steam_id64 = self._io.read_u8be()
-            self.account_id = self._io.read_u8be()
-            self.level = self._io.read_s4be()
-            self.flag2 = self._io.read_u1()
-            self.extra = bag_payload.BagPayload(self._io)
+            self._raw_data = self._io.read_bytes_full()
+            _io__raw_data = KaitaiStream(BytesIO(self._raw_data))
+            self.data = ac_player_credentials_body.AcPlayerCredentialsBody(_io__raw_data)
 
 
         def _fetch_instances(self):
             pass
-            self.extra._fetch_instances()
+            self.data._fetch_instances()
 
 
     class AcPlayerCredits(KaitaiStruct):
