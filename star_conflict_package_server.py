@@ -6579,8 +6579,12 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcVesselFreeCustomElements(KaitaiStruct):
-        """Field sequence from handler at 0x082308a3 in OnRecieve dispatch.
-        Reads: u32 cstrN
+        """The customization elements (decal/sticker def-names) the player has
+        unlocked for free. Handler 0x082308a3 reads u32 count, then count ×
+        NUL-terminated def-name (the ReadCStringLen is looped). The old
+        model read the count + only the first string, so the list was
+        truncated. Verified against all 106 captures (count 13..552, 0
+        leftover bytes).
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcVesselFreeCustomElements, self).__init__(_io)
@@ -6589,12 +6593,18 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.value = self._io.read_u4be()
-            self.text = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
+            self.count = self._io.read_u4be()
+            self.elements = []
+            for i in range(self.count):
+                self.elements.append((self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII"))
+
 
 
         def _fetch_instances(self):
             pass
+            for i in range(len(self.elements)):
+                pass
+
 
 
     class AcVesselLevelup(KaitaiStruct):

@@ -1016,14 +1016,20 @@ types:
       size-eos: true
   ac_vessel_free_custom_elements:
     doc: |
-      Field sequence from handler at 0x082308a3 in OnRecieve dispatch.
-      Reads: u32 cstrN
+      The customization elements (decal/sticker def-names) the player has
+      unlocked for free. Handler 0x082308a3 reads u32 count, then count ×
+      NUL-terminated def-name (the ReadCStringLen is looped). The old
+      model read the count + only the first string, so the list was
+      truncated. Verified against all 106 captures (count 13..552, 0
+      leftover bytes).
     seq:
-    - id: value
+    - id: count
       type: u4be
-    - id: text
+    - id: elements
       type: strz
       encoding: ASCII
+      repeat: expr
+      repeat-expr: count
   ac_vessel_custom_elements_buy:
     doc: |
       Field sequence from handler at 0x0823080e in OnRecieve dispatch.
