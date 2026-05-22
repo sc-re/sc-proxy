@@ -5265,9 +5265,13 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcShipQuests(KaitaiStruct):
-        """Per-ship quest list. Handler 0x0822bdf8 reads u1 flag + u1 num_records,
-        then num_records × {FUN_088f9340 prelude, u1, u1, u4, u8, 8×u8be}.
-        Surfaced through ac_unknown_bodies.AcShipQuestsBody.
+        """Per-ship quest record(s). Handler 0x0822bdf8 reads u1 `loaded` +
+        u8 `num_records` (always 1 in captures), then num_records × per-
+        record { u8 + u8 + u32 + u64 primary_iid + 8 × u64 iids }. Each
+        iid is 0 when no active quest. The leading u1 leaves the rest
+        bit-misaligned, so decoded by
+        ac_ship_quests_body.AcShipQuestsBody (BitReader). Verified
+        against all 106 captures (exactly 7 bits trailing padding).
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcShipQuests, self).__init__(_io)
