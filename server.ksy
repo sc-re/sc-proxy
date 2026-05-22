@@ -1085,21 +1085,31 @@ types:
       size-eos: true
   ac_battle_slots:
     doc: |
-      Battle loadout slots. u4be slot_count + variable-length slot list.
-      Captures show 54B (count=4 + 6 slots) and 46B (count=3 + 5 slots),
-      so the slot count != displayed slot count. Use `repeat: eos` to
-      consume all remaining battle_slot entries regardless of count.
+      Battle loadout slots. Handler 0x0822fe20 reads u32 slot_count, then
+      slot_count × u64 (the active vessel id in each battle slot — max 4
+      slots), then a constant 16-byte footer (u64 0 + u64 0x0c in every
+      one of 106 captures; slot_count is only ever 3 or 4). The earlier
+      `repeat: eos` model wrongly consumed the footer as 1-2 phantom
+      slots; use `repeat-expr: slot_count` so the count matches reality.
     seq:
     - id: slot_count
       type: u4be
     - id: slots
       type: battle_slot
-      repeat: eos
+      repeat: expr
+      repeat-expr: slot_count
+    - id: footer_reserved
+      type: u8be
+      doc: always 0 observed.
+    - id: footer_const
+      type: u8be
+      doc: always 0x0c (12) observed; purpose unconfirmed.
     types:
       battle_slot:
         seq:
         - id: unknown
           type: u4be
+          doc: high 32 bits of the slot u64; always 0 observed.
         - id: vessel_id
           type: u4be
   ac_battle_slot_change_vessel:

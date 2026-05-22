@@ -2068,10 +2068,12 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcBattleSlots(KaitaiStruct):
-        """Battle loadout slots. u4be slot_count + variable-length slot list.
-        Captures show 54B (count=4 + 6 slots) and 46B (count=3 + 5 slots),
-        so the slot count != displayed slot count. Use `repeat: eos` to
-        consume all remaining battle_slot entries regardless of count.
+        """Battle loadout slots. Handler 0x0822fe20 reads u32 slot_count, then
+        slot_count × u64 (the active vessel id in each battle slot — max 4
+        slots), then a constant 16-byte footer (u64 0 + u64 0x0c in every
+        one of 106 captures; slot_count is only ever 3 or 4). The earlier
+        `repeat: eos` model wrongly consumed the footer as 1-2 phantom
+        slots; use `repeat-expr: slot_count` so the count matches reality.
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcBattleSlots, self).__init__(_io)
@@ -2082,11 +2084,11 @@ class StarConflictPackageServer(KaitaiStruct):
         def _read(self):
             self.slot_count = self._io.read_u4be()
             self.slots = []
-            i = 0
-            while not self._io.is_eof():
+            for i in range(self.slot_count):
                 self.slots.append(StarConflictPackageServer.AcBattleSlots.BattleSlot(self._io, self, self._root))
-                i += 1
 
+            self.footer_reserved = self._io.read_u8be()
+            self.footer_const = self._io.read_u8be()
 
 
         def _fetch_instances(self):
