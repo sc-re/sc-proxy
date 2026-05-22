@@ -4458,7 +4458,14 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcPlayerCredentials(KaitaiStruct):
-        """Player nickname and session credentials."""
+        """Player nickname and session credentials. Handler 0x082305c7
+        reads, all big-endian: nickname (NUL-terminated), flag1 (bool,
+        always 1), steam_id64 (SteamID64, 0 if not Steam-linked),
+        account_id (stable 64-bit account id), level (small
+        account-progress level), flag2 (bool, always 0), then a trailing
+        property bag (empty in every capture). Total length =
+        28 + len(nickname). Verified against 93 captures.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcPlayerCredentials, self).__init__(_io)
             self._parent = _parent
@@ -4467,7 +4474,12 @@ class StarConflictPackageServer(KaitaiStruct):
 
         def _read(self):
             self.nickname = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
-            self.unknown = self._io.read_bytes_full()
+            self.flag1 = self._io.read_u1()
+            self.steam_id64 = self._io.read_u8be()
+            self.account_id = self._io.read_u8be()
+            self.level = self._io.read_s4be()
+            self.flag2 = self._io.read_u1()
+            self.extra = bag_payload.BagPayload(self._io)
 
 
         def _fetch_instances(self):
@@ -4477,12 +4489,12 @@ class StarConflictPackageServer(KaitaiStruct):
     class AcPlayerCredits(KaitaiStruct):
         """Player wallet snapshot. Handler 0x08231c56 → FUN_088e9ec0 reads
         a u16 flag word then byte-aligned per-bit currency balances:
-        bit 1 → credits, bit 2 → goldCredits, bit 3 → tokenCredits,
-        bit 4 → loyalty + loyalty_time, bit 5 → vid, bit 6 → freeSynergy
-        (free experience — confirmed against FUN_088e9ec0, a u32 read at
-        flag 0x40; previously mislabeled "premium"), bit 7 → 5 × craft
-        resources. All fields are byte-sized so the layout maps cleanly
-        to native kaitai.
+        bit 1 → credits, bit 2 → goldCredits, bit 3 → iridium,
+        bit 4 → xenochips + premium_time (premium-expiry ms timestamp),
+        bit 5 → vid, bit 6 → freeSynergy (free experience — confirmed
+        against FUN_088e9ec0, a u32 read at flag 0x40; previously
+        mislabeled "premium"), bit 7 → 5 × craft resources. All fields
+        are byte-sized so the layout maps cleanly to native kaitai.
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcPlayerCredits, self).__init__(_io)
@@ -4502,15 +4514,15 @@ class StarConflictPackageServer(KaitaiStruct):
 
             if self.flags & 8 != 0:
                 pass
-                self.token_credits = self._io.read_u8be()
+                self.iridium = self._io.read_u8be()
 
             if self.flags & 16 != 0:
                 pass
-                self.loyalty = self._io.read_u8be()
+                self.xenochips = self._io.read_u8be()
 
             if self.flags & 16 != 0:
                 pass
-                self.loyalty_time = self._io.read_u8be()
+                self.premium_time = self._io.read_u8be()
 
             if self.flags & 32 != 0:
                 pass

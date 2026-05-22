@@ -396,23 +396,46 @@ types:
     - id: value
       type: u2be
   ac_player_credentials:
-    doc: Player nickname and session credentials
+    doc: |
+      Player nickname and session credentials. Handler 0x082305c7 reads,
+      all big-endian: nickname (NUL-terminated), flag1 (bool, always 1),
+      steam_id64 (SteamID64, 0 if not Steam-linked), account_id (stable
+      64-bit account id), level (small account-progress level), flag2
+      (bool, always 0), then a trailing property bag (empty in every
+      capture). Total length = 28 + len(nickname). Verified against 93
+      captures.
     seq:
     - id: nickname
       type: strz
       encoding: ASCII
-    - id: unknown
-      size-eos: true
+    - id: flag1
+      type: u1
+      doc: bool, always 0x01 observed
+    - id: steam_id64
+      type: u8be
+      doc: SteamID64 (0x0110000100000000 | accountID); 0 for dev-login.
+    - id: account_id
+      type: u8be
+      doc: account-stable 64-bit id (not echoed elsewhere).
+    - id: level
+      type: s4be
+      doc: small account-progress level.
+    - id: flag2
+      type: u1
+      doc: bool, always 0x00 observed.
+    - id: extra
+      type: bag_payload
+      doc: trailing property bag, empty (entry count 0) in all captures.
   ac_player_credits:
     doc: |
       Player wallet snapshot. Handler 0x08231c56 → FUN_088e9ec0 reads
       a u16 flag word then byte-aligned per-bit currency balances:
-      bit 1 → credits, bit 2 → goldCredits, bit 3 → tokenCredits,
-      bit 4 → loyalty + loyalty_time, bit 5 → vid, bit 6 → freeSynergy
-      (free experience — confirmed against FUN_088e9ec0, a u32 read at
-      flag 0x40; previously mislabeled "premium"), bit 7 → 5 × craft
-      resources. All fields are byte-sized so the layout maps cleanly
-      to native kaitai.
+      bit 1 → credits, bit 2 → goldCredits, bit 3 → iridium,
+      bit 4 → xenochips + premium_time (premium-expiry ms timestamp),
+      bit 5 → vid, bit 6 → freeSynergy (free experience — confirmed
+      against FUN_088e9ec0, a u32 read at flag 0x40; previously
+      mislabeled "premium"), bit 7 → 5 × craft resources. All fields
+      are byte-sized so the layout maps cleanly to native kaitai.
     seq:
     - id: flags
       type: u2be
@@ -422,13 +445,14 @@ types:
     - id: gold_credits
       type: u8be
       if: 'flags & 0x04 != 0'
-    - id: token_credits
+    - id: iridium
       type: u8be
       if: 'flags & 0x08 != 0'
-    - id: loyalty
+    - id: xenochips
       type: u8be
       if: 'flags & 0x10 != 0'
-    - id: loyalty_time
+    - id: premium_time
+      doc: Premium-expiry timestamp in ms (paired with xenochips under bit 4).
       type: u8be
       if: 'flags & 0x10 != 0'
     - id: vid
