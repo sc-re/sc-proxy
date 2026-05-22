@@ -1212,11 +1212,17 @@ types:
       type: u8be
   ac_talents_update:
     doc: |
-      Field sequence from handler at 0x082304ad in OnRecieve dispatch.
-      Reads: u8
+      Talent-preset state. Handler 0x082304ad reads 4 × u8 (set_ids,
+      observed [0,1,2,3]) + 4 × bool (per-set active flag) + 4 ×
+      48-bit blocks (each: 45 talent-acquired bools + 3 ignored bits,
+      via ReadBytes(6)). The 4 bools make the rest bit-misaligned, so
+      this can't be modelled with native byte-aligned kaitai — decoded
+      by ac_talents_update_body.AcTalentsUpdateBody. The old "u1 status"
+      stub captured only the first byte.
     seq:
-    - id: status
-      type: u1
+    - id: data
+      type: ac_talents_update_body
+      size-eos: true
   ac_talents_reset:
     doc: |
       Field sequence from handler at 0x082303a7 in OnRecieve dispatch.

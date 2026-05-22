@@ -21,6 +21,7 @@ import ac_player_inventory_body
 import ac_player_vessels_body
 import ac_quests_body
 import ac_ship_quests_body
+import ac_talents_update_body
 import ac_teaching_list_body
 import ac_universe_get_body
 import ac_update_yup_purchases_body
@@ -5739,8 +5740,13 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcTalentsUpdate(KaitaiStruct):
-        """Field sequence from handler at 0x082304ad in OnRecieve dispatch.
-        Reads: u8
+        """Talent-preset state. Handler 0x082304ad reads 4 × u8 (set_ids,
+        observed [0,1,2,3]) + 4 × bool (per-set active flag) + 4 ×
+        48-bit blocks (each: 45 talent-acquired bools + 3 ignored bits,
+        via ReadBytes(6)). The 4 bools make the rest bit-misaligned, so
+        this can't be modelled with native byte-aligned kaitai — decoded
+        by ac_talents_update_body.AcTalentsUpdateBody. The old "u1 status"
+        stub captured only the first byte.
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcTalentsUpdate, self).__init__(_io)
@@ -5749,11 +5755,14 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.status = self._io.read_u1()
+            self._raw_data = self._io.read_bytes_full()
+            _io__raw_data = KaitaiStream(BytesIO(self._raw_data))
+            self.data = ac_talents_update_body.AcTalentsUpdateBody(_io__raw_data)
 
 
         def _fetch_instances(self):
             pass
+            self.data._fetch_instances()
 
 
     class AcTeachingAccept(KaitaiStruct):
