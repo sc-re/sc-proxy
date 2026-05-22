@@ -14,6 +14,7 @@ import ac_load_initial_player_data_body
 import ac_lobby_info_body
 import ac_lobby_list_body
 import ac_mail_get_body
+import ac_player_autogen_inventory_body
 import ac_player_inventory_body
 import ac_player_vessels_body
 import ac_quests_body
@@ -3637,11 +3638,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcLeagueTeamInfo(KaitaiStruct):
-        """League-team state — handler 0x08232b6c reads `u8 status` and on
-        status==0 calls FUN_088ee800 (the body reader). Surfaced through
-        `ac_league_team_info_body.AcLeagueTeamInfoBody` so the GUI tree
-        shows the full record (team_id, names, captain, member uids,
-        rating, …).
+        """League-team state — handler 0x08232b6c reads u8 status and on
+        status==0 calls FUN_088ee800 (the body reader). Decoded by
+        ac_league_team_info_body.AcLeagueTeamInfoBody.
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcLeagueTeamInfo, self).__init__(_io)
@@ -4264,11 +4263,11 @@ class StarConflictPackageServer(KaitaiStruct):
 
     class AcMailGet(KaitaiStruct):
         """Mailbox listing — handler 0x0822e030 reads u8 status + u1
-        keep_existing then calls FUN_088f6480, which reads u16v2 num_mails
-        followed by num_mails × MailRecord (FUN_088f43a0). Each record has
-        mail_id, flags, from/to uids, send/read times, a couple of flags,
-        and a list of attachments (u8 type + bag). Decoded by
-        `ac_mail_get_body.AcMailGetBody`.
+        keep_existing then calls FUN_088f6480 → u16v2 num_mails followed by
+        num_mails × MailRecord (FUN_088f43a0). Each record has mail_id,
+        flags, from/to uids, send/read times, two flag bytes, and a list of
+        attachments (u8 type + bag). Decoded by
+        ac_mail_get_body.AcMailGetBody.
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcMailGet, self).__init__(_io)
@@ -4289,8 +4288,8 @@ class StarConflictPackageServer(KaitaiStruct):
 
     class AcMailRemove(KaitaiStruct):
         """Remove-mail ACK — handler 0x0822e184 reads u8 status + u64
-        mail_id, then (when status==0) calls FUN_088f7c40 to drop the
-        matching mail from the local mailbox.
+        mail_id, then (when status==0) drops the matching mail from the
+        local mailbox.
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcMailRemove, self).__init__(_io)
@@ -4308,18 +4307,11 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcMailSend(KaitaiStruct):
-        """Send-mail ACK — handler 0x0822e200 reads `u8 status` and
-        branches:
-          * status == 0  → `u1 has_data`; if set, the server echoes the
-                           freshly-stored mail back (u32 mail_id + bag +
-                           MailRecord). Common case is has_data == 0 →
-                           body is just u8+u1 (9 bits, 7 bits padding).
-          * status == 0xe → `i32 + u1` (insufficient-funds / pricing
-                            error).
-          * other         → nothing more.
-
-        We expose `status` and the has_data bit for the common branch;
-        the optional tail isn't decoded yet (no captures with it).
+        """Send-mail ACK — handler 0x0822e200 reads u8 status then branches:
+        status==0 → u1 has_data (if set, server echoes the freshly-stored
+        mail back via u32 mail_id + bag + MailRecord); status==0x0e → i32
+        error_value + u1 error_flag; otherwise nothing. Common observed
+        response is status=0 has_data=0 (= u8+u1 = 9 bits + padding).
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcMailSend, self).__init__(_io)
@@ -4330,14 +4322,30 @@ class StarConflictPackageServer(KaitaiStruct):
         def _read(self):
             self.status = self._io.read_u1()
             if self.status == 0:
+                pass
                 self.has_data = self._io.read_bits_int_be(1) != 0
-            elif self.status == 0x0e:
+
+            if self.status == 14:
+                pass
                 self.error_value = self._io.read_s4be()
+
+            if self.status == 14:
+                pass
                 self.error_flag = self._io.read_bits_int_be(1) != 0
+
 
 
         def _fetch_instances(self):
             pass
+            if self.status == 0:
+                pass
+
+            if self.status == 14:
+                pass
+
+            if self.status == 14:
+                pass
+
 
 
     class AcMmInfo(KaitaiStruct):
@@ -4440,8 +4448,13 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcPlayerAutogenInventory(KaitaiStruct):
-        """Field sequence from handler at 0x082342e0 in OnRecieve dispatch.
-        Reads: u32
+        """Catalogue of the player's autogen (procedurally-rolled modular)
+        items. Handler 0x082342e0 reads `u32 count + count × ItemRecord +
+        u8 cur_size + u32 max_size`. Each ItemRecord (FUN_088eb190) is
+        `u64 iid + i32 + i32 + property-bag of the rolled stat parameters`.
+        Bit-packed (the bag's cstrings/bools leave the cursor sub-byte
+        aligned), so it's decoded by
+        ac_player_autogen_inventory_body.AcPlayerAutogenInventoryBody.
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcPlayerAutogenInventory, self).__init__(_io)
@@ -4450,21 +4463,24 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.value = self._io.read_u4be()
+            self._raw_data = self._io.read_bytes_full()
+            _io__raw_data = KaitaiStream(BytesIO(self._raw_data))
+            self.data = ac_player_autogen_inventory_body.AcPlayerAutogenInventoryBody(_io__raw_data)
 
 
         def _fetch_instances(self):
             pass
+            self.data._fetch_instances()
 
 
     class AcPlayerCredentials(KaitaiStruct):
-        """Player nickname and session credentials. Handler 0x082305c7
-        reads, all big-endian: nickname (NUL-terminated), flag1 (bool,
-        always 1), steam_id64 (SteamID64, 0 if not Steam-linked),
-        account_id (stable 64-bit account id), level (small
-        account-progress level), flag2 (bool, always 0), then a trailing
-        property bag (empty in every capture). Total length =
-        28 + len(nickname). Verified against 93 captures.
+        """Player nickname and session credentials. Handler 0x082305c7 reads,
+        all big-endian: nickname (NUL-terminated), flag1 (bool, always 1),
+        steam_id64 (SteamID64, 0 if not Steam-linked), account_id (stable
+        64-bit account id), level (small account-progress level), flag2
+        (bool, always 0), then a trailing property bag (empty in every
+        capture). Total length = 28 + len(nickname). Verified against 93
+        captures.
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcPlayerCredentials, self).__init__(_io)
@@ -4484,6 +4500,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
         def _fetch_instances(self):
             pass
+            self.extra._fetch_instances()
 
 
     class AcPlayerCredits(KaitaiStruct):
@@ -5748,10 +5765,10 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcTeachingAllow(KaitaiStruct):
-        """Teaching-allow update — handler 0x0822b852 reads u8 status +
-        u8 role + u1 allow, then (when status==0) writes `allow` into
-        game-state offset 0xba709 for role==2 (teacher) or 0xba708 for
-        role==1 (student). Role values not in {1, 2} are ignored.
+        """Teaching-allow update — handler 0x0822b852 reads u8 status + u8
+        role + u1 allow, then (when status==0) writes `allow` into game
+        state at +0xba709 for role==2 (teacher) or +0xba708 for role==1
+        (student). Role values outside {1, 2} are ignored.
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcTeachingAllow, self).__init__(_io)

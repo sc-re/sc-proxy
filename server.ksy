@@ -695,11 +695,17 @@ types:
       size-eos: true
   ac_player_autogen_inventory:
     doc: |
-      Field sequence from handler at 0x082342e0 in OnRecieve dispatch.
-      Reads: u32
+      Catalogue of the player's autogen (procedurally-rolled modular)
+      items. Handler 0x082342e0 reads `u32 count + count × ItemRecord +
+      u8 cur_size + u32 max_size`. Each ItemRecord (FUN_088eb190) is
+      `u64 iid + i32 + i32 + property-bag of the rolled stat parameters`.
+      Bit-packed (the bag's cstrings/bools leave the cursor sub-byte
+      aligned), so it's decoded by
+      ac_player_autogen_inventory_body.AcPlayerAutogenInventoryBody.
     seq:
-    - id: value
-      type: u4be
+    - id: data
+      type: ac_player_autogen_inventory_body
+      size-eos: true
   ac_player_vessels:
     doc: |
       Player's owned-vessel catalogue. The handler at 0x0822e436 reads
