@@ -434,8 +434,9 @@ types:
       bit 4 → xenochips + premium_time (premium-expiry ms timestamp),
       bit 5 → vid, bit 6 → freeSynergy (free experience — confirmed
       against FUN_088e9ec0, a u32 read at flag 0x40; previously
-      mislabeled "premium"), bit 7 → 5 × craft resources. All fields
-      are byte-sized so the layout maps cleanly to native kaitai.
+      mislabeled "premium"), bit 7 → faction_rep (5 × u32 reputation,
+      previously mislabeled "craft resources"). All fields are
+      byte-sized so the layout maps cleanly to native kaitai.
     seq:
     - id: flags
       type: u2be
@@ -462,7 +463,13 @@ types:
       doc: Free synergy / free experience (not bound to a ship).
       type: u4be
       if: 'flags & 0x40 != 0'
-    - id: craft_resources
+    - id: faction_rep
+      doc: |
+        Per-faction reputation points, indexed by ai.Faction (cosmos_constants.lua):
+        [0]=Empire, [1]=Federation, [2]=Jericho, [3]=Enclave, [4]=Cyber_2 (Ellydium).
+        Read into the profile's u32[5] at +0xada04 (the array GetFactionRep(i) indexes).
+        Values are raw reputation matching the rank thresholds in reputation.lua
+        (e.g. 3800000 = FieldMarshal, 0 = Private). Was mislabeled "craft_resources".
       type: u4be
       repeat: expr
       repeat-expr: 5

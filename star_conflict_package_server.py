@@ -4510,8 +4510,9 @@ class StarConflictPackageServer(KaitaiStruct):
         bit 4 → xenochips + premium_time (premium-expiry ms timestamp),
         bit 5 → vid, bit 6 → freeSynergy (free experience — confirmed
         against FUN_088e9ec0, a u32 read at flag 0x40; previously
-        mislabeled "premium"), bit 7 → 5 × craft resources. All fields
-        are byte-sized so the layout maps cleanly to native kaitai.
+        mislabeled "premium"), bit 7 → faction_rep (5 × u32 reputation,
+        previously mislabeled "craft resources"). All fields are
+        byte-sized so the layout maps cleanly to native kaitai.
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcPlayerCredits, self).__init__(_io)
@@ -4551,9 +4552,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
             if self.flags & 128 != 0:
                 pass
-                self.craft_resources = []
+                self.faction_rep = []
                 for i in range(5):
-                    self.craft_resources.append(self._io.read_u4be())
+                    self.faction_rep.append(self._io.read_u4be())
 
 
 
@@ -4583,7 +4584,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
             if self.flags & 128 != 0:
                 pass
-                for i in range(len(self.craft_resources)):
+                for i in range(len(self.faction_rep)):
                     pass
 
 
