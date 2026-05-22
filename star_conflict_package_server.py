@@ -14,6 +14,7 @@ import ac_load_initial_player_data_body
 import ac_lobby_info_body
 import ac_lobby_list_body
 import ac_mail_get_body
+import ac_mm_info_body
 import ac_player_autogen_inventory_body
 import ac_player_credentials_body
 import ac_player_inventory_body
@@ -4350,7 +4351,13 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcMmInfo(KaitaiStruct):
-        """Matchmaking queue state. Body is a single property bag."""
+        """Matchmaking queue state. Handler 0x08231dbc reads two 1-bit bools
+        then a property bag (ReadBool, ReadBool, Bag_Deserialize). The two
+        leading bits leave the bag bit-misaligned, so it can't be modelled
+        with the byte-aligned bag_payload — decoded by
+        ac_mm_info_body.AcMmInfoBody. The bag carries clientsInQueue,
+        averageTimeInQueue, maxTimeInQueue, playersByMMValue, etc.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcMmInfo, self).__init__(_io)
             self._parent = _parent
@@ -4358,12 +4365,14 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.bag = bag_payload.BagPayload(self._io)
+            self._raw_data = self._io.read_bytes_full()
+            _io__raw_data = KaitaiStream(BytesIO(self._raw_data))
+            self.data = ac_mm_info_body.AcMmInfoBody(_io__raw_data)
 
 
         def _fetch_instances(self):
             pass
-            self.bag._fetch_instances()
+            self.data._fetch_instances()
 
 
     class AcMotd(KaitaiStruct):

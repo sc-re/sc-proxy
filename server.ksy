@@ -369,10 +369,17 @@ types:
     - id: status
       type: u2be
   ac_mm_info:
-    doc: Matchmaking queue state. Body is a single property bag.
+    doc: |
+      Matchmaking queue state. Handler 0x08231dbc reads two 1-bit bools
+      then a property bag (ReadBool, ReadBool, Bag_Deserialize). The two
+      leading bits leave the bag bit-misaligned, so it can't be modelled
+      with the byte-aligned bag_payload — decoded by
+      ac_mm_info_body.AcMmInfoBody. The bag carries clientsInQueue,
+      averageTimeInQueue, maxTimeInQueue, playersByMMValue, etc.
     seq:
-    - id: bag
-      type: bag_payload
+    - id: data
+      type: ac_mm_info_body
+      size-eos: true
   ac_enter_tournament:
     doc: Tournament entry ACK — u8 status + bag of state.
     seq:
