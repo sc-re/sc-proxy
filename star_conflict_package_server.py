@@ -5623,7 +5623,15 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcSurveyGetNew(KaitaiStruct):
-        """Response to survey poll; all-zero when no surveys available."""
+        """Response to survey-poll request. Handler 0x0822f5b2 reads u8 status;
+        on success (status == 0) a property bag of survey data follows via
+        Bag_Deserialize. On error (status != 0) no further reads -- the
+        body is just the status byte. All 757 S->C captures take the
+        status=0 / empty-bag form (5-byte body = u8(0) + u32 num_entries(0)),
+        so the full active-survey schema is unobserved here; field names
+        inside the bag will need a capture with status=0 AND a non-empty
+        bag to verify.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcSurveyGetNew, self).__init__(_io)
             self._parent = _parent
@@ -5631,16 +5639,28 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.reserved = self._io.read_u4be()
             self.status = self._io.read_u1()
+            if self.status == 0:
+                pass
+                self.bag = bag_payload.BagPayload(self._io)
+
 
 
         def _fetch_instances(self):
             pass
+            if self.status == 0:
+                pass
+                self.bag._fetch_instances()
+
 
 
     class AcSurveyResults(KaitaiStruct):
-        """Survey result data; all-zero when no surveys active."""
+        """Survey results. Handler 0x0822f502 reads u8 status; on success
+        (status == 0) a property bag of result data follows via
+        Bag_Deserialize. On error (status != 0) no further reads. All
+        757 S->C captures take the status=0 / empty-bag form, so the
+        schema of an active result bag is unobserved here.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcSurveyResults, self).__init__(_io)
             self._parent = _parent
@@ -5648,12 +5668,19 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.reserved = self._io.read_u4be()
             self.status = self._io.read_u1()
+            if self.status == 0:
+                pass
+                self.bag = bag_payload.BagPayload(self._io)
+
 
 
         def _fetch_instances(self):
             pass
+            if self.status == 0:
+                pass
+                self.bag._fetch_instances()
+
 
 
     class AcSurveyVote(KaitaiStruct):

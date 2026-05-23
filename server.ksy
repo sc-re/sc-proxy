@@ -2473,12 +2473,21 @@ types:
     - id: status
       type: u1
   ac_survey_get_new:
-    doc: Response to survey poll; all-zero when no surveys available
+    doc: |
+      Response to survey-poll request. Handler 0x0822f5b2 reads u8 status;
+      on success (status == 0) a property bag of survey data follows via
+      Bag_Deserialize. On error (status != 0) no further reads -- the
+      body is just the status byte. All 757 S->C captures take the
+      status=0 / empty-bag form (5-byte body = u8(0) + u32 num_entries(0)),
+      so the full active-survey schema is unobserved here; field names
+      inside the bag will need a capture with status=0 AND a non-empty
+      bag to verify.
     seq:
-    - id: reserved
-      type: u4be
     - id: status
       type: u1
+    - id: bag
+      type: bag_payload
+      if: status == 0
   ac_survey_vote:
     doc: |
       Field sequence from handler at 0x0822efcd in OnRecieve dispatch.
@@ -2487,12 +2496,18 @@ types:
     - id: status
       type: u1
   ac_survey_results:
-    doc: Survey result data; all-zero when no surveys active
+    doc: |
+      Survey results. Handler 0x0822f502 reads u8 status; on success
+      (status == 0) a property bag of result data follows via
+      Bag_Deserialize. On error (status != 0) no further reads. All
+      757 S->C captures take the status=0 / empty-bag form, so the
+      schema of an active result bag is unobserved here.
     seq:
-    - id: reserved
-      type: u4be
     - id: status
       type: u1
+    - id: bag
+      type: bag_payload
+      if: status == 0
   ac_universe_get:
     doc: |
       Sector-control snapshot — what `MasterServer.UniverseGet` returns
