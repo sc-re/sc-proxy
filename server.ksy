@@ -522,12 +522,12 @@ types:
       type: u1
   ac_change_player_nickname:
     doc: |
-      Field sequence from handler at 0x0822ebd8 in OnRecieve dispatch.
-      Reads: u8 cstrN
+      Nickname-change ack. Handler 0x0822ebd8 reads u8 status + cstr
+      new_nickname (NUL-terminated).
     seq:
     - id: status
       type: u1
-    - id: nickname
+    - id: new_nickname
       type: strz
       encoding: ASCII
   ac_steam_user_info:
@@ -665,14 +665,20 @@ types:
       repeat-expr: count
   ac_reward_tutorial:
     doc: |
-      Field sequence from handler at 0x0823444a in OnRecieve dispatch.
-      Reads: u8 u8 u64
+      Tutorial-reward ack. Handler 0x0823444a reads (bit-stream order):
+      u8 status + u8 + u1 flag + u64. The mid-stream u1 makes the
+      trailing u64 bit-misaligned; faithful decode needs a BitReader
+      body module (TODO; no S->C captures observed). The native model
+      below uses kaitai `b1` with implicit byte-alignment of the u64,
+      which will diverge from the wire if the encoder doesn't pad.
     seq:
     - id: status
       type: u1
     - id: field_1
       type: u1
-    - id: u64_2
+    - id: flag
+      type: b1
+    - id: field_3
       type: u8be
   ac_player_inventory:
     doc: |
@@ -756,14 +762,22 @@ types:
       type: u8be
   ac_salvage_item:
     doc: |
-      Field sequence from handler at 0x08234a1b in OnRecieve dispatch.
-      Reads: u64 u8 u32
+      Single-item salvage ack. Handler 0x08234a1b reads (bit-stream order):
+      u64 iid + u8 + u1 flag + u32. The mid-stream u1 leaves the trailing
+      u32 bit-misaligned, so a faithful decode needs a BitReader body
+      module (TODO; no S->C captures observed yet to validate). The
+      native model below treats the bool as kaitai's `b1` with implicit
+      byte-alignment of the subsequent u32 — fine when flag=0 and the
+      u32 happens to be byte-aligned in the encoder, but the trailing
+      value will diverge if the wire encoding is truly bit-misaligned.
     seq:
-    - id: u64_0
+    - id: iid
       type: u8be
     - id: field_1
       type: u1
-    - id: u32_2
+    - id: flag
+      type: b1
+    - id: field_3
       type: u4be
   ac_salvage_items:
     doc: |
@@ -851,15 +865,17 @@ types:
       size-eos: true
   ac_vessel_cheat_change_equip:
     doc: |
-      Field sequence from handler at 0x0823010c in OnRecieve dispatch.
-      Reads: u8 u64 u8
+      Vessel cheat-change-equip ack. Handler 0x0823010c reads u8 status
+      + u64 iid + u8 + u1 flag (1 bit; trailing).
     seq:
     - id: status
       type: u1
-    - id: u64_1
+    - id: iid
       type: u8be
     - id: field_2
       type: u1
+    - id: flag
+      type: b1
   ac_vessel_transfer_equip:
     doc: |
       Transfer equipment between vessels. Confirmed against 38B captures:
@@ -876,22 +892,31 @@ types:
       size-eos: true
   ac_vessel_strip_equip:
     doc: |
-      Field sequence from handler at 0x0823353e in OnRecieve dispatch.
-      Reads: u8 u64
+      Vessel strip-equip ack. Handler 0x0823353e reader_calls list says
+      u8 + u64 + u1; that matches the 10-byte C->S request shape. But
+      the matching S->C response in captures is ~125 KB — the handler
+      clearly does much more than the recognized-reader-call set
+      captures (probably a sub-deserializer call into a larger vessel
+      snapshot). Modelled minimally as the request shape; the S->C body
+      needs further RE before it can be faithfully decoded.
     seq:
     - id: status
       type: u1
-    - id: uid
+    - id: iid
       type: u8be
+    - id: flag
+      type: b1
   ac_vessel_change_munition:
     doc: |
-      Field sequence from handler at 0x08234924 in OnRecieve dispatch.
-      Reads: u8 u64
+      Vessel munition-change ack. Handler 0x08234924 reads u8 status +
+      u64 iid + u1 flag (1 bit; trailing).
     seq:
     - id: status
       type: u1
-    - id: uid
+    - id: iid
       type: u8be
+    - id: flag
+      type: b1
   ac_vessel_refill_munition:
     doc: Munition refill confirmation; count = munitions restored
     seq:
@@ -984,20 +1009,28 @@ types:
       type: u2be
   ac_vessel_repair_battle:
     doc: |
-      Field sequence from handler at 0x08230d28 in OnRecieve dispatch.
-      Reads: u8
+      Vessel battle-repair ack. Handler 0x08230d28 reads u8 status +
+      three 1-bit bools (trailing; ~5 bits padding).
     seq:
     - id: status
       type: u1
+    - id: flag_a
+      type: b1
+    - id: flag_b
+      type: b1
+    - id: flag_c
+      type: b1
   ac_vessel_refill_battle:
     doc: |
-      Field sequence from handler at 0x08233754 in OnRecieve dispatch.
-      Reads: u8 u8
+      Vessel refill-in-battle ack. Handler 0x08233754 reads
+      u8 status + u8 + u1 flag (1 bit; trailing).
     seq:
     - id: status
       type: u1
     - id: field_1
       type: u1
+    - id: flag
+      type: b1
   ac_vessel_strip_improper_battle:
     doc: |
       Server-pushed notification that one or more vessel modules were
@@ -1320,11 +1353,14 @@ types:
       type: u8be
   ac_squad_ready:
     doc: |
-      Field sequence from handler at 0x08232bf4 in OnRecieve dispatch.
-      Reads: u8
+      Squad-ready ack. Handler 0x08232bf4 reads u8 status + u1 flag
+      (1 bit). Verified against the 4-byte S->C captures (1 byte status
+      + 1 bit flag + 7 bits padding).
     seq:
     - id: status
       type: u1
+    - id: flag
+      type: b1
   ac_squad_convert_to_wing:
     doc: |
       Field sequence from handler at 0x08232ae4 in OnRecieve dispatch.
@@ -1598,15 +1634,17 @@ types:
       type: u8be
   ac_teaching_accept:
     doc: |
-      Field sequence from handler at 0x0822bb58 in OnRecieve dispatch.
-      Reads: u8 u64 u8
+      Teaching-accept ack. Handler 0x0822bb58 reads u8 status + u64 iid
+      + u8 + u1 flag (1 bit; trailing).
     seq:
     - id: status
       type: u1
-    - id: u64_1
+    - id: iid
       type: u8be
     - id: field_2
       type: u1
+    - id: flag
+      type: b1
   ac_teaching_reject:
     doc: |
       Field sequence from handler at 0x0822b9c6 in OnRecieve dispatch.
@@ -1675,9 +1713,16 @@ types:
       type: u1
   ac_finalize_steam_mtxn:
     doc: |
-      Field sequence from handler at 0x0822b52b in OnRecieve dispatch.
-      Reads: u8 cstrN
+      Steam micro-transaction finalisation ack. Handler 0x0822b52b reads
+      (bit-stream order): u1 flag + u8 + cstrN. The leading u1 leaves
+      the rest of the body bit-misaligned, so a faithful decode needs
+      a BitReader body module (TODO; no S->C captures observed). The
+      native model below applies kaitai's `b1` with implicit alignment,
+      which can mis-decode the trailing bytes if the encoder doesn't
+      pad after the bit.
     seq:
+    - id: flag
+      type: b1
     - id: status
       type: u1
     - id: text
@@ -1708,11 +1753,13 @@ types:
       size-eos: true
   ac_lobby_join:
     doc: |
-      Field sequence from handler at 0x0822b264 in OnRecieve dispatch.
-      Reads: u8
+      Lobby join ack. Handler 0x0822b264 reads u8 status + u1 flag
+      (1 bit; ~7 bits of trailing padding).
     seq:
     - id: status
       type: u1
+    - id: flag
+      type: b1
   ac_lobby_create:
     doc: |
       Newly-created lobby info. Layout from 88-114B captures:
@@ -2186,18 +2233,18 @@ types:
       type: u1
   ac_clan_ship_build:
     doc: |
-      Field sequence from handler at 0x0822a68b in OnRecieve dispatch.
-      Reads: u8 cstrN cstrN cstrN
+      Clan-ship build ack. Handler 0x0822a68b reads u8 status + three
+      NUL-terminated def-name strings (e.g. hull/section/component).
     seq:
     - id: status
       type: u1
-    - id: text
+    - id: def_name_1
       type: strz
       encoding: ASCII
-    - id: text1
+    - id: def_name_2
       type: strz
       encoding: ASCII
-    - id: text2
+    - id: def_name_3
       type: strz
       encoding: ASCII
   ac_clan_ship_boost_building:
@@ -2213,22 +2260,22 @@ types:
       type: u1
   ac_clan_ship_boost_repairing:
     doc: |
-      Field sequence from handler at 0x0822a856 in OnRecieve dispatch.
-      Reads: u8 cstrN
+      Clan-ship boost-repair ack. Handler 0x0822a856 reads u8 status +
+      cstr def_name (NUL-terminated).
     seq:
     - id: status
       type: u1
-    - id: text
+    - id: def_name
       type: strz
       encoding: ASCII
   ac_clan_ship_fit:
     doc: |
-      Field sequence from handler at 0x0822a558 in OnRecieve dispatch.
-      Reads: u8 cstrN
+      Clan-ship fit ack. Handler 0x0822a558 reads u8 status + cstr
+      def_name (NUL-terminated).
     seq:
     - id: status
       type: u1
-    - id: text
+    - id: def_name
       type: strz
       encoding: ASCII
   ac_clan_ship_set_current:
@@ -2293,32 +2340,32 @@ types:
       type: u1
   ac_clan_change_name:
     doc: |
-      Field sequence from handler at 0x0822d72b in OnRecieve dispatch.
-      Reads: u8 cstrN
+      Clan-rename ack. Handler 0x0822d72b reads u8 status + cstr
+      new_name (NUL-terminated).
     seq:
     - id: status
       type: u1
-    - id: name
+    - id: new_name
       type: strz
       encoding: ASCII
   ac_clan_change_tag:
     doc: |
-      Field sequence from handler at 0x0822d136 in OnRecieve dispatch.
-      Reads: u8 cstrN
+      Clan-tag-change ack. Handler 0x0822d136 reads u8 status + cstr
+      new_tag (NUL-terminated).
     seq:
     - id: status
       type: u1
-    - id: tag
+    - id: new_tag
       type: strz
       encoding: ASCII
   ac_clan_assign_emblem:
     doc: |
-      Field sequence from handler at 0x0822d050 in OnRecieve dispatch.
-      Reads: u8 cstrN
+      Clan-emblem-assign ack. Handler 0x0822d050 reads u8 status + cstr
+      emblem_id (NUL-terminated).
     seq:
     - id: status
       type: u1
-    - id: emblem
+    - id: emblem_id
       type: strz
       encoding: ASCII
   ac_clan_bank_transfer:
@@ -2636,11 +2683,13 @@ types:
       type: u1
   ac_set_visited_zone:
     doc: |
-      Field sequence from handler at 0x0822cec6 in OnRecieve dispatch.
-      Reads: u16
+      Visited-zone ack. Handler 0x0822cec6 reads u16 zone_id + u1 flag
+      (1 bit; ~7 bits of trailing padding).
     seq:
-    - id: value
+    - id: zone_id
       type: u2be
+    - id: flag
+      type: b1
   ac_zone_coordinator_gm_command:
     seq:
     - id: unknown

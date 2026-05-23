@@ -2225,8 +2225,8 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcChangePlayerNickname(KaitaiStruct):
-        """Field sequence from handler at 0x0822ebd8 in OnRecieve dispatch.
-        Reads: u8 cstrN
+        """Nickname-change ack. Handler 0x0822ebd8 reads u8 status + cstr
+        new_nickname (NUL-terminated).
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcChangePlayerNickname, self).__init__(_io)
@@ -2236,7 +2236,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
         def _read(self):
             self.status = self._io.read_u1()
-            self.nickname = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
+            self.new_nickname = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
 
 
         def _fetch_instances(self):
@@ -2280,8 +2280,8 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcClanAssignEmblem(KaitaiStruct):
-        """Field sequence from handler at 0x0822d050 in OnRecieve dispatch.
-        Reads: u8 cstrN
+        """Clan-emblem-assign ack. Handler 0x0822d050 reads u8 status + cstr
+        emblem_id (NUL-terminated).
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcClanAssignEmblem, self).__init__(_io)
@@ -2291,7 +2291,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
         def _read(self):
             self.status = self._io.read_u1()
-            self.emblem = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
+            self.emblem_id = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
 
 
         def _fetch_instances(self):
@@ -2353,8 +2353,8 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcClanChangeName(KaitaiStruct):
-        """Field sequence from handler at 0x0822d72b in OnRecieve dispatch.
-        Reads: u8 cstrN
+        """Clan-rename ack. Handler 0x0822d72b reads u8 status + cstr
+        new_name (NUL-terminated).
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcClanChangeName, self).__init__(_io)
@@ -2364,7 +2364,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
         def _read(self):
             self.status = self._io.read_u1()
-            self.name = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
+            self.new_name = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
 
 
         def _fetch_instances(self):
@@ -2390,8 +2390,8 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcClanChangeTag(KaitaiStruct):
-        """Field sequence from handler at 0x0822d136 in OnRecieve dispatch.
-        Reads: u8 cstrN
+        """Clan-tag-change ack. Handler 0x0822d136 reads u8 status + cstr
+        new_tag (NUL-terminated).
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcClanChangeTag, self).__init__(_io)
@@ -2401,7 +2401,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
         def _read(self):
             self.status = self._io.read_u1()
-            self.tag = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
+            self.new_tag = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
 
 
         def _fetch_instances(self):
@@ -2910,8 +2910,8 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcClanShipBoostRepairing(KaitaiStruct):
-        """Field sequence from handler at 0x0822a856 in OnRecieve dispatch.
-        Reads: u8 cstrN
+        """Clan-ship boost-repair ack. Handler 0x0822a856 reads u8 status +
+        cstr def_name (NUL-terminated).
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcClanShipBoostRepairing, self).__init__(_io)
@@ -2921,7 +2921,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
         def _read(self):
             self.status = self._io.read_u1()
-            self.text = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
+            self.def_name = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
 
 
         def _fetch_instances(self):
@@ -2929,8 +2929,8 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcClanShipBuild(KaitaiStruct):
-        """Field sequence from handler at 0x0822a68b in OnRecieve dispatch.
-        Reads: u8 cstrN cstrN cstrN
+        """Clan-ship build ack. Handler 0x0822a68b reads u8 status + three
+        NUL-terminated def-name strings (e.g. hull/section/component).
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcClanShipBuild, self).__init__(_io)
@@ -2940,9 +2940,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
         def _read(self):
             self.status = self._io.read_u1()
-            self.text = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
-            self.text1 = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
-            self.text2 = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
+            self.def_name_1 = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
+            self.def_name_2 = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
+            self.def_name_3 = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
 
 
         def _fetch_instances(self):
@@ -2950,8 +2950,8 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcClanShipFit(KaitaiStruct):
-        """Field sequence from handler at 0x0822a558 in OnRecieve dispatch.
-        Reads: u8 cstrN
+        """Clan-ship fit ack. Handler 0x0822a558 reads u8 status + cstr
+        def_name (NUL-terminated).
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcClanShipFit, self).__init__(_io)
@@ -2961,7 +2961,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
         def _read(self):
             self.status = self._io.read_u1()
-            self.text = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
+            self.def_name = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
 
 
         def _fetch_instances(self):
@@ -3204,8 +3204,13 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcFinalizeSteamMtxn(KaitaiStruct):
-        """Field sequence from handler at 0x0822b52b in OnRecieve dispatch.
-        Reads: u8 cstrN
+        """Steam micro-transaction finalisation ack. Handler 0x0822b52b reads
+        (bit-stream order): u1 flag + u8 + cstrN. The leading u1 leaves
+        the rest of the body bit-misaligned, so a faithful decode needs
+        a BitReader body module (TODO; no S->C captures observed). The
+        native model below applies kaitai's `b1` with implicit alignment,
+        which can mis-decode the trailing bytes if the encoder doesn't
+        pad after the bit.
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcFinalizeSteamMtxn, self).__init__(_io)
@@ -3214,6 +3219,7 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
+            self.flag = self._io.read_bits_int_be(1) != 0
             self.status = self._io.read_u1()
             self.text = (self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII")
 
@@ -4101,8 +4107,8 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcLobbyJoin(KaitaiStruct):
-        """Field sequence from handler at 0x0822b264 in OnRecieve dispatch.
-        Reads: u8
+        """Lobby join ack. Handler 0x0822b264 reads u8 status + u1 flag
+        (1 bit; ~7 bits of trailing padding).
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcLobbyJoin, self).__init__(_io)
@@ -4112,6 +4118,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
         def _read(self):
             self.status = self._io.read_u1()
+            self.flag = self._io.read_bits_int_be(1) != 0
 
 
         def _fetch_instances(self):
@@ -4891,8 +4898,12 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcRewardTutorial(KaitaiStruct):
-        """Field sequence from handler at 0x0823444a in OnRecieve dispatch.
-        Reads: u8 u8 u64
+        """Tutorial-reward ack. Handler 0x0823444a reads (bit-stream order):
+        u8 status + u8 + u1 flag + u64. The mid-stream u1 makes the
+        trailing u64 bit-misaligned; faithful decode needs a BitReader
+        body module (TODO; no S->C captures observed). The native model
+        below uses kaitai `b1` with implicit byte-alignment of the u64,
+        which will diverge from the wire if the encoder doesn't pad.
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcRewardTutorial, self).__init__(_io)
@@ -4903,7 +4914,8 @@ class StarConflictPackageServer(KaitaiStruct):
         def _read(self):
             self.status = self._io.read_u1()
             self.field_1 = self._io.read_u1()
-            self.u64_2 = self._io.read_u8be()
+            self.flag = self._io.read_bits_int_be(1) != 0
+            self.field_3 = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -4934,8 +4946,14 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcSalvageItem(KaitaiStruct):
-        """Field sequence from handler at 0x08234a1b in OnRecieve dispatch.
-        Reads: u64 u8 u32
+        """Single-item salvage ack. Handler 0x08234a1b reads (bit-stream order):
+        u64 iid + u8 + u1 flag + u32. The mid-stream u1 leaves the trailing
+        u32 bit-misaligned, so a faithful decode needs a BitReader body
+        module (TODO; no S->C captures observed yet to validate). The
+        native model below treats the bool as kaitai's `b1` with implicit
+        byte-alignment of the subsequent u32 — fine when flag=0 and the
+        u32 happens to be byte-aligned in the encoder, but the trailing
+        value will diverge if the wire encoding is truly bit-misaligned.
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcSalvageItem, self).__init__(_io)
@@ -4944,9 +4962,10 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.u64_0 = self._io.read_u8be()
+            self.iid = self._io.read_u8be()
             self.field_1 = self._io.read_u1()
-            self.u32_2 = self._io.read_u4be()
+            self.flag = self._io.read_bits_int_be(1) != 0
+            self.field_3 = self._io.read_u4be()
 
 
         def _fetch_instances(self):
@@ -5196,8 +5215,8 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcSetVisitedZone(KaitaiStruct):
-        """Field sequence from handler at 0x0822cec6 in OnRecieve dispatch.
-        Reads: u16
+        """Visited-zone ack. Handler 0x0822cec6 reads u16 zone_id + u1 flag
+        (1 bit; ~7 bits of trailing padding).
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcSetVisitedZone, self).__init__(_io)
@@ -5206,7 +5225,8 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.value = self._io.read_u2be()
+            self.zone_id = self._io.read_u2be()
+            self.flag = self._io.read_bits_int_be(1) != 0
 
 
         def _fetch_instances(self):
@@ -5565,8 +5585,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcSquadReady(KaitaiStruct):
-        """Field sequence from handler at 0x08232bf4 in OnRecieve dispatch.
-        Reads: u8
+        """Squad-ready ack. Handler 0x08232bf4 reads u8 status + u1 flag
+        (1 bit). Verified against the 4-byte S->C captures (1 byte status
+        + 1 bit flag + 7 bits padding).
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcSquadReady, self).__init__(_io)
@@ -5576,6 +5597,7 @@ class StarConflictPackageServer(KaitaiStruct):
 
         def _read(self):
             self.status = self._io.read_u1()
+            self.flag = self._io.read_bits_int_be(1) != 0
 
 
         def _fetch_instances(self):
@@ -5771,8 +5793,8 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcTeachingAccept(KaitaiStruct):
-        """Field sequence from handler at 0x0822bb58 in OnRecieve dispatch.
-        Reads: u8 u64 u8
+        """Teaching-accept ack. Handler 0x0822bb58 reads u8 status + u64 iid
+        + u8 + u1 flag (1 bit; trailing).
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcTeachingAccept, self).__init__(_io)
@@ -5782,8 +5804,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
         def _read(self):
             self.status = self._io.read_u1()
-            self.u64_1 = self._io.read_u8be()
+            self.iid = self._io.read_u8be()
             self.field_2 = self._io.read_u1()
+            self.flag = self._io.read_bits_int_be(1) != 0
 
 
         def _fetch_instances(self):
@@ -6431,8 +6454,8 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcVesselChangeMunition(KaitaiStruct):
-        """Field sequence from handler at 0x08234924 in OnRecieve dispatch.
-        Reads: u8 u64
+        """Vessel munition-change ack. Handler 0x08234924 reads u8 status +
+        u64 iid + u1 flag (1 bit; trailing).
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcVesselChangeMunition, self).__init__(_io)
@@ -6442,7 +6465,8 @@ class StarConflictPackageServer(KaitaiStruct):
 
         def _read(self):
             self.status = self._io.read_u1()
-            self.uid = self._io.read_u8be()
+            self.iid = self._io.read_u8be()
+            self.flag = self._io.read_bits_int_be(1) != 0
 
 
         def _fetch_instances(self):
@@ -6450,8 +6474,8 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcVesselCheatChangeEquip(KaitaiStruct):
-        """Field sequence from handler at 0x0823010c in OnRecieve dispatch.
-        Reads: u8 u64 u8
+        """Vessel cheat-change-equip ack. Handler 0x0823010c reads u8 status
+        + u64 iid + u8 + u1 flag (1 bit; trailing).
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcVesselCheatChangeEquip, self).__init__(_io)
@@ -6461,8 +6485,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
         def _read(self):
             self.status = self._io.read_u1()
-            self.u64_1 = self._io.read_u8be()
+            self.iid = self._io.read_u8be()
             self.field_2 = self._io.read_u1()
+            self.flag = self._io.read_bits_int_be(1) != 0
 
 
         def _fetch_instances(self):
@@ -6670,8 +6695,8 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcVesselRefillBattle(KaitaiStruct):
-        """Field sequence from handler at 0x08233754 in OnRecieve dispatch.
-        Reads: u8 u8
+        """Vessel refill-in-battle ack. Handler 0x08233754 reads
+        u8 status + u8 + u1 flag (1 bit; trailing).
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcVesselRefillBattle, self).__init__(_io)
@@ -6682,6 +6707,7 @@ class StarConflictPackageServer(KaitaiStruct):
         def _read(self):
             self.status = self._io.read_u1()
             self.field_1 = self._io.read_u1()
+            self.flag = self._io.read_bits_int_be(1) != 0
 
 
         def _fetch_instances(self):
@@ -6727,8 +6753,8 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcVesselRepairBattle(KaitaiStruct):
-        """Field sequence from handler at 0x08230d28 in OnRecieve dispatch.
-        Reads: u8
+        """Vessel battle-repair ack. Handler 0x08230d28 reads u8 status +
+        three 1-bit bools (trailing; ~5 bits padding).
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcVesselRepairBattle, self).__init__(_io)
@@ -6738,6 +6764,9 @@ class StarConflictPackageServer(KaitaiStruct):
 
         def _read(self):
             self.status = self._io.read_u1()
+            self.flag_a = self._io.read_bits_int_be(1) != 0
+            self.flag_b = self._io.read_bits_int_be(1) != 0
+            self.flag_c = self._io.read_bits_int_be(1) != 0
 
 
         def _fetch_instances(self):
@@ -6745,8 +6774,13 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcVesselStripEquip(KaitaiStruct):
-        """Field sequence from handler at 0x0823353e in OnRecieve dispatch.
-        Reads: u8 u64
+        """Vessel strip-equip ack. Handler 0x0823353e reader_calls list says
+        u8 + u64 + u1; that matches the 10-byte C->S request shape. But
+        the matching S->C response in captures is ~125 KB — the handler
+        clearly does much more than the recognized-reader-call set
+        captures (probably a sub-deserializer call into a larger vessel
+        snapshot). Modelled minimally as the request shape; the S->C body
+        needs further RE before it can be faithfully decoded.
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcVesselStripEquip, self).__init__(_io)
@@ -6756,7 +6790,8 @@ class StarConflictPackageServer(KaitaiStruct):
 
         def _read(self):
             self.status = self._io.read_u1()
-            self.uid = self._io.read_u8be()
+            self.iid = self._io.read_u8be()
+            self.flag = self._io.read_bits_int_be(1) != 0
 
 
         def _fetch_instances(self):
