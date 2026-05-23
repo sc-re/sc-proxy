@@ -24,6 +24,7 @@ import ac_ship_quests_body
 import ac_talents_update_body
 import ac_teaching_list_body
 import ac_universe_get_body
+import ac_update_dlc_ownership_body
 import ac_update_yup_purchases_body
 import ac_use_blueprint_response_body
 import ac_user_profile_get_response_body
@@ -6062,8 +6063,15 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcUpdateDlcOwnership(KaitaiStruct):
-        """Field sequence from handler at 0x08233924 in OnRecieve dispatch.
-        Reads: u8
+        """DLC ownership snapshot. Handler 0x08233924 reads u8 status, then
+        branches: status==0 -> Bag_Deserialize (a Steam-product-GUID-keyed
+        bag); status!=0 -> u32 count + count × {u64 iid, cstr name,
+        u32 qty, u1 flag, u64 misc} (same per-item shape as
+        ac_player_inventory's FUN_088ead70). All 26 captures take the
+        status=0 path with a 16-entry GUID bag. The leading u8 stays
+        byte-aligned but the bag's inner u1 misaligns subsequent reads,
+        so this is decoded by
+        ac_update_dlc_ownership_body.AcUpdateDlcOwnershipBody.
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcUpdateDlcOwnership, self).__init__(_io)
@@ -6072,11 +6080,14 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.status = self._io.read_u1()
+            self._raw_data = self._io.read_bytes_full()
+            _io__raw_data = KaitaiStream(BytesIO(self._raw_data))
+            self.data = ac_update_dlc_ownership_body.AcUpdateDlcOwnershipBody(_io__raw_data)
 
 
         def _fetch_instances(self):
             pass
+            self.data._fetch_instances()
 
 
     class AcUpdateYupPurchases(KaitaiStruct):

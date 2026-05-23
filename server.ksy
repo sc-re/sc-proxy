@@ -1466,11 +1466,19 @@ types:
       type: u1
   ac_update_dlc_ownership:
     doc: |
-      Field sequence from handler at 0x08233924 in OnRecieve dispatch.
-      Reads: u8
+      DLC ownership snapshot. Handler 0x08233924 reads u8 status, then
+      branches: status==0 -> Bag_Deserialize (a Steam-product-GUID-keyed
+      bag); status!=0 -> u32 count + count × {u64 iid, cstr name,
+      u32 qty, u1 flag, u64 misc} (same per-item shape as
+      ac_player_inventory's FUN_088ead70). All 26 captures take the
+      status=0 path with a 16-entry GUID bag. The leading u8 stays
+      byte-aligned but the bag's inner u1 misaligns subsequent reads,
+      so this is decoded by
+      ac_update_dlc_ownership_body.AcUpdateDlcOwnershipBody.
     seq:
-    - id: status
-      type: u1
+    - id: data
+      type: ac_update_dlc_ownership_body
+      size-eos: true
   ac_friends_send_request:
     doc: |
       Despite the AC name, the response carries the player's full social
