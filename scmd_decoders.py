@@ -693,6 +693,76 @@ def _scmd_store(body: bytes) -> ScmdPayload:
     try:
         if t == 0x00:
             out["catalog_hash"] = _kv("u32", br.read_u32(), br)
+        elif t == 0x01:
+            # Type-1 initial catalog push (StoreSvc::Recieve case 1, 825a350).
+            # Per-chunk header — same shape as type=2 except the uncompressed_size
+            # prefix sits inside the *payload* (the first 4 B at from_byte=0)
+            # rather than being read as a discrete header field, because a
+            # multi-chunk transfer only carries it once:
+            #   u32 stored_size  total bytes of the reassembly buffer (incl. the
+            #                    leading u32 uncompressed_size). Constant across
+            #                    chunks of the same transfer.
+            #   u32 from_byte    byte offset where this chunk attaches; chunk 0
+            #                    has from_byte=0 and starts with the leading
+            #                    uncompressed_size + the deflate head, later
+            #                    chunks have from_byte = sum(prev payloads) and
+            #                    contain raw deflate continuation bytes only.
+            # A complete catalog is 6+ chunks (~340 KB total, ~1.16 MB inflated,
+            # ~14 K records). We can only fully decode chunk-0 standalone if the
+            # transfer fits in a single packet — otherwise we surface the chunk
+            # header + raw payload bytes so the caller can reassemble them.
+            out["stored_size"] = _kv("u32", br.read_u32(), br)
+            out["from_byte"]   = _kv("u32", br.read_u32(), br)
+            stored    = out["stored_size"].value
+            from_byte = out["from_byte"].value
+            avail     = (len(body) * 8 - br.pos) // 8
+            region    = br.read_blob(avail)
+            payload_bit = 9 * 8     # header is u8 + 2×u32 = 9 bytes
+            if from_byte != 0 or len(region) < 4:
+                # Continuation chunk (or too short to inflate). Surface metadata
+                # and the raw payload region; reassembly is the caller's job.
+                out["deflate_continuation"] = Variant(
+                    "bytes", region, 0xff,
+                    (payload_bit, payload_bit + len(region) * 8))
+                out["_chunk_note"] = _kv(
+                    "?", f"chunk attaches at byte {from_byte} of a "
+                    f"{stored}-byte reassembly buffer; previous chunks are "
+                    f"required to inflate.")
+                return ScmdPayload("SCMD_STORE", out)
+            # Chunk 0: first 4 B of the payload is the inflated-size prefix,
+            # then raw deflate (wbits=-15). Try to inflate the chunk standalone;
+            # for a multi-chunk transfer this will partial-fail at the deflate
+            # stream's middle, but a single-chunk transfer (small catalog) goes
+            # all the way through and we get records.
+            out["uncompressed_size"] = Variant(
+                "u32", int.from_bytes(region[:4], "big"), 0xff,
+                (payload_bit, payload_bit + 32))
+            defl_input = region[4:]
+            inflated = dec = last_err = None
+            for wbits in (-15, 47):
+                dec = zlib.decompressobj(wbits)
+                try:
+                    inflated = dec.decompress(defl_input) + dec.flush()
+                    break
+                except zlib.error as e:
+                    last_err = e
+                    inflated = None
+            if inflated is None:
+                out["deflate"] = Variant(
+                    "bytes", defl_input, 0xff,
+                    (payload_bit + 32, payload_bit + 32 + len(defl_input) * 8))
+                out["_inflate_err"] = _kv(
+                    "?", f"chunk-0 of a multi-chunk transfer; need later "
+                    f"chunks to complete the deflate stream "
+                    f"({type(last_err).__name__}: {last_err})")
+                return ScmdPayload("SCMD_STORE", out)
+            consumed = len(defl_input) - len(dec.unused_data)
+            out["deflate"] = Variant(
+                "bytes", defl_input[:consumed], 0xff,
+                (payload_bit + 32, payload_bit + 32 + consumed * 8))
+            out["inflated_raw"] = Variant(
+                "bytes", inflated, 0xff, (0, len(inflated)))
+            out["inflated"] = _read_store_delta(inflated)
         elif t == 0x02:
             # Chunk header — `StoreSvc::Recieve` case 1/2 (0x08259f60):
             #   u32 stored_size  size of the reassembly payload for this transfer.
