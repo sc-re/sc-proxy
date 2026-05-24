@@ -5,6 +5,7 @@ import kaitaistruct
 from kaitaistruct import KaitaiStruct, KaitaiStream, BytesIO
 import ac_account_auras_body
 import bag_payload
+import ac_buy_item_response_body
 import prefixed_bag_payload
 import fed_design_tgp_stream
 import ac_friends_send_request_body
@@ -2154,10 +2155,16 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcBuyItem(KaitaiStruct):
-        """Item-purchase ACK. 30B form is fail/queued (item_def empty).
-        81B form is success: u4be amount + 8 zero bytes + cstring
-        item_def_name (e.g. "SpaceMissile_ChildRockets_T5_Mk3") + opaque
-        tail with new balances.
+        """Item-purchase ACK. Handler 0x08233dd0 (Ghidra-decompiled) reads:
+        u32 store_item_id_echo, u8 status, then an InventoryItem via the
+        shared FUN_088ead70 (u64 iid + cstrN def_name + u32 qty + u1 flag
+        + u64 misc). If iid != 0 (a new inventory slot was created), the
+        handler reads a trailing u1 + u8 count + count NUL-terminated
+        cstrings (the consumed/affected def-names). When iid == 0 the
+        handler stops after the InventoryItem, even when the server has
+        sent a longer body -- the client ignores the tail. The
+        InventoryItem's u1 flag bit-misaligns the rest, so decoded by
+        ac_buy_item_response_body.AcBuyItemResponseBody.
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcBuyItem, self).__init__(_io)
@@ -2166,12 +2173,14 @@ class StarConflictPackageServer(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.status = self._io.read_u4be()
-            self.payload = self._io.read_bytes_full()
+            self._raw_data = self._io.read_bytes_full()
+            _io__raw_data = KaitaiStream(BytesIO(self._raw_data))
+            self.data = ac_buy_item_response_body.AcBuyItemResponseBody(_io__raw_data)
 
 
         def _fetch_instances(self):
             pass
+            self.data._fetch_instances()
 
 
     class AcBuyProductFromAdvert(KaitaiStruct):

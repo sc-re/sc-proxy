@@ -734,14 +734,19 @@ types:
       size-eos: true
   ac_buy_item:
     doc: |
-      Item-purchase ACK. 30B form is fail/queued (item_def empty).
-      81B form is success: u4be amount + 8 zero bytes + cstring
-      item_def_name (e.g. "SpaceMissile_ChildRockets_T5_Mk3") + opaque
-      tail with new balances.
+      Item-purchase ACK. Handler 0x08233dd0 (Ghidra-decompiled) reads:
+      u32 store_item_id_echo, u8 status, then an InventoryItem via the
+      shared FUN_088ead70 (u64 iid + cstrN def_name + u32 qty + u1 flag
+      + u64 misc). If iid != 0 (a new inventory slot was created), the
+      handler reads a trailing u1 + u8 count + count NUL-terminated
+      cstrings (the consumed/affected def-names). When iid == 0 the
+      handler stops after the InventoryItem, even when the server has
+      sent a longer body -- the client ignores the tail. The
+      InventoryItem's u1 flag bit-misaligns the rest, so decoded by
+      ac_buy_item_response_body.AcBuyItemResponseBody.
     seq:
-    - id: status
-      type: u4be
-    - id: payload
+    - id: data
+      type: ac_buy_item_response_body
       size-eos: true
   ac_sell_item:
     seq:
