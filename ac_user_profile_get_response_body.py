@@ -72,6 +72,7 @@ after bit 9.
 from __future__ import annotations
 from dataclasses import dataclass
 from typing import List, Optional, Tuple
+import traceback
 
 from notification import BitReader, _read_bag
 
@@ -186,64 +187,68 @@ class _ProfileRecord:
                 for i in range(10) if (self.flags >> i) & 1]
 
 
-def _read_record(br: BitReader) -> _ProfileRecord:
+def _read_record(br: BitReader) -> (_ProfileRecord, Optional[str]):
     rec = _ProfileRecord(uid=br.read_u64(), flags=_read_var_uint(br))
 
-    if rec.flags & (1 << UPF_STATE):
-        rec.state             = br.read_u8()
-        rec.state_last_change = br.read_u64()
-
-    if rec.flags & (1 << UPF_CLAN_ID):
-        rec.clan_id = br.read_u64()
-
-    if rec.flags & (1 << UPF_GENERAL_STATS):
-        rec.general_stats = [br.read_u64() for _ in range(33)]
-
-    if rec.flags & (1 << UPF_VESSELS_RANK_STATS):
-        rec.vessels_rank_stats = [
-            [br.read_u64() for _ in range(33)] for _ in range(18)
-        ]
-
-    if rec.flags & (1 << UPF_ACHIEVEMENTS):
-        ach = []
-        for _ in range(261):
-            value = br.read_u32()
-            num_ranks = br.read_u8()
-            ranks: List[int] = []
-            for _ in range(num_ranks):
-                rd = br.read_u64()
-                ranks.append(rd)
-                if rd == 0:
-                    break
-            ach.append((value, ranks))
-        rec.achievements = ach
-
-    if rec.flags & (1 << UPF_MEDALS):
-        med = []
-        for _ in range(62):
-            entry: List[int] = []
-            for _ in range(8):
-                v = br.read_u32()
-                entry.append(v)
-                if v == 0:
-                    break
-            med.append(entry)
-        rec.medals = med
-
-    if rec.flags & (1 << UPF_TITLES):
-        rec.titles = _read_titles(br)
-
-    if rec.flags & (1 << UPF_AVATARS):
-        rec.avatars = _read_avatars_or_mottos(br)
-
-    if rec.flags & (1 << UPF_MOTTOS):
-        rec.mottos = _read_avatars_or_mottos(br)
-
-    if rec.flags & (1 << UPF_ATLAS):
-        rec.atlas = _read_atlas(br)
+    try:
+        if rec.flags & (1 << UPF_STATE):
+            rec.state             = br.read_u8()
+            rec.state_last_change = br.read_u64()
+    
+        if rec.flags & (1 << UPF_CLAN_ID):
+            rec.clan_id = br.read_u64()
+    
+        if rec.flags & (1 << UPF_GENERAL_STATS):
+            rec.general_stats = [br.read_u64() for _ in range(33)]
+    
+        if rec.flags & (1 << UPF_VESSELS_RANK_STATS):
+            rec.vessels_rank_stats = [
+                [br.read_u64() for _ in range(33)] for _ in range(18)
+            ]
+    
+        if rec.flags & (1 << UPF_ACHIEVEMENTS):
+            ach = []
+            for _ in range(261):
+                value = br.read_u32()
+                num_ranks = br.read_u8()
+                ranks: List[int] = []
+                for _ in range(num_ranks):
+                    rd = br.read_u64()
+                    ranks.append(rd)
+                    if rd == 0:
+                        break
+                ach.append((value, ranks))
+            rec.achievements = ach
+    
+        if rec.flags & (1 << UPF_MEDALS):
+            med = []
+            for _ in range(62):
+                entry: List[int] = []
+                for _ in range(8):
+                    v = br.read_u32()
+                    entry.append(v)
+                    if v == 0:
+                        break
+                med.append(entry)
+            rec.medals = med
+    
+        if rec.flags & (1 << UPF_TITLES):
+            rec.titles = _read_titles(br)
+    
+        if rec.flags & (1 << UPF_AVATARS):
+            rec.avatars = _read_avatars_or_mottos(br)
+    
+        if rec.flags & (1 << UPF_MOTTOS):
+            rec.mottos = _read_avatars_or_mottos(br)
+    
+        if rec.flags & (1 << UPF_ATLAS):
+            rec.atlas = _read_atlas(br)
+    except Exception as e:
+        rec.bits_consumed = br.pos
+        return rec, (f"{type(e).__name__}: {e} (bit {br.pos})\n{traceback.format_exc()}")
 
     rec.bits_consumed = br.pos
-    return rec
+    return rec, None
 
 
 class AcUserProfileGetResponseBody:
@@ -260,8 +265,12 @@ class AcUserProfileGetResponseBody:
             for _ in range(self.num_records):
                 start = br.pos
                 try:
-                    rec = _read_record(br)
+                    rec, error = _read_record(br)
                     self.records.append(rec)
+                    if error != None:
+                        self.error = error
+                        self.partial = True
+                        break
                 except Exception as e:
                     self.error = (f"record {len(self.records)}: "
                                   f"{type(e).__name__}: {e} (bit {start})")

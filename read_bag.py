@@ -30,6 +30,7 @@ def decode_bag_file(path: str, prefixed: bool) -> str:
     with open(path, "rb") as f:
         raw = f.read()
     br = BitReader(raw)
+    br.read_u16()
     if prefixed:
         present = br.read_bool()
         if not present:

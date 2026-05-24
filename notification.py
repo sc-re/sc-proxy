@@ -309,7 +309,7 @@ def _read_bag(br: BitReader) -> dict:
     use_indexed_keys = br.read_bool()
     for i in range(num_entries):
         entry_start = br.pos
-        key = str(i) if use_indexed_keys else br.read_cstring()
+        key = ("int" + str(i)) if use_indexed_keys else br.read_cstring()
         v = _read_variant(br)
         # Widen the variant's range to cover the key too — the tree
         # shows "key: value" as one node, so highlighting the value

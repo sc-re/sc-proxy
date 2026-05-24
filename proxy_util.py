@@ -118,9 +118,9 @@ def set_local_server_mode(host: str = "192.168.2.32") -> None:
     DEFAULT_REAL_LB    = (host, 3801)
     DEFAULT_REAL_SHARD = (host, 3802)
     DEFAULT_REAL_CHAT  = (host, 3815)
-    LB_LISTEN_PORT    = 4801
-    SHARD_LISTEN_PORT = 4802
-    CHAT_LISTEN_PORT  = 4815
+    #LB_LISTEN_PORT    = 4801
+    #SHARD_LISTEN_PORT = 4802
+    #CHAT_LISTEN_PORT  = 4815
     CAPTURE_DIR = os.path.join("captures_debug", _session_ts)
     log.info(
         f"[proxy] local-server mode: upstream={host}, "

@@ -5,6 +5,7 @@ import kaitaistruct
 from kaitaistruct import KaitaiStruct, KaitaiStream, BytesIO
 import ac_buy_item_request_body
 import bag_payload
+import ac_mail_send_request_body
 import ac_user_profile_get_request_body
 import ac_vessel_change_equip_multi_request_body
 from enum import IntEnum
@@ -3586,6 +3587,7 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcMailRemove(KaitaiStruct):
+        """Delete-mail request — single u64 mail_id."""
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcMailRemove, self).__init__(_io)
             self._parent = _parent
@@ -3593,7 +3595,7 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.unknown = self._io.read_bytes_full()
+            self.mail_id = self._io.read_u8be()
 
 
         def _fetch_instances(self):
@@ -3601,6 +3603,10 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcMailSend(KaitaiStruct):
+        """Send-mail request — u64 recipient + cstring subject + cstring body
+        + attachment bag. Decoded by
+        ac_mail_send_request_body.AcMailSendRequestBody.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcMailSend, self).__init__(_io)
             self._parent = _parent
@@ -3608,11 +3614,14 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.unknown = self._io.read_bytes_full()
+            self._raw_data = self._io.read_bytes_full()
+            _io__raw_data = KaitaiStream(BytesIO(self._raw_data))
+            self.data = ac_mail_send_request_body.AcMailSendRequestBody(_io__raw_data)
 
 
         def _fetch_instances(self):
             pass
+            self.data._fetch_instances()
 
 
     class AcMmInfo(KaitaiStruct):

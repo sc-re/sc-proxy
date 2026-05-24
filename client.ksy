@@ -1340,13 +1340,19 @@ types:
       type: u1
       doc: Top bit (0x80) = u1 flag; remaining bits padding.
   ac_mail_send:
+    doc: |
+      Send-mail request — u64 recipient + cstring subject + cstring body
+      + attachment bag. Decoded by
+      ac_mail_send_request_body.AcMailSendRequestBody.
     seq:
-    - id: unknown
+    - id: data
+      type: ac_mail_send_request_body
       size-eos: true
   ac_mail_remove:
+    doc: Delete-mail request — single u64 mail_id.
     seq:
-    - id: unknown
-      size-eos: true
+    - id: mail_id
+      type: u8be
   ac_mail_acknowledge_expiration:
     seq:
     - id: unknown
