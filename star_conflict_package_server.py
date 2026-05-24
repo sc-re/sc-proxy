@@ -5623,14 +5623,30 @@ class StarConflictPackageServer(KaitaiStruct):
 
 
     class AcSurveyGetNew(KaitaiStruct):
-        """Response to survey-poll request. Handler 0x0822f5b2 reads u8 status;
-        on success (status == 0) a property bag of survey data follows via
-        Bag_Deserialize. On error (status != 0) no further reads -- the
-        body is just the status byte. All 757 S->C captures take the
-        status=0 / empty-bag form (5-byte body = u8(0) + u32 num_entries(0)),
-        so the full active-survey schema is unobserved here; field names
-        inside the bag will need a capture with status=0 AND a non-empty
-        bag to verify.
+        """Response to survey-poll request. Handler 0x0822f5b2 reads u8
+        status; on success (status == 0) a property bag follows via
+        Bag_Deserialize. On error (status != 0) the body is just the
+        status byte.
+        
+        Expected bag keys when a survey is active (from
+        ui/scripts/work/gameobjects/vote.lua + windows/votewnd.lua +
+        public/uipublic.lua MasterServer_OnNewSurvey):
+        
+          sid           u64     survey id
+          question      str     the question text (or loc key)
+          multiple      i32     1 = multi-select, otherwise single-select
+          answers       bag     indexed bag of answer entries; each entry
+                                has at least { text: str, recordIdx: i32 }
+                                and is identified by its index in this bag
+                                when sent back via MasterServer_SurveyVote
+          reward        i32     reward amount (optional; only present
+                                when > 0)
+          isGoldReward  bool    paired with `reward` -- true = GS,
+                                false = credits (optional)
+        
+        All 757 S->C captures take the status=0 / EMPTY-bag form
+        (5-byte body), so the active-survey bag shape above is from
+        Lua client code rather than from observed wire data.
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcSurveyGetNew, self).__init__(_io)
@@ -5656,10 +5672,26 @@ class StarConflictPackageServer(KaitaiStruct):
 
     class AcSurveyResults(KaitaiStruct):
         """Survey results. Handler 0x0822f502 reads u8 status; on success
-        (status == 0) a property bag of result data follows via
-        Bag_Deserialize. On error (status != 0) no further reads. All
-        757 S->C captures take the status=0 / empty-bag form, so the
-        schema of an active result bag is unobserved here.
+        (status == 0) a property bag follows via Bag_Deserialize. On
+        error (status != 0) the body is just the status byte.
+        
+        Expected bag keys when results are present (from
+        ui/scripts/windows/votewnd.lua + public/uipublic.lua
+        MasterServer_OnSurveyResults):
+        
+          sid          u64    survey id
+          question     str    the question (re-echoed)
+          answers      bag    indexed bag of answer entries
+                              (same shape as in ac_survey_get_new)
+          results      bag    per-answer vote counts; each entry is a
+                              u64 (appears in Lua as { h, l } halves)
+                              and is summed by the client to derive a
+                              displayed total
+          totalVoted   u64    server-sent total vote count
+        
+        All 757 S->C captures take the status=0 / EMPTY-bag form (5-byte
+        body), so the active-results bag shape above is from Lua client
+        code rather than observed wire data.
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageServer.AcSurveyResults, self).__init__(_io)
