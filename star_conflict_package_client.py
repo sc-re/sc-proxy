@@ -3,6 +3,7 @@
 
 import kaitaistruct
 from kaitaistruct import KaitaiStruct, KaitaiStream, BytesIO
+import ac_buy_item_request_body
 import bag_payload
 import ac_user_profile_get_request_body
 import ac_vessel_change_equip_multi_request_body
@@ -1936,6 +1937,16 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcBuyItem(KaitaiStruct):
+        """Buy-item C->S request. Encoder FUN_082576a0 (called by the
+        `GameStore_Buy(storeItemId, amount, creditsType, [mode])` Lua
+        binding @FUN_082640a0) writes: u32 store_item_id + u32 amount
+        (clamped 1..0x3fff) + u8 credits_type + u1 has_discount
+        (client-computed from the discount-aura catalog) + u32 mode (the
+        4th Lua arg; 0xffffffff when omitted). 14-byte body with 7 bits
+        of trailing padding. The 1-bit has_discount makes the trailing
+        u32 bit-misaligned, so decoded by
+        ac_buy_item_request_body.AcBuyItemRequestBody.
+        """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcBuyItem, self).__init__(_io)
             self._parent = _parent
@@ -1943,11 +1954,14 @@ class StarConflictPackageClient(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.unknown = self._io.read_bytes_full()
+            self._raw_data = self._io.read_bytes_full()
+            _io__raw_data = KaitaiStream(BytesIO(self._raw_data))
+            self.data = ac_buy_item_request_body.AcBuyItemRequestBody(_io__raw_data)
 
 
         def _fetch_instances(self):
             pass
+            self.data._fetch_instances()
 
 
     class AcBuyProductFromAdvert(KaitaiStruct):
@@ -4681,11 +4695,9 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcTeachingAllow(KaitaiStruct):
-        """Teaching-allow toggle C→S — single u1 `allow` bit. The role
-        (teacher vs student) is not on the wire; the server keeps the
-        current role context and writes the new allow value to the
-        matching slot. The matching S→C response echoes status, role,
-        and allow back.
+        """Teaching-allow toggle — single u1 `allow` bit. The role (teacher
+        vs student) is not on the wire; the server keeps the current role
+        context and updates the matching allow slot.
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcTeachingAllow, self).__init__(_io)
@@ -5005,14 +5017,13 @@ class StarConflictPackageClient(KaitaiStruct):
 
 
     class AcUserProfileGet(KaitaiStruct):
-        """Bulk-fetch user profiles request — handler 0x0822ed43 reads
-        u32 count + count × {u64 uid + varuint flags}, bit-packed. The
-        flags varuint is a UPF_* bitmask saying which fields the client
-        wants in the response (the per-flag-bit data only appears in the
-        response, not the request — that's why successive records'
-        byte-alignment slides by 1 bit, producing the 0x80/0x40/0x20/…
-        shifting pattern in hex dumps). Decoded by
-        `ac_user_profile_get_request_body.AcUserProfileGetRequestBody`.
+        """Bulk-fetch user profiles request — bit-packed u32 count + count ×
+        {u64 uid + varuint flags}, where `flags` is a UPF_* bitmask asking
+        the server which fields to include in the response. No per-flag
+        payload follows in the request; that's why each record is exactly
+        73 bits (when flags fit in 1+8 varuint) and successive records'
+        byte-alignment slides by 1 bit per record. Decoded by
+        ac_user_profile_get_request_body.AcUserProfileGetRequestBody.
         """
         def __init__(self, _io, _parent=None, _root=None):
             super(StarConflictPackageClient.AcUserProfileGet, self).__init__(_io)

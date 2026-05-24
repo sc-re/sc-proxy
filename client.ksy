@@ -482,8 +482,19 @@ types:
     - id: unknown
       size-eos: true
   ac_buy_item:
+    doc: |
+      Buy-item C->S request. Encoder FUN_082576a0 (called by the
+      `GameStore_Buy(storeItemId, amount, creditsType, [mode])` Lua
+      binding @FUN_082640a0) writes: u32 store_item_id + u32 amount
+      (clamped 1..0x3fff) + u8 credits_type + u1 has_discount
+      (client-computed from the discount-aura catalog) + u32 mode (the
+      4th Lua arg; 0xffffffff when omitted). 14-byte body with 7 bits
+      of trailing padding. The 1-bit has_discount makes the trailing
+      u32 bit-misaligned, so decoded by
+      ac_buy_item_request_body.AcBuyItemRequestBody.
     seq:
-    - id: unknown
+    - id: data
+      type: ac_buy_item_request_body
       size-eos: true
   ac_sell_item:
     seq:
