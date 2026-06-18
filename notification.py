@@ -93,6 +93,7 @@ class BitReader:
 
     def read_bool(self) -> bool:
         self.last_read_start = self.pos
+        print(f"byte {self.buf[self.pos >> 3]:02x}")
         return self.read_bits(1) == 1
 
     def read_u8(self) -> int:
@@ -307,6 +308,7 @@ def _read_bag(br: BitReader) -> dict:
         br.last_read_start = bag_start
         return out
     use_indexed_keys = br.read_bool()
+    print(f"Reading indexed keys at {br.pos - 1}: {use_indexed_keys}")
     for i in range(num_entries):
         entry_start = br.pos
         key = ("int" + str(i)) if use_indexed_keys else br.read_cstring()
@@ -381,6 +383,10 @@ def validate(notif: Notification) -> list[str]:
 
     Tolerances: u64a vs u64b are accepted interchangeably for `u64` specs;
     `num` accepts any numeric tag; `?` accepts any tag.
+
+    A trailing '?' on the tag (e.g. `u64?` or `??`) marks the field as
+    optional — its absence from the bag is not reported as an issue, but
+    when it IS present the type check still applies.
     """
     spec = SN_FIELDS.get(notif.sn_id)
     issues: list[str] = []
@@ -394,12 +400,15 @@ def validate(notif: Notification) -> list[str]:
     expected_keys: set[str] = set()
     for want_tag, key in spec:
         expected_keys.add(key)
+        optional = want_tag.endswith("?") and want_tag != "?"
+        check_tag = want_tag[:-1] if optional else want_tag
         if key not in notif.bag:
-            issues.append(f"missing field {key!r} (expected {want_tag})")
+            if not optional:
+                issues.append(f"missing field {key!r} (expected {want_tag})")
             continue
         v = notif.bag[key]
         got_tag = v.tag if isinstance(v, Variant) else "?"
-        compat = _COMPAT.get(want_tag, {want_tag})
+        compat = _COMPAT.get(check_tag, {check_tag})
         if got_tag not in compat:
             issues.append(f"field {key!r} wire-tag {got_tag}, expected {want_tag}")
 
@@ -445,7 +454,7 @@ SN_FIELDS: dict[int, list[tuple[str, str]]] = {
       5: [],  # SN_VESSELS_AUTO_REFILLED — no C++ handler, no Lua handler
       6: [],  # SN_VESSELS_AUTO_REFILL_FAILED — no C++ handler, no Lua handler
       7: [],  # SN_VESSEL_REFILLED — no C++ handler, no Lua handler
-      8: [("str", "defName"), ("bag", "bundleContents"), ("?", "itemDefName"), ("?", "itemType"), ("?", "iid")],  # SN_ITEM_PURCHASED (cpp,lua)
+      8: [("str", "defName"), ("bag", "bundleContents"), ("??", "itemDefName"), ("i32", "itemType"), ("u64?", "iid"), ("u64?", "vid"), ("i32?", "credits"), ("i32?", "goldCredits"), ("i32?", "tokenCredits"), ("i32?", "eventCredits"), ("i32", "amount")],  # SN_ITEM_PURCHASED (cpp,lua) — iid/vid mutually-exclusive (set only when the purchase mints an inventory/vessel instance); credits-fields omitted when the purchase had no currency cost (e.g. some IT_BUNDLE drops); itemDefName never observed on wire, kept optional for Lua reference
       9: [("bag", "contents")],  # SN_ITEM_BURNED (lua)
      10: [],  # SN_CREDITS_PURCHASED — no C++ handler, no Lua handler
      11: [("?", "premiumSeconds")],  # SN_PREMIUM_TIME_PURCHASED (lua)

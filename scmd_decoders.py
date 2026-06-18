@@ -178,6 +178,30 @@ def _scmd_dock_space_station(body: bytes) -> ScmdPayload:
     })
 
 
+def _scmd_connect_dedicated_server(body: bytes) -> ScmdPayload:
+    """0x0b: cstring addr + u16 port + u64 session_id + i32 zone_id + u1 flag.
+
+    Source: case 0xb of MasterServerEndpoint::OnRecieve (handler at 0x8242faa).
+    After reading, the client formats and logs:
+        "SCMD_CONNECT_DEDICATED_SERVER %s:%d / %s zone %d"
+
+    The trailing 1-bit is stored at `MasterServerEndpoint + 0x30` (purpose
+    not yet pinned down — only the write site is in OnRecieve, and reads
+    happen elsewhere in the class). Empty `addr` triggers the
+    "was sent with empty address" warning path. The actual immediate-vs-
+    deferred connect decision uses a *different* flag at +0x2951e8 (set
+    by an earlier state-machine event, unrelated to this packet).
+    """
+    br = BitReader(body)
+    return ScmdPayload("SCMD_CONNECT_DEDICATED_SERVER", {
+        "addr":       _kv("str", br.read_cstring(max_len=256), br),
+        "port":       _kv("u16", br.read_u16(),   br),
+        "session_id": _kv("u64", br.read_u64(),   br),
+        "zone_id":    _kv("i32", br.read_i32(),   br),
+        "flag":       _kv("bool", br.read_bool(), br),
+    })
+
+
 def _scmd_replace_chat_msg(body: bytes) -> ScmdPayload:
     """0x26: u64 chat_msg_id + u8 flag (synthesised into a 2-entry bag for UI).
 
@@ -1158,6 +1182,7 @@ def _read_store_catalog(br: BitReader, out: dict) -> None:
 
 DECODERS: dict[int, Callable[[bytes], ScmdPayload]] = {
     0x09: _scmd_store,
+    0x0b: _scmd_connect_dedicated_server,
     0x0f: _scmd_squad_notification,
     0x10: _scmd_social_notification,
     0x11: _scmd_teaching_notification,
