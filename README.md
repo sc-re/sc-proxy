@@ -18,6 +18,14 @@ Choose `localhost` in the Server dropdown to connect through the proxy.
 After logging in, the proxy will dump the bodies of recieved packets in `./captures`
 or whatever directory the environment variable `SC_CAPTURE_DIR` points to.
 
+### Browsing older sessions
+
+The Qt inspector (`python3 proxy_gui.py`) has a **Session** dropdown in the
+filter bar. It defaults to `● Live` (freshly captured traffic); selecting one
+of the listed sessions reloads that session's saved packet bodies from disk and
+shows them in the table, decoded exactly as the live view would. Use `⟳` to
+rescan the capture directories, and pick `● Live` again to resume the live feed.
+
 Update the files `server.ksy` and `client.ksy` with definitions of packages you understand.
 - `client.ksy` is for packages flowing from Client to Server
 - `server.ksy` is for packages flowing from Server to Client

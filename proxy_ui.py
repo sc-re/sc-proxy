@@ -19,6 +19,7 @@ from PySide6 import QtCore, QtGui, QtWidgets
 
 import packet_bus
 import scmd_decoders
+import session_loader
 
 
 # ── helpers ─────────────────────────────────────────────────────────────────
@@ -77,6 +78,10 @@ class PacketModel(QtCore.QAbstractTableModel):
     def __init__(self, parent: QtCore.QObject | None = None):
         super().__init__(parent)
         self._records: list[packet_bus.PacketRecord] = []
+        # When live, incoming bus records are appended; when showing a
+        # loaded session, live records are buffered (still captured by the
+        # proxy threads) but not shown until the user switches back.
+        self._live = True
         self.new_record.connect(self._on_record, QtCore.Qt.QueuedConnection)
         packet_bus.subscribe(lambda r: self.new_record.emit(r))
         for r in packet_bus.history():
@@ -85,7 +90,26 @@ class PacketModel(QtCore.QAbstractTableModel):
     # ---- internal -------------------------------------------------------
 
     def _on_record(self, r: packet_bus.PacketRecord) -> None:
-        self._append(r)
+        if self._live:
+            self._append(r)
+
+    # ---- session switching ---------------------------------------------
+
+    def show_live(self) -> None:
+        """Switch back to the live view, backfilling from bus history."""
+        self.beginResetModel()
+        self._records = list(packet_bus.history())
+        self._live = True
+        self.endResetModel()
+
+    def show_session(self,
+                     records: list[packet_bus.PacketRecord]) -> None:
+        """Replace the table contents with a loaded session's records and
+        stop appending live traffic until show_live() is called."""
+        self.beginResetModel()
+        self._live = False
+        self._records = list(records)
+        self.endResetModel()
 
     def _append(self, r: packet_bus.PacketRecord) -> None:
         row = len(self._records)
@@ -191,12 +215,29 @@ class MainWindow(QtWidgets.QMainWindow):
         self.dir_cs.toggled.connect(lambda v: self.proxy.set_direction("C→S", v))
         self.follow_box = QtWidgets.QCheckBox("Follow tail")
         self.follow_box.setChecked(True)
+
+        # Session selector — "Live" plus every on-disk capture session.
+        # Picking an older session loads it into the table; picking Live
+        # resumes showing freshly captured traffic.
+        self.session_combo = QtWidgets.QComboBox()
+        self.session_combo.setMinimumWidth(260)
+        self.session_combo.setToolTip("Load an older capture session")
+        self.reload_btn = QtWidgets.QToolButton()
+        self.reload_btn.setText("⟳")
+        self.reload_btn.setToolTip("Rescan capture directories")
+        self.reload_btn.clicked.connect(self._refresh_sessions)
+        self._refresh_sessions()
+        self.session_combo.currentIndexChanged.connect(self._on_session_pick)
+
         bar = QtWidgets.QHBoxLayout()
         bar.addWidget(QtWidgets.QLabel("Filter:"))
         bar.addWidget(self.filter_edit, 1)
         bar.addWidget(self.dir_sc)
         bar.addWidget(self.dir_cs)
         bar.addWidget(self.follow_box)
+        bar.addWidget(QtWidgets.QLabel("Session:"))
+        bar.addWidget(self.session_combo)
+        bar.addWidget(self.reload_btn)
 
         # Table
         self.table = QtWidgets.QTableView()
@@ -273,9 +314,51 @@ class MainWindow(QtWidgets.QMainWindow):
     # ---- slots ----------------------------------------------------------
 
     def _update_status(self, *_):
+        scope = "live" if self.model._live else "session"
         self._status.showMessage(
-            f"{self.proxy.rowCount()} shown / {self.model.rowCount()} captured"
+            f"{self.proxy.rowCount()} shown / {self.model.rowCount()} "
+            f"{scope}"
         )
+
+    # ---- session loading ------------------------------------------------
+
+    def _refresh_sessions(self) -> None:
+        """(Re)populate the session combo from disk. Index 0 is always the
+        live view; the rest are on-disk sessions newest-first. Each item's
+        userData is the session path (None for Live)."""
+        keep_path = self.session_combo.currentData()
+        self.session_combo.blockSignals(True)
+        self.session_combo.clear()
+        self.session_combo.addItem("● Live", None)
+        for s in session_loader.list_sessions():
+            self.session_combo.addItem(s.label, s.path)
+        # Restore the previously-selected session if it still exists.
+        if keep_path is not None:
+            i = self.session_combo.findData(keep_path)
+            if i >= 0:
+                self.session_combo.setCurrentIndex(i)
+        self.session_combo.blockSignals(False)
+
+    def _on_session_pick(self, _index: int) -> None:
+        path = self.session_combo.currentData()
+        if path is None:
+            self.model.show_live()
+            self.follow_box.setEnabled(True)
+            self._update_status()
+            return
+        # Loading reads + decodes every body; show a wait cursor since a
+        # large session can take a moment.
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        try:
+            records = session_loader.load_session(path)
+        finally:
+            QtWidgets.QApplication.restoreOverrideCursor()
+        self.model.show_session(records)
+        # A loaded session is static — tail-following is meaningless, so
+        # disable it and jump to the top.
+        self.follow_box.setEnabled(False)
+        self.table.scrollToTop()
+        self._update_status()
 
     def _maybe_scroll(self, *_):
         if self.follow_box.isChecked():
