@@ -44,6 +44,40 @@ def _hexdump(data: bytes, width: int = 16) -> str:
 _BIT_RANGE_ROLE = QtCore.Qt.UserRole + 1
 
 
+def _error_color() -> QtGui.QColor:
+    """Red for unparsed / error rows, picked for the active theme.
+
+    The original muted red (#cc4040) is too dark to read against a dark
+    background, so brighten it when the palette is dark and use a deeper
+    red on light themes where a pale red would wash out.
+    """
+    pal = QtWidgets.QApplication.palette()
+    dark = pal.color(QtGui.QPalette.Base).lightnessF() < 0.5
+    return QtGui.QColor("#ff6b6b") if dark else QtGui.QColor("#c0211b")
+
+
+def _mono_font() -> QtGui.QFont:
+    """A readable, anti-aliased monospace font.
+
+    The platform 'fixed' font on Windows is often Courier New, which
+    renders poorly at UI sizes; prefer a modern programming monospace when
+    one is installed. PreferAntialias forces smoothing on regardless of
+    the font's default style strategy.
+    """
+    families = set(QtGui.QFontDatabase.families())
+    for name in ("Cascadia Mono", "Cascadia Code", "Consolas",
+                 "JetBrains Mono", "DejaVu Sans Mono"):
+        if name in families:
+            font = QtGui.QFont(name)
+            break
+    else:
+        font = QtGui.QFontDatabase.systemFont(QtGui.QFontDatabase.FixedFont)
+    font.setPointSize(10)
+    font.setStyleStrategy(
+        QtGui.QFont.PreferAntialias | QtGui.QFont.PreferQuality)
+    return font
+
+
 def _node_to_item(node: scmd_decoders.DecodeNode) -> QtWidgets.QTreeWidgetItem:
     """Convert a DecodeNode subtree into a QTreeWidgetItem subtree.
 
@@ -55,7 +89,7 @@ def _node_to_item(node: scmd_decoders.DecodeNode) -> QtWidgets.QTreeWidgetItem:
         item.setData(0, _BIT_RANGE_ROLE, node.bit_range)
     if node.wire_type == "error":
         for col in range(3):
-            item.setForeground(col, QtGui.QColor("#cc4040"))
+            item.setForeground(col, _error_color())
     for child in node.children:
         item.addChild(_node_to_item(child))
     return item
@@ -142,7 +176,7 @@ class PacketModel(QtCore.QAbstractTableModel):
             if col == 5: return "" if r.uid is None else str(r.uid)
             if col == 6: return r.body_len
         elif role == QtCore.Qt.ForegroundRole and not r.ok:
-            return QtGui.QColor("#cc4040")
+            return _error_color()
         elif role == QtCore.Qt.UserRole:
             return r
         return None
@@ -247,7 +281,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.table.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.table.verticalHeader().setVisible(False)
         self.table.setAlternatingRowColors(True)
-        mono = QtGui.QFontDatabase.systemFont(QtGui.QFontDatabase.FixedFont)
+        mono = _mono_font()
         self.table.setFont(mono)
         for c, w in enumerate([60, 80, 110, 312, 448, 100, 70]):
             self.table.setColumnWidth(c, w)
@@ -588,6 +622,14 @@ def _make_selection(block: QtGui.QTextBlock, col_start: int,
 # ── entry point ─────────────────────────────────────────────────────────────
 
 def run() -> int:
+    # High-DPI: with the default (rounded) policy Qt snaps fractional
+    # Windows display scales (e.g. 125%/150%) to an integer factor, which
+    # leaves text blurry / poorly anti-aliased. PassThrough keeps the real
+    # fractional factor so glyphs stay sharp. Must be set before the
+    # QApplication is constructed.
+    if QtWidgets.QApplication.instance() is None:
+        QtWidgets.QApplication.setHighDpiScaleFactorRoundingPolicy(
+            QtCore.Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication(sys.argv)
     win = MainWindow()
     win.show()
