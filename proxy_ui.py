@@ -12,6 +12,7 @@ expects it.
 """
 from __future__ import annotations
 import re
+import signal
 import sys
 import time
 
@@ -631,6 +632,17 @@ def run() -> int:
         QtWidgets.QApplication.setHighDpiScaleFactorRoundingPolicy(
             QtCore.Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication(sys.argv)
+
+    # Ctrl-C handling: while app.exec() sits in Qt's C++ event loop, Python
+    # never regains control to run its SIGINT handler, so Ctrl-C only
+    # surfaces as a traceback (and the window stays open). Route SIGINT to
+    # app.quit() and run a do-nothing timer that periodically hands control
+    # back to the interpreter so the pending signal actually gets delivered.
+    signal.signal(signal.SIGINT, lambda *_: app.quit())
+    sigint_timer = QtCore.QTimer()
+    sigint_timer.timeout.connect(lambda: None)
+    sigint_timer.start(200)
+
     win = MainWindow()
     win.show()
     return app.exec()
