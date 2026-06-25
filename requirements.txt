@@ -1,0 +1,15 @@
+# Runtime / tooling dependencies for sc-proxy.
+# Install with:  python -m pip install -r requirements.txt
+#
+# Versions below are the ones the setup was verified against; loosen the
+# pins (==  ->  >=) if you need newer releases.
+
+# Core: kaitai-generated packet parsers (star_conflict_package_*.py) need this.
+# Required by both proxy.py and proxy_gui.py.
+kaitaistruct==0.11
+
+# Qt packet inspector — only needed for proxy_gui.py.
+PySide6==6.11.1
+
+# YAML reader used by verify_ksy.py to lint the .ksy schemas.
+ruamel.yaml==0.19.1

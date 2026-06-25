@@ -1220,9 +1220,9 @@ types:
       type: u4be
   ac_exchange_gold:
     doc: Exchange gold for credits
-     seq:
+    seq:
     - id: status
-       type: u1
+      type: u1
     - id: credits
       type: u4be
     - id: gold

@@ -4,7 +4,9 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-kaitaistruct = "*"
+kaitaistruct = "*"      # core packet parsers (proxy.py + proxy_gui.py)
+pyside6 = "*"           # Qt packet inspector (proxy_gui.py)
+"ruamel.yaml" = "*"     # .ksy linter (verify_ksy.py)
 
 [requires]
 python_version = "3"
