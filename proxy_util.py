@@ -39,6 +39,34 @@ DEFAULT_REAL_SHARD = (os.environ.get("SC_REAL_HOST", "185.253.20.238"),
 DEFAULT_REAL_CHAT  = (os.environ.get("SC_REAL_HOST", "185.253.20.238"),
                       int(os.environ.get("SC_REAL_CHAT_PORT", "3815")))
 
+
+def _detect_lan_ip() -> str:
+    """Best-effort primary outbound IPv4 of this host.
+
+    Opens a UDP socket "toward" a public address (no packet is actually
+    sent) so the OS picks the default-route interface, then reads back
+    its local address. Falls back to loopback if that fails.
+    """
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        s.connect(("8.8.8.8", 80))
+        return s.getsockname()[0]
+    except Exception:
+        return "127.0.0.1"
+    finally:
+        s.close()
+
+
+# Host advertised to the game inside the rewritten shard/chat address
+# (proxy_lb._rewrite_shard_addr). The game must be able to reach the
+# proxy's shard/chat listeners at this address from wherever it runs, so
+# it defaults to this machine's primary LAN IP (auto-detected). Pin it
+# via SC_PROXY_HOST for unusual layouts (e.g. NAT, or a fixed LAN IP).
+# Previously this was a hardcoded literal that silently went stale when
+# the host's DHCP lease changed, leaving the game unable to reach the
+# shard.
+ADVERTISE_HOST = os.environ.get("SC_PROXY_HOST") or _detect_lan_ip()
+
 # Ports the proxy listens on. Each sub-proxy reads these at start() so a
 # late call to set_local_server_mode() before the threads launch takes
 # effect. Defaults match the upstream prod values (so the game's

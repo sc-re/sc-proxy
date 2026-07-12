@@ -162,8 +162,8 @@ def _handle(client: socket.socket, addr):
     # Shard/chat ports follow proxy_util so --local-server's shifted
     # listen ports get propagated into the rewritten address the game
     # connects to.
-    fake_shard = ("127.0.0.1", proxy_util.SHARD_LISTEN_PORT)
-    fake_chat  = ("127.0.0.1", proxy_util.CHAT_LISTEN_PORT)
+    fake_shard = (proxy_util.ADVERTISE_HOST, proxy_util.SHARD_LISTEN_PORT)
+    fake_chat  = (proxy_util.ADVERTISE_HOST, proxy_util.CHAT_LISTEN_PORT)
     s2c_idx = [0]  # list for closure mutation
 
     def on_s2c(pkt):

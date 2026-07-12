@@ -47,6 +47,8 @@ def main() -> int:
 
     log.info(f"upstream LB: {proxy_util.DEFAULT_REAL_LB[0]}:"
              f"{proxy_util.DEFAULT_REAL_LB[1]}")
+    log.info(f"advertising shard/chat to game at {proxy_util.ADVERTISE_HOST} "
+             f"(override with SC_PROXY_HOST)")
     threading.Thread(target=proxy_lb.run,    daemon=True).start()
     threading.Thread(target=proxy_shard.run, daemon=True).start()
     threading.Thread(target=proxy_chat.run,  daemon=True).start()
