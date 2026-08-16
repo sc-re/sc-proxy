@@ -7,8 +7,8 @@ Two operating modes (pick with the `--local-server` flag):
                            (185.253.20.238:3801/3802/3815), listens on
                            the standard ports (3801/19803/3815),
                            captures into `captures/<session>/`.
-  * `--local-server`     — proxy talks to the local dev server at
-                           192.168.2.32 (same standard upstream ports),
+  * `--local-server`     — proxy talks to the local dev server
+                           (same standard upstream ports),
                            listens on shifted ports (4801/4802/4815)
                            so a default-mode proxy can run alongside,
                            captures into `captures_debug/<session>/`.
@@ -43,15 +43,15 @@ log = logging.getLogger("main")
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--local-server", action="store_true",
+    ap.add_argument("--local-server",
                     help="point the proxy at the LAN dev server "
-                         "(192.168.2.32), listen on the shifted port set "
+                         "listen on the shifted port set "
                          "(4801/4802/4815), and save captures into "
                          "captures_debug/.")
     args = ap.parse_args()
 
     if args.local_server:
-        proxy_util.set_local_server_mode()
+        proxy_util.set_local_server_mode(args.local_server)
 
     log.info(f"upstream LB: {proxy_util.DEFAULT_REAL_LB[0]}:"
              f"{proxy_util.DEFAULT_REAL_LB[1]}")

@@ -123,7 +123,7 @@ _capture_idx = [0]
 _capture_lock = threading.Lock()
 
 
-def set_local_server_mode(host: str = "192.168.2.32") -> None:
+def set_local_server_mode(host: str) -> None:
     """Switch the proxy to point at the local dev server at `host`.
 
     Effects, all applied to the module globals so the sub-proxies pick
